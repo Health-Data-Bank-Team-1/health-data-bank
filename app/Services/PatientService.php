@@ -17,4 +17,24 @@ class PatientService
     {
         return $this->repo->getAll();
     }
+
+    public function getPatient($id)
+    {
+        return $this->repo->findById($id);
+    }
+
+    public function createPatient($data)
+    {
+        return $this->repo->create($data);
+    }
+
+    public function updatePatient($id, $data)
+    {
+        return $this->repo->update($id, $data);
+    }
+
+    public function deletePatient($id)
+    {
+        return $this->repo->delete($id);
+    }
 }
