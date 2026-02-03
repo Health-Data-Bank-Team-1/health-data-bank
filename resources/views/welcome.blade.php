@@ -1519,40 +1519,35 @@
     @endif
 </head>
 
-<body
-    class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col">
-    <div class="flex items-center justify-center w-half">
-        <main class="flex max-w-[335px] w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
-            <div
-                class="text-[13px] leading-[20px] flex-1 p-6 pb-12 lg:p-20 bg-white dark:bg-[#161615] dark:text-[#EDEDEC] rounded-lg border-2 border-[#19140035] dark:border-[#3E3E3A]">
-                <div class="mb-4 text-lg w-full justify-start">
-                    {{ __('Welcome to the Health Data Bank') }}
-                </div>
-                <div class= "flex justify-center items-center gap-4">
-                    @if (Route::has('login'))
-                        <a href="{{ route('login') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                            Log in
-                        </a>
-                    @endif
-                    <span>
-                        {{ __('or') }}
-                    </span>
-                    @if (Route::has('register'))
-                        <a href="{{ route('register') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                            Register
-                        </a>
-                    @endif
-                </div>
+<x-guest-layout>
+    <x-authentication-card>
+        <x-slot name="logo">
+            <span class="text-xl font-semibold tracking-wide">{{ 'Health Data Bank' }}</span>
+        </x-slot>
+        <div class="flex flex-col items-center">
+            <div class= "flex justify-center items-center gap-4">
+                @if (Route::has('login'))
+                    <x-link-button href="{{ route('login') }}">
+                        Login
+                    </x-link-button>
+                @endif
+                <span>
+                    {{ __('or') }}
+                </span>
+                @if (Route::has('register'))
+                    <x-link-button href="{{ route('register') }}">
+                        Register
+                    </x-link-button>
+                @endif
             </div>
-    </div>
-    </main>
-    </div>
-
-    @if (Route::has('login'))
-        <div class="h-14.5 hidden lg:block"></div>
-    @endif
-</body>
+            <div class= "mt-4 text-lg text-center font-semibold">
+                {{ 'About Us' }}
+            </div>
+            <div class= "mt-2 text-base text-center">
+                {{ 'We are a web based Health-Data Bank system that enables precariously housed individuals to record, manage, and review their personal health information in a simple and accessible manner.' }}
+            </div>
+        </div>
+    </x-authentication-card>
+</x-guest-layout>
 
 </html>
