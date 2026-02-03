@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+
+class RouteServiceProvider extends ServiceProvider
+{
+    /**
+     * The path to the "home" route for your application.
+     *
+     * @var string
+     */
+    public const HOME = '/dashboard';
+
+    /**
+     * Define your route model bindings, pattern filters, etc.
+     */
+    public function boot(): void
+    {
+        $this->configureRateLimiting();
+
+        $this->routes(function () {
+            // Load API routes
+            Route::middleware('api')
+                ->prefix('api')
+                ->group(base_path('routes/api.php'));
+
+            // Load Web routes
+            Route::middleware('web')
+                ->group(base_path('routes/web.php'));
+
+            // -------------------------------
+            // TEMPORARY TEST ROUTE
+            // -------------------------------
+            // This will confirm that RouteServiceProvider is working
+            Route::get('/test-provider', function () {
+                return response()->json([
+                    'message' => 'RouteServiceProvider is working! Routes are loaded.',
+                ]);
+            });
+        });
+    }
+
+    /**
+     * Configure the rate limiters for the application.
+     */
+    protected function configureRateLimiting(): void
+    {
+        // Optional: rate limiting configuration for APIs
+        // Example:
+        // RateLimiter::for('api', function (Request $request) {
+        //     return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        // });
+    }
+}
