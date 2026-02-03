@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('team_user', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('team_id');
-            $table->foreignId('user_id');
-            $table->string('role')->nullable();
-            $table->timestamps();
-
-            $table->unique(['team_id', 'user_id']);
+        Schema::create('dashboards', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('account_id');
+            $table->foreign('account_id')
+                ->references('id')
+                ->on('accounts')
+                ->onDelete('cascade');
         });
     }
 
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('team_user');
+        Schema::dropIfExists('dashboards');
     }
 };

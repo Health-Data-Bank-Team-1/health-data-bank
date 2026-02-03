@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('patients', function (Blueprint $table) {
-            $table->id();
+        Schema::create('accounts', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->enum('account_type', ['User', 'Researcher', 'HealthcareProvider', 'Admin']);
             $table->string('name');
-            $table->string('email')->nullable();
+            $table->string('email')->unique();
+            $table->enum('status', ['ACTIVE', 'DEACTIVATED'])->default('ACTIVE');
             $table->timestamps();
-        });
+});
+
     }
 
     /**
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('patients');
+        Schema::dropIfExists('accounts');
     }
 };
