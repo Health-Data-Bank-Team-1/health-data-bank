@@ -1,48 +1,79 @@
 <form wire:submit="register">
-
-    <x-validation-errors class="mb-4" />
-
     <div>
-        <x-label for="role" value="{{ __('Role') }}" />
+        <x-label for="role" value="{{ __('Role (required)') }}" />
         <select wire:model.live="role" id="role" class="block mt-1 w-full">
             <option value="User">User</option>
             <option value="Admin">Admin</option>
             <option value="HealthcareProvider">Healthcare Provider</option>
             <option value="Researcher">Researcher</option>
         </select>
+        <div>
+            @error('role')
+                <span class="text-sm text-red-600 mt-1">{{ $message }}</span>
+            @enderror
+        </div>
     </div>
 
     <div>
-        <x-label for="name" value="{{ __('Name') }}" />
+        <x-label for="name" value="{{ __('Name (required)') }}" />
         <x-input wire:model="name" id="name" class="block mt-1 w-full" type="text" />
-    </div>
-
-    <div class="mt-4">
-        <x-label for="email" value="{{ __('Email') }}" />
-        <x-input wire:model="email" id="email" class="block mt-1 w-full" type="email" />
-    </div>
-
-    <div class="mt-4">
-        <x-label for="password" value="{{ __('Password') }}" />
-        <x-input wire:model="password" id="password" class="block mt-1 w-full" type="password" />
-    </div>
-
-    <div class="mt-4">
-        <x-label for="password_confirmation" value="{{ __('Confirm Password') }}" />
-        <x-input wire:model="password_confirmation" id="password_confirmation" class="block mt-1 w-full" type="password" />
-    </div>
-
-    @if ($role === 'Admin')
-        <div class="mt-4">
-            <x-label for="admin_code" value="Admin Code" />
-            <x-input wire:model="admin_code" id="admin_code" type="text" class="block mt-1 w-full" />
+        <div>
+            @error('name')
+                <span class="text-sm text-red-600 mt-1">{{ $message }}</span>
+            @enderror
         </div>
-    @elseif($role === 'Researcher')
-        <x-label for="department" value="Department" />
-        <x-input wire:model="department" id="department" type="text" class="block mt-1 w-full" />
-    @elseif($role === 'HealthcareProvider')
-        <x-label for="department" value="Department" />
-        <x-input wire:model="department" id="department" type="text" class="block mt-1 w-full" />
+    </div>
+
+    <div class="mt-4">
+        <x-label for="email" value="{{ __('Email (required)') }}" />
+        <x-input wire:model="email" id="email" class="block mt-1 w-full" type="email" />
+        <div>
+            @error('email')
+                <span class="text-sm text-red-600 mt-1">{{ $message }}</span>
+            @enderror
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <x-label for="password" value="{{ __('Password (required)') }}" />
+        <x-input wire:model="password" id="password" class="block mt-1 w-full" type="password" />
+        <div>
+            @error('password')
+                <span class="text-sm text-red-600 mt-1">{{ $message }}</span>
+            @enderror
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <x-label for="password_confirmation" value="{{ __('Confirm Password (required)') }}" />
+        <x-input wire:model="password_confirmation" id="password_confirmation" class="block mt-1 w-full"
+            type="password" />
+        <div>
+            @error('password_confirmation')
+                <span class="text-sm text-red-600 mt-1">{{ $message }}</span>
+            @enderror
+        </div>
+    </div>
+
+    @if ($role === 'HealthcareProvider')
+        <div class="mt-4">
+            <x-label for="organization" value="{{ __('Organization (required)')}}" />
+            <x-input wire:model="organization" id="organization" type="text" class="block mt-1 w-full" />
+            <div>
+                @error('organization')
+                    <span class="text-sm text-red-600 mt-1">{{ $message }}</span>
+                @enderror
+            </div>
+        </div>
+        <div class="mt-4">
+            <x-label for="license" value="{{ __('License (required)')}}" />
+            <x-input wire:model="license" id="license" type="text" class="block mt-1 w-full" />
+            <div>
+                @error('license')
+                    <span class="text-sm text-red-600 mt-1">{{ $message }}</span>
+                @enderror
+            </div>
+        </div>
     @endif
     <div class="flex items-center justify-end mt-4">
         <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

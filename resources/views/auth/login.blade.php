@@ -1,7 +1,7 @@
 <x-guest-layout>
     <x-authentication-card>
         <x-slot name="logo">
-            <span class="text-xl">{{ 'Health Data Bank' }}</span>
+            <span class="text-xl font-semibold tracking-wide">{{ 'Health Data Bank' }}</span>
         </x-slot>
 
         <x-validation-errors class="mb-4" />
