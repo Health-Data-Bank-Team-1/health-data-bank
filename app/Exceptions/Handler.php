@@ -29,6 +29,8 @@ class Handler extends ExceptionHandler
                             'route'  => optional($request->route())->getName() ?? 'unknown',
                             'path'   => $request->path(),
                             'reason' => class_basename($e),
+                            'ip_address' => $request->ip(),
+                            'user_agent' => $request->userAgent(),
                         ]
                     );
                 }
@@ -38,3 +40,4 @@ class Handler extends ExceptionHandler
         });
     }
 }
+
