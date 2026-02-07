@@ -3,7 +3,6 @@
         <x-label for="role" value="{{ __('Role (required)') }}" />
         <select wire:model.live="role" id="role" class="block mt-1 w-full">
             <option value="User">User</option>
-            <option value="Admin">Admin</option>
             <option value="HealthcareProvider">Healthcare Provider</option>
             <option value="Researcher">Researcher</option>
         </select>
