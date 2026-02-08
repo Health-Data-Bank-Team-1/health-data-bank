@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\MyProgress;
 use App\Livewire\UserFormSelect;
 use App\Livewire\UserTodo;
+use App\Livewire\FormIndex;
+use App\Livewire\FormRenderer;
 
 Route::get('/', function () {
     return view('welcome');
@@ -23,4 +25,8 @@ Route::middleware([
         ->name('user-form-select');
     Route::get('/user-todo', UserTodo::class)
         ->name('user-todo');
+    Route::get('/forms', FormIndex::class)
+        ->name('forms.index');
+    Route::get('/forms/{form}', FormRenderer::class)
+        ->name('forms.show');
 });

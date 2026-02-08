@@ -9,6 +9,9 @@ class MyProgress extends Component
     public function render()
     {
         return view('livewire.my-progress')
-            ->layout('layouts.app');
+            ->layout('layouts.app')
+            ->layoutData([
+                'header' => 'My Progress'
+            ]);
     }
 }

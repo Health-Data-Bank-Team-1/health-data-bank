@@ -18,9 +18,11 @@ return new class extends Migration
 
             $table->string('label');
 
-            $table->enum('field_type', ['Text', 'Number', 'Date', 'Boolean', 'Dropdown']);
+            $table->enum('field_type', ['Text', 'Number', 'Date', 'RadioButton', 'Checkbox']);
 
             $table->jsonb('validation_rules')->nullable();
+
+            $table->jsonb('options')->nullable();
 
             $table->foreign('form_template_id')
                 ->references('id')
