@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Livewire\MyProgress;
 
 Route::get('/', function () {
     return view('welcome');
@@ -14,4 +15,6 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+    Route::get('/my-progress', MyProgress::class)
+        ->name('my-progress');
 });
