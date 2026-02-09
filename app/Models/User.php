@@ -59,6 +59,27 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+
+    public function getRolesTable(): string
+    {
+        return 'roles';
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'account_roles', 'account_id', 'role_id');
+    }
+
+    public function getRolePermissionsTable(): string
+    {
+        return 'role_permissions';
+    }
+
+    public function getModelRolesTable(): string
+    {
+        return 'account_roles';
+    }
+
     protected function casts(): array
     {
         return [

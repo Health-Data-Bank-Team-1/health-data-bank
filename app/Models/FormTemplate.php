@@ -15,6 +15,10 @@ class FormTemplate extends Model
         'version',
         'status',
         'description',
+        'approval_status',
+        'approved_by',
+        'approved_at',
+        'rejection_reason',
     ];
 
     public function fields()
@@ -25,5 +29,10 @@ class FormTemplate extends Model
     public function submissions()
     {
         return $this->hasMany(FormSubmission::class);
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }
