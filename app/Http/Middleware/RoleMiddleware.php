@@ -11,9 +11,16 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, ...$roles)
     {
         $user = Auth::user();
-        if (!$user || !in_array($user->role->name, $roles)) {
+
+        if (
+            !$user ||
+            !$user->role ||
+            !isset($user->role->name) ||
+            !in_array($user->role->name, $roles)
+        ) {
             abort(403, 'Unauthorized');
         }
+
         return $next($request);
     }
 }

@@ -36,7 +36,7 @@
                     @endif
 
                     <!-- OTP verification form -->
-                    <form method="POST" action="{{ route('auth.otp.verify') }}">
+                    <form method="POST" action="{{ route('otp.verify') }}">
                         @csrf
 
                         <div class="mb-3">
@@ -48,7 +48,7 @@
                     </form>
 
                     <!-- Optional: Resend OTP link -->
-                    <form method="POST" action="{{ route('auth.otp.send') }}" class="mt-3 text-center">
+                    <form method="POST" action="{{ route('otp.send') }}" class="mt-3 text-center">
                         @csrf
                         <button type="submit" class="btn btn-link">Resend OTP</button>
                     </form>

@@ -10,8 +10,16 @@ class UserOtp extends Model
     use HasFactory;
 
     protected $fillable = [
-        'email',
+        'user_id',   // added this
         'otp',
         'expires_at',
     ];
+
+    /**
+     * Relationship to the User model
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -4,7 +4,13 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\OtpController;
+use App\Http\Middleware\RoleMiddleware;
 
+/*
+|--------------------------------------------------------------------------
+| HOME
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
     return view('welcome');
 });
@@ -35,41 +41,39 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard/user', function () {
         return view('dashboards.user');
-    })->name('dashboard.user');
+    })->name('dashboard.user')
+      ->middleware([RoleMiddleware::class . ':User']);
 
     Route::get('/dashboard/researcher', function () {
         return view('dashboards.researcher');
-    })->name('dashboard.researcher');
+    })->name('dashboard.researcher')
+      ->middleware([RoleMiddleware::class . ':Researcher']);
 
     Route::get('/dashboard/provider', function () {
         return view('dashboards.provider');
-    })->name('dashboard.provider');
+    })->name('dashboard.provider')
+      ->middleware([RoleMiddleware::class . ':Healthcare Provider']);
 
     Route::get('/dashboard/admin', function () {
         return view('dashboards.admin');
-    })->name('dashboard.admin');
+    })->name('dashboard.admin')
+      ->middleware([RoleMiddleware::class . ':Administrator']);
 });
 
 /*
 |--------------------------------------------------------------------------
-| OTP VERIFICATION ROUTES
+| OTP ROUTES
 |--------------------------------------------------------------------------
 */
-    Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/otp', [OtpController::class, 'show'])->name('otp.show');
     Route::post('/otp', [OtpController::class, 'verify'])->name('otp.verify');
     Route::post('/otp/send', [OtpController::class, 'sendOtp'])->name('otp.send');
-
-    // Verify OTP submission
-    Route::post('/otp', [OtpController::class, 'verify'])->name('auth.otp.verify');
-
-    // Send / Resend OTP
-    Route::post('/otp/send', [OtpController::class, 'sendOtp'])->name('auth.otp.send');
 });
 
 /*
 |--------------------------------------------------------------------------
-| PROFILE ROUTES (keep yours)
+| PROFILE ROUTES
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {

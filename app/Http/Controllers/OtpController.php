@@ -27,15 +27,13 @@ class OtpController extends Controller
      */
     public function sendOtp(User $user): \Illuminate\Http\JsonResponse
     {
-       
         $otp = rand(100000, 999999);
 
-        // Store or update OTP in database
+        // Store or update OTP in database (no email column needed)
         UserOtp::updateOrCreate(
             ['user_id' => $user->id],
             [
                 'otp' => $otp,
-                'email' => $user->email,
                 'expires_at' => Carbon::now()->addMinutes(5),
             ]
         );
@@ -47,7 +45,7 @@ class OtpController extends Controller
         });
 
         return response()->json([
-            'message' => 'OTP sent to your email (check laravel.log)'
+            'message' => 'OTP sent to your email (check laravel.log if using log driver)'
         ]);
     }
 
@@ -74,12 +72,9 @@ class OtpController extends Controller
             return back()->withErrors(['otp' => 'Invalid or expired OTP']);
         }
 
-     
-
-        // Delete the OTP after successful login
+        // Delete the OTP after successful verification
         $record->delete();
 
         return redirect()->intended('/dashboard');
-                         
     }
 }
