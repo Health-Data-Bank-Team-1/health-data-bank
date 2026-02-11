@@ -5,8 +5,7 @@ namespace App\Listeners;
 use Illuminate\Auth\Events\Logout;
 use App\Services\AuditLogger;
 
-class AuditLogout
-{
+class AuditLogout {
     public function handle(Logout $event): void
     {
         AuditLogger::log(

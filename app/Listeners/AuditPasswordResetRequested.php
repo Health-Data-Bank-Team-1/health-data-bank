@@ -16,6 +16,7 @@ class AuditPasswordResetRequested
         // $event->notifiable is usually the User model
         $user = $event->notifiable;
 
+
         AuditLogger::log(
             'password_reset_requested',
             ['security', 'auth'],

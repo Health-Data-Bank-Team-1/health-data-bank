@@ -38,8 +38,7 @@ class AuditLogger
 
         $user = Auth::user();
 
-        // If an auditable model is provided AND supports manual audit creation, use it.
-        // Otherwise, fallback to DB insert (optional). We keep it simple: require auditable models.
+
         if ($auditable && method_exists($auditable, 'audits')) {
             // Create an audit record via relationship so auditable_type/auditable_id are set correctly.
             $auditable->audits()->create([
@@ -56,13 +55,6 @@ class AuditLogger
             return;
         }
 
-        // If no auditable is provided, you have two choices:
-        // 1) Require an auditable target for every event (recommended), OR
-        // 2) Create a small "SystemAudit" auditable model to attach system-wide events.
-        //
-        // For now, we do nothing if no auditable is provided to avoid malformed audits.
-        // This keeps the implementation safe and consistent.
-        // You can replace this with a SystemAudit target later.
     }
 
     /**

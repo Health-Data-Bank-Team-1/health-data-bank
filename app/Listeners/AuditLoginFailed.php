@@ -17,6 +17,7 @@ class AuditLoginFailed{
                 'reason' => 'invalid_credentials',
                 'email_attempted' => $event->credentials['email'] ?? null,
             ]
+
         );
     }
 }
