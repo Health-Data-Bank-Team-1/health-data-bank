@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\ResetsUserPasswords;
+use App\Services\AuditLogger;
 
 class ResetUserPassword implements ResetsUserPasswords
 {
@@ -25,5 +26,13 @@ class ResetUserPassword implements ResetsUserPasswords
         $user->forceFill([
             'password' => Hash::make($input['password']),
         ])->save();
+
+        AuditLogger::log(
+            'password_reset_completed',
+            ['security', 'auth', 'outcome:success'],
+            $user,
+            [],
+            []
+        );
     }
 }

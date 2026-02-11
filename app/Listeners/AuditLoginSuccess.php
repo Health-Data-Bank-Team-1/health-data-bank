@@ -5,11 +5,11 @@ namespace App\Listeners;
 use Illuminate\Auth\Events\Login;
 use App\Services\AuditLogger;
 
-class LogLoginSuccess
+class AuditLoginSuccess
 {
     public function handle(Login $event): void
     {
-        // Attach audit to the authenticated user (Option A)
+        // Attach audit to the authenticated user
         AuditLogger::log(
             'login_success',
             ['auth', 'outcome:success'],

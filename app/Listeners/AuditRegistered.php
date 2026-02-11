@@ -5,7 +5,7 @@ namespace App\Listeners;
 use Illuminate\Auth\Events\Registered;
 use App\Services\AuditLogger;
 
-class LogRegistered
+class AuditRegistered
 {
     public function handle(Registered $event): void
     {

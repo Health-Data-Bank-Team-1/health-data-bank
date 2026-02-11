@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\UpdatesUserPasswords;
+use App\Services\AuditLogger;
 
 class UpdateUserPassword implements UpdatesUserPasswords
 {
@@ -28,5 +29,13 @@ class UpdateUserPassword implements UpdatesUserPasswords
         $user->forceFill([
             'password' => Hash::make($input['password']),
         ])->save();
+
+        AuditLogger::log(
+            'password_changed',
+            ['security', 'auth', 'outcome:success'],
+            $user,
+            [],
+            []
+        );
     }
 }
