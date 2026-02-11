@@ -13,7 +13,11 @@ return new class extends Migration
     {
         Schema::table('form_templates', function (Blueprint $table) {
             $table->string('approval_status')->default('draft');
-            $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->uuid('approved_by')->nullable();
+            $table->foreign('approved_by')
+                ->references('id')
+                ->on('users')
+                ->nullOnDelete();
             $table->timestamp('approved_at')->nullable();
             $table->text('rejection_reason')->nullable();
         });

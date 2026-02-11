@@ -2,38 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Traits\HasUuid;
+use Spatie\Permission\Models\Role as SpatieRole;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class Role extends Model
+class Role extends SpatieRole
 {
-    use HasUuid, HasRoles;
+    use HasUuids;
 
-    protected $table = 'roles';
-    protected $fillable = ['role_name'];
-    public $timestamps = false;
-
-    protected $guard_name = null;      // disable Spatie guard
-
-    public function getGuardName()
-    {
-        return null;
-    }
-
-    public function accounts(): BelongsToMany
-    {
-        return $this->belongsToMany(Account::class, 'account_roles');
-    }
-
-    public function permissions(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Permission::class,
-            'role_permissions',   // your pivot table
-            'role_id',            // foreign key in pivot pointing to this role
-            'permission_id'       // foreign key in pivot pointing to permission
-        );
-    }
+    public $incrementing = false;
+    protected $keyType = 'string';
 }

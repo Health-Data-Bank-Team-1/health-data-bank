@@ -10,6 +10,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class User extends Authenticatable
 {
@@ -18,6 +20,7 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
     use HasProfilePhoto;
+    use HasRoles, HasUuids;
     use HasTeams;
     use Notifiable;
     use TwoFactorAuthenticatable;
@@ -27,6 +30,9 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
         'name',
         'email',
@@ -59,26 +65,6 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-
-    public function getRolesTable(): string
-    {
-        return 'roles';
-    }
-
-    public function roles()
-    {
-        return $this->belongsToMany(Role::class, 'account_roles', 'account_id', 'role_id');
-    }
-
-    public function getRolePermissionsTable(): string
-    {
-        return 'role_permissions';
-    }
-
-    public function getModelRolesTable(): string
-    {
-        return 'account_roles';
-    }
 
     protected function casts(): array
     {
