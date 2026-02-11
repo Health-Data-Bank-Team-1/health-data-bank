@@ -30,7 +30,6 @@ class UpdateUserPassword implements UpdatesUserPasswords
             'password' => Hash::make($input['password']),
         ])->save();
 
-
         AuditLogger::log(
             'password_changed',
             ['security', 'auth', 'outcome:success'],

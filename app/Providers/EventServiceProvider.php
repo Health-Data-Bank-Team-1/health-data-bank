@@ -42,7 +42,6 @@ class EventServiceProvider extends ServiceProvider
         NotificationSent::class => [
             AuditPasswordResetRequested::class,
         ],
-
     ];
 
     /**
