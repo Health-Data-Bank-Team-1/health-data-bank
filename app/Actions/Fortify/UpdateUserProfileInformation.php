@@ -7,6 +7,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
+use App\Services\AuditLogger;
+
 
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
 {
@@ -35,6 +37,16 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'name' => $input['name'],
                 'email' => $input['email'],
             ])->save();
+
+            AuditLogger::log(
+                'profile_updated',
+                ['account', 'security'],
+                $user,
+                [],
+                [
+                    'fields_updated' => ['name', 'email'],
+                ]
+            );
         }
     }
 
@@ -52,5 +64,17 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         ])->save();
 
         $user->sendEmailVerificationNotification();
+
+        AuditLogger::log(
+            'profile_updated',
+            ['account', 'security'],
+            $user,
+            [],
+            [
+                'fields_updated' => ['name', 'email'],
+                'email_verification_reset' => true,
+            ]
+        );
+
     }
 }
