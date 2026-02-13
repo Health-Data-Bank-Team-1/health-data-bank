@@ -9,10 +9,6 @@ use Illuminate\Http\Request;
 
 class FormTemplateApprovalController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['role:admin']); // Uses UUID roles
-    }
 
     public function submit(FormTemplate $template, FormTemplateApprovalService $service)
     {
