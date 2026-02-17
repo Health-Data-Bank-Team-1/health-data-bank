@@ -23,7 +23,26 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     $user = Auth::user();
 
-    return match ($user->role->name) {
+    // Make sure a user is logged in
+    if (!$user) {
+        return redirect()->route('login');
+    }
+
+    // Safe access to role name
+    $roleName = null;
+
+    // Option 1: If role is a relationship (Role model)
+    if ($user->relationLoaded('role') || method_exists($user, 'role')) {
+        $roleName = $user->role ? $user->role->name : null;
+    }
+
+    // Option 2: fallback if you have a 'role' string column
+    if (!$roleName && isset($user->role)) {
+        $roleName = $user->role;
+    }
+
+    // Redirect based on role
+    return match ($roleName) {
         'User' => redirect()->route('dashboard.user'),
         'Researcher' => redirect()->route('dashboard.researcher'),
         'Healthcare Provider' => redirect()->route('dashboard.provider'),

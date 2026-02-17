@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 
 class Role extends Model
 {
-    use HasFactory;
+    // Remove HasFactory since we don't need a factory for Role
+    // use HasFactory;  
 
     protected $fillable = ['name'];
 

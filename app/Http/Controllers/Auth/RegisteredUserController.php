@@ -22,6 +22,7 @@ class RegisteredUserController extends Controller
     {
         // Pass all roles to the registration view
         $roles = Role::all(); 
+      
         return view('auth.register', compact('roles'));
     }
 
