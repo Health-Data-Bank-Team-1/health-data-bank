@@ -12,10 +12,13 @@ class FormTemplateFactory extends Factory
     public function definition(): array
     {
         return [
+            'title' => $this->faker->words(2, true),
+            'schema' => [
+                'fields' => ['bp']
+            ],
+
             'version' => 1,
-            'status' => 'draft', //default
-            'description' => $this->faker->sentence(),
-            'approval_status' => 'pending', //default
+            'approval_status' => 'pending',
             'approved_by' => null,
             'approved_at' => null,
             'rejection_reason' => null,

@@ -78,4 +78,47 @@ class FormTemplateApprovalTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function test_cannot_approve_already_approved_form()
+    {
+        $this->actingAsAdmin();
+
+        $form = FormTemplate::factory()->create([
+            'approval_status' => 'approved'
+        ]);
+
+        $response = $this->postJson("/api/admin/forms/{$form->id}/approve");
+
+        $response->assertStatus(422);
+    }
+
+    public function test_reject_requires_reason()
+    {
+        $this->actingAsAdmin();
+
+        $form = FormTemplate::factory()->create([
+            'approval_status' => 'pending'
+        ]);
+
+        $response = $this->postJson("/api/admin/forms/{$form->id}/reject");
+
+        $response->assertStatus(422);
+    }
+
+    public function test_workflow_errors_return_standard_json()
+    {
+        $this->actingAsAdmin();
+
+        $form = FormTemplate::factory()->create([
+            'approval_status' => 'approved'
+        ]);
+
+        $response = $this->postJson("/api/admin/forms/{$form->id}/approve");
+
+        $response->assertJsonStructure([
+            'error',
+            'message',
+            'status'
+        ]);
+    }
 }

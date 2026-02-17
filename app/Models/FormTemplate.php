@@ -10,18 +10,30 @@ class FormTemplate extends Model
 {
     use HasFactory, HasUuid;
 
-    public $timestamps = false;
-
     protected $fillable = [
+        'id',
+        'title',
+        'schema',
         'version',
-        'status',
-        'description',
         'approval_status',
         'approved_by',
         'approved_at',
         'rejection_reason',
     ];
 
+    protected $attributes = [
+        'version' => 1,
+        'approval_status' => 'pending',
+    ];
+
+    protected $casts = [
+        'schema' => 'array',
+        'approved_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    //Relationships
     public function fields()
     {
         return $this->hasMany(FormField::class);
@@ -35,5 +47,10 @@ class FormTemplate extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function versions()
+    {
+        return $this->hasMany(FormTemplateVersion::class);
     }
 }

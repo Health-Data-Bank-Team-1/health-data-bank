@@ -14,8 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+
+    //middleware
     ->withMiddleware(function (Middleware $middleware): void {
 
+        // Spatie role/permission middleware aliases
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
@@ -23,6 +26,25 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
     })
+
+    //exception handling
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
-    })->create();
+
+        //standardized workflow error responses
+        $exceptions->render(function (
+            \App\Exceptions\WorkflowException $e,
+                                              $request
+        ) {
+            //only return JSON if API request
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => 'WorkflowError',
+                    'message' => $e->getMessage(),
+                    'status' => $e->getStatus(),
+                ], $e->getStatus());
+            }
+        });
+
+    })
+
+    ->create();
