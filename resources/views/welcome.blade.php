@@ -20,36 +20,42 @@
         </style>
     @endif
 </head>
-
-<x-guest-layout>
-    <x-authentication-card>
-        <x-slot name="logo">
-            <span class="text-xl font-semibold tracking-wide">{{ 'Health Data Bank' }}</span>
-        </x-slot>
-        <div class="flex flex-col items-center">
-            <div class= "flex justify-center items-center gap-4">
-                @if (Route::has('login'))
-                    <x-link-button href="{{ route('login') }}">
-                        Login
-                    </x-link-button>
-                @endif
-                <span>
-                    {{ __('or') }}
-                </span>
-                @if (Route::has('register'))
-                    <x-link-button href="{{ route('register') }}">
-                        Register
-                    </x-link-button>
-                @endif
-            </div>
-            <div class= "mt-4 text-lg text-center font-semibold">
-                {{ 'About Us' }}
-            </div>
-            <div class= "mt-2 text-base text-center">
-                {{ 'We are a web based Health-Data Bank system that enables precariously housed individuals to record, manage, and review their personal health information in a simple and accessible manner.' }}
-            </div>
-        </div>
-    </x-authentication-card>
-</x-guest-layout>
-
+<body>
+        <header>
+            <nav></nav>
+        </header>
+        <main>
+            <h1 hidden>Welcome to the Health Data Bank</h1>
+            <x-guest-layout>
+                <x-authentication-card>
+                    <x-slot name="logo">
+                        <span class="text-xl font-semibold tracking-wide">{{ 'Health Data Bank' }}</span>
+                    </x-slot>
+                    <div class="flex flex-col items-center">
+                        <div class= "flex justify-center items-center gap-4">
+                            @if (Route::has('login'))
+                                <x-link-button href="{{ route('login') }}">
+                                    Login
+                                </x-link-button>
+                            @endif
+                            <span>
+                                {{ __('or') }}
+                            </span>
+                            @if (Route::has('register'))
+                                <x-link-button href="{{ route('register') }}">
+                                    Register
+                                </x-link-button>
+                            @endif
+                        </div>
+                        <div class= "mt-4 text-lg text-center font-semibold">
+                            {{ 'About Us' }}
+                        </div>
+                        <div class= "mt-2 text-base text-center">
+                            {{ 'We are a web based Health-Data Bank system that enables precariously housed individuals to record, manage, and review their personal health information in a simple and accessible manner.' }}
+                        </div>
+                    </div>
+                </x-authentication-card>
+            </x-guest-layout>
+        </main>
+    </body>
 </html>
