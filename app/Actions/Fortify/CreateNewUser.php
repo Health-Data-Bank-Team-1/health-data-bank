@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Laravel\Jetstream\Jetstream;
+use Illuminate\Support\Str;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -34,6 +35,18 @@ class CreateNewUser implements CreatesNewUsers
                 'email' => $input['email'],
                 'password' => Hash::make($input['password']),
             ]), function (User $user) {
+
+                // Create accounts row (UUID)
+                DB::table('accounts')->insert([
+                    'id' => (string) Str::uuid(),
+                    'account_type' => 'User',     // adjust later if you support multiple roles on signup
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'status' => 'ACTIVE',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
                 $this->createTeam($user);
             });
         });

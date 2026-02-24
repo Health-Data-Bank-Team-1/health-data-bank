@@ -9,11 +9,11 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Notifications\Events\NotificationSent;
 
-use App\Listeners\AuditPasswordResetRequested;
-use App\Listeners\AuditLoginSuccess;
-use App\Listeners\AuditLoginFailed;
-use App\Listeners\AuditLogout;
-use App\Listeners\AuditRegistered;
+use App\Listeners\LogPasswordResetRequested;
+use App\Listeners\LogLoginSuccess;
+use App\Listeners\LogLoginFailure;
+use App\Listeners\LogLogout;
+use App\Listeners\LogRegistered;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -24,23 +24,23 @@ class EventServiceProvider extends ServiceProvider
      */
     protected $listen = [
         Login::class => [
-            AuditLoginSuccess::class,
+            LogLoginSuccess::class,
         ],
 
         Failed::class => [
-            AuditLoginFailed::class,
+            LogLoginFailure::class,
         ],
 
         Logout::class => [
-            AuditLogout::class,
+            LogLogout::class,
         ],
 
         Registered::class => [
-            AuditRegistered::class,
+            LogRegistered::class,
         ],
 
         NotificationSent::class => [
-            AuditPasswordResetRequested::class,
+            LogPasswordResetRequested::class,
         ],
     ];
 

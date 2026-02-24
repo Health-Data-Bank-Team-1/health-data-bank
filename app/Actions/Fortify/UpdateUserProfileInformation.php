@@ -3,6 +3,7 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -33,19 +34,45 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user instanceof MustVerifyEmail) {
             $this->updateVerifiedUser($user, $input);
         } else {
+            $oldName  = $user->name;
+            $oldEmail = $user->email;
+            $actorId = null;
+            if (!empty($user->email)) {
+                $actorId = DB::table('accounts')->where('email', $user->email)->value('id');
+            }
+
             $user->forceFill([
                 'name' => $input['name'],
                 'email' => $input['email'],
             ])->save();
 
+
+            if ($actorId) {
+                DB::table('accounts')
+                    ->where('id', $actorId)
+                    ->update([
+                        'name' => $input['name'],
+                        'email' => $input['email'],
+                        'updated_at' => now(),
+                    ]);
+            }
+
+            $fieldsUpdated = [];
+            if (($input['name'] ?? null) !== $oldName)  $fieldsUpdated[] = 'name';
+            if (($input['email'] ?? null) !== $oldEmail) $fieldsUpdated[] = 'email';
+
             AuditLogger::log(
                 'profile_updated',
-                ['account', 'security'],
-                $user,
-                [],
+                'success',
+                null,
+                'account',
+                $actorId,
                 [
-                    'fields_updated' => ['name', 'email'],
-                ]
+                    'fields_updated' => $fieldsUpdated,
+                    'email_changed' => in_array('email', $fieldsUpdated, true),
+                    'photo_updated' => isset($input['photo']),
+                ],
+                $actorId
             );
         }
     }
@@ -57,23 +84,39 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      */
     protected function updateVerifiedUser(User $user, array $input): void
     {
+        $oldEmail = $user->email;
+        $actorId = null;
+        if (!empty($oldEmail)) {
+            $actorId = DB::table('accounts')->where('email', $oldEmail)->value('id');
+        }
         $user->forceFill([
             'name' => $input['name'],
             'email' => $input['email'],
             'email_verified_at' => null,
         ])->save();
 
+        if ($actorId) {
+            DB::table('accounts')
+                ->where('id', $actorId)
+                ->update([
+                    'name' => $input['name'],
+                    'email' => $input['email'],
+                    'updated_at' => now(),
+                ]);
+        }
         $user->sendEmailVerificationNotification();
 
         AuditLogger::log(
             'profile_updated',
-            ['account', 'security'],
-            $user,
-            [],
+            'success',
+            null,
+            'account',
+            $actorId,
             [
                 'fields_updated' => ['name', 'email'],
                 'email_verification_reset' => true,
-            ]
+            ],
+            $actorId
         );
 
     }

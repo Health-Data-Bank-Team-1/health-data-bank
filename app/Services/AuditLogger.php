@@ -3,84 +3,112 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
 
-/**
- * AuditLogger
- *
- * Central wrapper for consistent audit logging across the system.
- * Uses owen-it/laravel-auditing (audits table).
- *
- * Important: Never log raw health values, form responses, or direct identifiers.
- * Only log IDs, event codes, and minimal safe metadata.
- */
 class AuditLogger
 {
-    /**
-     * Log an auditable event.
-     *
-     * @param  string       $event    Event name in snake_case (e.g., login_success)
-     * @param  array        $tags     Tags for category/outcome (e.g., ['auth','outcome:success'])
-     * @param  mixed|null   $auditable A model instance being acted on (optional)
-     * @param  array        $oldValues Safe "before" values (IDs only)
-     * @param  array        $newValues Safe "after" values (IDs only)
-     */
     public static function log(
-        string $event,
-        array $tags = [],
-        $auditable = null,
-        array $oldValues = [],
-        array $newValues = []
+        string $actionType,
+        ?string $outcome = null,
+        ?string $reasonCode = null,
+        ?string $targetType = null,
+        ?string $targetId = null,
+        array $metadata = [],
+        ?string $actorIdOverride = null
     ): void {
-        // Basic safety: don't let obviously sensitive keys through.
-        self::guardAgainstSensitiveData($oldValues);
-        self::guardAgainstSensitiveData($newValues);
 
-        $user = Auth::user();
+        try {
+            $metadata = self::sanitizeMetadata($metadata);
 
+            [$resolvedActorId, $actorRole] = self::resolveActor();
+            $actorId = $actorIdOverride ?? $resolvedActorId;
 
-        if ($auditable && method_exists($auditable, 'audits')) {
-            // Create an audit record via relationship so auditable_type/auditable_id are set correctly.
-            $auditable->audits()->create([
-                'user_type'  => $user ? get_class($user) : null,
-                'user_id'    => $user ? $user->getAuthIdentifier() : null,
-                'event'      => $event,
-                'old_values' => empty($oldValues) ? null : json_encode($oldValues),
-                'new_values' => empty($newValues) ? null : json_encode($newValues),
-                'url'        => Request::fullUrl(),
-                'ip_address' => Request::ip(),
-                'user_agent' => substr((string) Request::userAgent(), 0, 1023),
-                'tags'       => empty($tags) ? null : implode(',', $tags),
+            if ($actorRole) {
+                $metadata['actor_role'] = $actorRole;
+            }
+
+            $row = [
+                'actor_id'    => $actorId,
+                'action_type' => $actionType,
+                'outcome'     => $outcome,
+                'reason_code' => $reasonCode,
+                'target_type' => $targetType,
+                'target_id'   => $targetId,
+                'ip_address'  => Request::ip(),
+                'user_agent'  => substr((string) Request::userAgent(), 0, 1023),
+                'metadata'    => empty($metadata) ? null : json_encode($metadata, JSON_THROW_ON_ERROR),
+                'timestamp'   => now(), // or use created_at if you standardize on timestamps()
+            ];
+
+            DB::table('audit_logs')->insert($row);
+        } catch (\Throwable $e) {
+            //  record internal error
+            Log::warning('AuditLogger failed to write audit log', [
+                'action_type' => $actionType,
+                'error' => $e->getMessage(),
             ]);
-            return;
         }
-
     }
 
-    /**
-     * Guardrail: Prevent logging sensitive content.
-     * This is conservative: if a key looks like it could contain PHI, block it.
-     */
-    private static function guardAgainstSensitiveData(array $data): void
+    private static function resolveActor(): array
     {
+        $user = Auth::user();
+        if (!$user || empty($user->email)) {
+            return [null, null];
+        }
+
+        $account = DB::table('accounts')
+            ->select('id', 'role') // adjust column name if needed
+            ->where('email', $user->email)
+            ->first();
+
+        return [$account?->id, $account?->role];
+    }
+
+    private static function sanitizeMetadata(array $data): array
+    {
+        // Hard block keys that are *very likely* PII/PHI or secrets
         $blockedKeys = [
             'password', 'pass', 'pwd', 'token', 'secret',
-            'email', 'name', 'address', 'dob', 'date_of_birth',
-            'health', 'symptom', 'diagnosis', 'notes', 'form_response', 'responses'
+            'email', 'name', 'address', 'phone', 'dob', 'date_of_birth',
+            'answers', 'answer', 'response', 'responses', 'payload', 'body', 'content',
+            'notes', 'note', 'comment', 'message',
         ];
+
+        $out = [];
+        $sanitized = false;
 
         foreach ($data as $key => $value) {
             $k = strtolower((string) $key);
+
             foreach ($blockedKeys as $blocked) {
                 if (str_contains($k, $blocked)) {
-                    // Fail closed: throw to prevent accidental PHI logging.
-                    throw new \InvalidArgumentException("AuditLogger blocked sensitive key: {$key}");
+                    $sanitized = true;
+                    continue 2; // skip this key
                 }
             }
-            // Also block large free-text blobs
-            if (is_string($value) && strlen($value) > 500) {
-                throw new \InvalidArgumentException("AuditLogger blocked large text value for key: {$key}");
+
+            // Block long strings (likely free text)
+            if (is_string($value) && strlen($value) > 300) {
+                $sanitized = true;
+                continue;
             }
+
+            // Block large arrays (often full request bodies)
+            if (is_array($value) && count($value) > 50) {
+                $sanitized = true;
+                continue;
+            }
+
+            $out[$key] = $value;
         }
+
+        if ($sanitized) {
+            $out['metadata_sanitized'] = true;
+        }
+
+        return $out;
     }
 }

@@ -16,28 +16,23 @@ class Handler extends ExceptionHandler
 
             if ($e instanceof AuthorizationException || $e instanceof AccessDeniedHttpException) {
 
-                $actor = $request->user();
+                $routeName = optional($request->route())->getName() ?? 'unknown';
 
-                if ($actor) {
-                    AuditLogger::log(
-                        'access_denied',
-                        ['authz', 'outcome:blocked'],
-                        $actor,
-                        [],
-                        [
-                            'method' => $request->method(),
-                            'route'  => optional($request->route())->getName() ?? 'unknown',
-                            'path'   => $request->path(),
-                            'reason' => class_basename($e),
-                            'ip_address' => $request->ip(),
-                            'user_agent' => $request->userAgent(),
-                        ]
-                    );
-                }
+                AuditLogger::log(
+                    'access_denied',
+                    'blocked',
+                    class_basename($e),
+                    'route',
+                    $routeName,
+                    [
+                        'method' => $request->method(),
+                        'path'   => $request->path(),
+                        'route'  => $routeName,
+                    ]
+                );
             }
 
             return null;
         });
     }
 }
-

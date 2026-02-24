@@ -3,6 +3,7 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\UpdatesUserPasswords;
@@ -30,12 +31,22 @@ class UpdateUserPassword implements UpdatesUserPasswords
             'password' => Hash::make($input['password']),
         ])->save();
 
+        $actorId = null;
+
+        if (!empty($user->email)) {
+            $actorId = DB::table('accounts')
+                ->where('email', $user->email)
+                ->value('id');
+        }
+
         AuditLogger::log(
             'password_changed',
-            ['security', 'auth', 'outcome:success'],
-            $user,
-            [],
-            []
+            'success',
+            null,
+            'account',
+            $actorId,
+            ['source' => 'profile_settings'],
+            $actorId
         );
     }
 }

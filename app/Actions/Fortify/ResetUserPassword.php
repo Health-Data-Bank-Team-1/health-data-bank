@@ -3,6 +3,7 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\ResetsUserPasswords;
@@ -27,12 +28,22 @@ class ResetUserPassword implements ResetsUserPasswords
             'password' => Hash::make($input['password']),
         ])->save();
 
+        $actorId = null;
+
+        if (!empty($user->email)) {
+            $actorId = DB::table('accounts')
+                ->where('email', $user->email)
+                ->value('id');
+        }
+
         AuditLogger::log(
             'password_reset_completed',
-            ['security', 'auth', 'outcome:success'],
-            $user,
-            [],
-            []
+            'success',
+            null,
+            'account',
+            $actorId,
+            ['source' => 'fortify_reset'],
+            $actorId
         );
     }
 }
