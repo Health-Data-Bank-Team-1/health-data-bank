@@ -2,22 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Traits\HasUuid;
+use Spatie\Permission\Models\Permission as SpatiePermission;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class Permission extends Model
+class Permission extends SpatiePermission
 {
-    use HasUuid;
+    use HasUuids;
 
-    public $timestamps = false;
-
-    protected $fillable = [
-        'permission_name',
-        'scope',
-    ];
-
-    public function roles()
-    {
-        return $this->belongsToMany(Role::class, 'role_permissions');
-    }
+    public $incrementing = false;
+    protected $keyType = 'string';
 }
