@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\HasUuid;
 
 class Account extends Model
 {
-    use HasUuid;
+    use HasUuid, HasFactory;
+
+    public $timestamps = true;
 
     protected $fillable = [
         'account_type',
