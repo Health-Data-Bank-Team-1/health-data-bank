@@ -12,6 +12,8 @@ use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Account;
 
 class User extends Authenticatable
 {
@@ -33,10 +35,16 @@ class User extends Authenticatable
     public $incrementing = false;
     protected $keyType = 'string';
 
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
+    }
+
     protected $fillable = [
         'name',
         'email',
         'password',
+        'account_id',
     ];
 
     /**

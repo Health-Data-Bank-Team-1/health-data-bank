@@ -2,6 +2,7 @@
 
 namespace App\Actions\Fortify;
 
+use App\Models\Account;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -23,19 +24,33 @@ class CreateNewUser implements CreatesNewUsers
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => $this->passwordRules(),
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
 
         return DB::transaction(function () use ($input) {
-            return tap(User::create([
+
+            //Create the domain Account record
+            $account = Account::create([
+                'account_type' => 'User',
+                'name' => $input['name'],
+                'email' => $input['email'],
+                'status' => 'ACTIVE',
+            ]);
+
+            //Create the auth User linked to that account
+            $user = User::create([
                 'name' => $input['name'],
                 'email' => $input['email'],
                 'password' => Hash::make($input['password']),
-            ]), function (User $user) {
-                $this->createTeam($user);
-            });
+                'account_id' => $account->id,
+            ]);
+
+            //Jetstream personal team
+            $this->createTeam($user);
+
+            return $user;
         });
     }
 

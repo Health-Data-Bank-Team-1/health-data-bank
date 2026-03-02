@@ -1,0 +1,18 @@
+[90m= [39m[34;4mApp\Models\User[39;24m {#7125
+    [34mid[39m: "[32m019ca7db-c5a2-727a-a174-f798f415b559[39m",
+    [34maccount_id[39m: "[32m7e38e99b-cf2d-44f7-9d3a-8bb5132e5fa6[39m",
+    [34mname[39m: "[32mTest User[39m",
+    [34memail[39m: "[32mtestuser@example.com[39m",
+    [34memail_verified_at[39m: [36mnull[39m,
+    #[33mpassword[39m: "[32m$2y$12$OdlytfEbikZzmFAu2sWKRO6mCe7SPeW.GsMp8Uiaa.LDm.UoII40u[39m",
+    #[33mtwo_factor_secret[39m: [36mnull[39m,
+    #[33mtwo_factor_recovery_codes[39m: [36mnull[39m,
+    [34mtwo_factor_confirmed_at[39m: [36mnull[39m,
+    #[33mremember_token[39m: "[32mKznyY1TqyzF22mJJt5spRpbPYgmoK9s2jHUef0W3GDckZOrkakm0gjaHaSMr[39m",
+    [34mcurrent_team_id[39m: [35m1[39m,
+    [34mprofile_photo_path[39m: [36mnull[39m,
+    [34mcreated_at[39m: "[32m2026-03-01 05:25:24[39m",
+    [34mupdated_at[39m: "[32m2026-03-01 05:25:50[39m",
+    +[1mprofile_photo_url[22m: "[32mhttps://ui-avatars.com/api/?name=T+U&color=7F9CF5&background=EBF4FF[39m",
+  }
+
