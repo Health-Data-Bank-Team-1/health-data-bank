@@ -9,6 +9,9 @@ class UserTodo extends Component
     public function render()
     {
         return view('livewire.user-todo')
-            ->layout('layouts.app');
+            ->layout('layouts.app')
+            ->layoutData([
+                'header' => 'TODO'
+            ]);
     }
 }

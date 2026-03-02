@@ -5,18 +5,9 @@
                 <a href="{{ route('user-form-select') }}">Forms</a>
             </h2>
         </div>
-        <p class="mt-4 text-gray-500 text-sm leading-relaxed">
-            Forms here
-        </p>
-        <p class="mt-4 text-gray-500 text-sm leading-relaxed">
-            Forms here
-        </p>
-        <p class="mt-4 text-gray-500 text-sm leading-relaxed">
-            Forms here
-        </p>
-        <p class="mt-4 text-gray-500 text-sm leading-relaxed">
-            Forms here
-        </p>
+        <div>
+            <livewire:form-index />
+        </div>
     </div>
 
     <div class="grid grid-cols-1 gap-6">
