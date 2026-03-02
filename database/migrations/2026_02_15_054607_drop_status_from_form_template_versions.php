@@ -11,18 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('roles', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->enum('role_name', ['User', 'Researcher', 'Admin', 'Provider'])->unique();
+        Schema::table('form_template_versions', function (Blueprint $table) {
+            $table->dropColumn('status');
         });
-
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('roles');
+        Schema::table('form_template_versions', function (Blueprint $table) {
+            $table->string('status')->default('draft');
+        });
     }
 };

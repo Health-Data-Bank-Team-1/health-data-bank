@@ -11,13 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('permissions', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-
-            $table->string('permission_name', 100)->unique();
-            $table->string('scope', 100)->nullable();
+        Schema::table('forms', function (Blueprint $table) {
+            //
         });
-
     }
 
     /**
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('permissions');
+        Schema::table('forms', function (Blueprint $table) {
+            //
+        });
     }
 };

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class HealthEntry extends Model
 {
-    use HasUuid;
+    use HasUuid, HasFactory;
 
     public $timestamps = false;
 
@@ -19,16 +20,17 @@ class HealthEntry extends Model
     ];
 
     protected $casts = [
+        'timestamp' => 'datetime',
         'encrypted_values' => 'array',
     ];
 
     public function submission()
     {
-        return $this->belongsTo(FormSubmission::class);
+        return $this->belongsTo(FormSubmission::class, 'submission_id');
     }
 
     public function account()
     {
-        return $this->belongsTo(Account::class);
+        return $this->belongsTo(Account::class, 'account_id');
     }
 }

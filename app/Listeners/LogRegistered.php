@@ -4,12 +4,16 @@ namespace App\Listeners;
 
 use Illuminate\Auth\Events\Registered;
 use App\Services\AuditLogger;
+<<<<<<< audit-password-and-profile-events
 use Illuminate\Support\Facades\DB;
+=======
+>>>>>>> main
 
 class LogRegistered
 {
     public function handle(Registered $event): void
     {
+<<<<<<< audit-password-and-profile-events
         $actorId = null;
 
         if ($event->user && !empty($event->user->email)) {
@@ -26,6 +30,14 @@ class LogRegistered
             $actorId, //  target_id
             ['source' => 'fortify_registered'],
             $actorId  //  actor override
+=======
+        AuditLogger::log(
+            'register_success',
+            ['auth', 'outcome:success'],
+            $event->user,
+            [],
+            []
+>>>>>>> main
         );
     }
 }
