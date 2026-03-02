@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\FormSubmission;
-use App\Models\AuditLog;
+use App\Models\Account;
 
 class FormSubmissionController extends Controller
 {
@@ -16,8 +16,19 @@ class FormSubmissionController extends Controller
             'entries' => 'required|array',
         ]);
 
+        // Get or create an account for the authenticated user
+        // Since users don't have account_id, we need to create one
+        $account = Account::firstOrCreate(
+            ['email' => $request->user()->email],
+            [
+                'name' => $request->user()->name,
+                'account_type' => 'User',
+                'status' => 'ACTIVE',
+            ]
+        );
+
         $submission = FormSubmission::create([
-            'account_id' => auth()->id(),
+            'account_id' => $account->id,  // ← Use the UUID account ID
             'form_template_id' => $validated['form_template_id'],
             'status' => 'submitted',
             'submitted_at' => now(),
@@ -25,8 +36,9 @@ class FormSubmissionController extends Controller
 
         foreach ($validated['entries'] as $entry) {
             $submission->healthEntries()->create([
-                'field_id' => $entry['field_id'],
-                'value' => $entry['value'],
+                'account_id' => $account->id,
+                'timestamp' => now(),
+                'encrypted_values' => $entry['value'] ?? null,
             ]);
         }
 
