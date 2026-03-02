@@ -38,7 +38,6 @@ class FormTemplateVersioningService
             ]
         );
 
-
         return $new;
     }
 }

@@ -13,7 +13,6 @@ class FormTemplateVersion extends Model
         'schema',
         'created_by',
     ];
-
     protected $casts = [
         'schema' => 'array',
     ];

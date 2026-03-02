@@ -72,6 +72,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                     'email_changed' => in_array('email', $fieldsUpdated, true),
                     'photo_updated' => isset($input['photo']),
                 ],
+
                 $actorId
             );
         }

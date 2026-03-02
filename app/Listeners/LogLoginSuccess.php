@@ -17,7 +17,6 @@ class LogLoginSuccess
                 ->where('email', $event->user->email)
                 ->value('id');
         }
-
         AuditLogger::log(
             'login_success',
             'success',

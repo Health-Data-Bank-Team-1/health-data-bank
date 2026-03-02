@@ -133,10 +133,8 @@ class FormTemplateApprovalService
         FormTemplateVersion::create([
             'form_template_id' => $template->id,
             'version' => $nextVersion + 1,
-
             'title' => $template->title,
             'schema' => $template->schema,
-
             'created_by' => $adminId,
         ]);
     }

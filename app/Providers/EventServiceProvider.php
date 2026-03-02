@@ -43,7 +43,6 @@ class EventServiceProvider extends ServiceProvider
             LogPasswordResetRequested::class,
         ],
     ];
-
     /**
      * Register any events for your application.
      */

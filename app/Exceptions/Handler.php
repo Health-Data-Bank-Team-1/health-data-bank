@@ -31,7 +31,6 @@ class Handler extends ExceptionHandler
                     ]
                 );
             }
-
             return null;
         });
     }

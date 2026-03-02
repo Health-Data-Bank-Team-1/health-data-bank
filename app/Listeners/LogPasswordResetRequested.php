@@ -21,7 +21,6 @@ class LogPasswordResetRequested {
                 ->where('email', $event->notifiable->email)
                 ->value('id');
         }
-
         AuditLogger::log(
             'password_reset_requested',
             'success',

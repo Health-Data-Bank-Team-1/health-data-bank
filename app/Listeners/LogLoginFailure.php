@@ -18,7 +18,6 @@ class LogLoginFailure
                 ->where('email', $event->user->email)
                 ->value('id');
         }
-
         AuditLogger::log(
             'login_failure',
             'failure',

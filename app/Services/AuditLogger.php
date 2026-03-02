@@ -108,7 +108,6 @@ class AuditLogger
         if ($sanitized) {
             $out['metadata_sanitized'] = true;
         }
-
         return $out;
     }
 }

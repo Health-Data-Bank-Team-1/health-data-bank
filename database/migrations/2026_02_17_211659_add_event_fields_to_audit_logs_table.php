@@ -40,7 +40,6 @@ return new class extends Migration
                 'ip_address',
                 'user_agent',
                 'metadata',
-
             ]);
 
             $table->index('action_type');

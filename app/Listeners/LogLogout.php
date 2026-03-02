@@ -17,7 +17,6 @@ class LogLogout
                 ->where('email', $event->user->email)
                 ->value('id');
         }
-
         AuditLogger::log(
             'logout',
             'success',

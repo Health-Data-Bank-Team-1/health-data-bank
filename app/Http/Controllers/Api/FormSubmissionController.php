@@ -32,7 +32,6 @@ class FormSubmissionController extends Controller
                 [],
                 null
             );
-
             return response()->json(['message' => 'Account mapping failed.'], 403);
         }
 

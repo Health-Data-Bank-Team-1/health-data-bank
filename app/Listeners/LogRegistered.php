@@ -17,7 +17,6 @@ class LogRegistered
                 ->where('email', $event->user->email)
                 ->value('id');
         }
-
         AuditLogger::log(
             'register_success',
             'success',

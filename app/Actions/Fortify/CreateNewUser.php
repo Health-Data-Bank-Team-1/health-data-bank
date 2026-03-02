@@ -35,7 +35,6 @@ class CreateNewUser implements CreatesNewUsers
                 'email' => $input['email'],
                 'password' => Hash::make($input['password']),
             ]), function (User $user) {
-
                 // Create accounts row (UUID)
                 DB::table('accounts')->insert([
                     'id' => (string) Str::uuid(),

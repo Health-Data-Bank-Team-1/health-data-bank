@@ -13,7 +13,6 @@ class WorkflowException extends Exception
         parent::__construct($message);
         $this->status = $status;
     }
-
     public function getStatus(): int
     {
         return $this->status;
