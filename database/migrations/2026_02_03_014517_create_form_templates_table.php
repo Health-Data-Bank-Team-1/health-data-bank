@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->integer('version')->default(1);
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
