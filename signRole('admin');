@@ -1,0 +1,16 @@
+[90m= [39m[34;4mApp\Models\User[39;24m {#7083
+    [34mname[39m: "[32mEvie D'Amore[39m",
+    [34memail[39m: "[32mayana36@example.com[39m",
+    [34memail_verified_at[39m: "[32m2026-02-16 05:50:32[39m",
+    #[33mpassword[39m: "[32m$2y$12$vNiiEcLk87Ic70hh9WJqZ.vcZzZXaKgCFgzcQq0ghLhYX.eLWtnaO[39m",
+    #[33mtwo_factor_secret[39m: [36mnull[39m,
+    #[33mtwo_factor_recovery_codes[39m: [36mnull[39m,
+    #[33mremember_token[39m: "[32mXGBIbqe06s[39m",
+    [34mprofile_photo_path[39m: [36mnull[39m,
+    [34mcurrent_team_id[39m: [36mnull[39m,
+    [34mid[39m: "[32m019c6500-209b-7103-b438-25724dfb4c47[39m",
+    [34mupdated_at[39m: "[32m2026-02-16 05:50:33[39m",
+    [34mcreated_at[39m: "[32m2026-02-16 05:50:33[39m",
+    +[1mprofile_photo_url[22m: "[32mhttps://ui-avatars.com/api/?name=E+D&color=7F9CF5&background=EBF4FF[39m",
+  }
+

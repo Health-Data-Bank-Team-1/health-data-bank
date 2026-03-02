@@ -2,26 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Models\Role as SpatieRole;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use App\Traits\HasUuid;
 
-class Role extends Model
+class Role extends SpatieRole
 {
-    use HasUuid;
+    use HasUuids;
 
-    public $timestamps = false;
-
-    protected $fillable = [
-        'role_name',
-    ];
-
-    public function accounts()
-    {
-        return $this->belongsToMany(Account::class, 'account_roles');
-    }
-
-    public function permissions()
-    {
-        return $this->belongsToMany(Permission::class, 'role_permissions');
-    }
+    public $incrementing = false;
+    protected $keyType = 'string';
 }
