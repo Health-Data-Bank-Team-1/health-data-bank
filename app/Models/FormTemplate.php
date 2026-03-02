@@ -10,7 +10,7 @@ use Spatie\Sluggable\SlugOptions;
 
 class FormTemplate extends Model
 {
-    use HasFactory, HasUuid;
+    use HasFactory, HasUuid, HasSlug;
 
     protected $fillable = [
         'id',
@@ -21,6 +21,7 @@ class FormTemplate extends Model
         'approved_by',
         'approved_at',
         'rejection_reason',
+        'description',
     ];
 
     protected $attributes = [
@@ -54,5 +55,18 @@ class FormTemplate extends Model
     public function versions()
     {
         return $this->hasMany(FormTemplateVersion::class);
+    }
+
+    public function getSlugOptions(): SlugOptions
+    {
+        return SlugOptions::create()
+            ->generateSlugsFrom('title')
+            ->saveSlugsTo('slug')
+            ->doNotGenerateSlugsOnUpdate();
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
     }
 }

@@ -42,6 +42,4 @@ Route::middleware([
         Route::post('/', [FormTemplateController::class, 'store'])->name('form-templates.store');
         Route::put('{template}', [FormTemplateController::class, 'update'])->name('form-templates.update');
     });
-
-
 });
