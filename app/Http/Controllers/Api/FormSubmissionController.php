@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\FormSubmission;
-use App\Models\Account;
+use App\Models\HealthEntry;
+use App\Services\HealthDataEncryptionService;
 
 class FormSubmissionController extends Controller
 {
+    public function __construct(
+        private HealthDataEncryptionService $encryptionService
+    ) {}
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -17,8 +22,7 @@ class FormSubmissionController extends Controller
         ]);
 
         // Get or create an account for the authenticated user
-        // Since users don't have account_id, we need to create one
-        $account = Account::firstOrCreate(
+        $account = \App\Models\Account::firstOrCreate(
             ['email' => $request->user()->email],
             [
                 'name' => $request->user()->name,
@@ -27,18 +31,30 @@ class FormSubmissionController extends Controller
             ]
         );
 
+        // Create form submission
         $submission = FormSubmission::create([
-            'account_id' => $account->id,  // ← Use the UUID account ID
+            'account_id' => $account->id,
             'form_template_id' => $validated['form_template_id'],
-            'status' => 'submitted',
+            'status' => 'SUBMITTED',
             'submitted_at' => now(),
         ]);
 
+        // Create health entries with encrypted values
         foreach ($validated['entries'] as $entry) {
-            $submission->healthEntries()->create([
+            // Prepare the data to encrypt
+            $dataToEncrypt = [
+                'field_id' => $entry['field_id'] ?? null,
+                'value' => $entry['value'] ?? null,
+                'submitted_at' => now()->toIso8601String(),
+            ];
+
+            // Create entry with encrypted data
+            // The EncryptedArray cast will automatically encrypt before saving
+            HealthEntry::create([
+                'submission_id' => $submission->id,
                 'account_id' => $account->id,
                 'timestamp' => now(),
-                'encrypted_values' => $entry['value'] ?? null,
+                'encrypted_values' => $dataToEncrypt,  // ← Cast handles encryption
             ]);
         }
 

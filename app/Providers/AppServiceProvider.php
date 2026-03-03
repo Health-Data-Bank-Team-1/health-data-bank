@@ -3,22 +3,20 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Services\HealthDataEncryptionService;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        // Register encryption service as singleton
+        $this->app->singleton(HealthDataEncryptionService::class, function ($app) {
+            return new HealthDataEncryptionService();
+        });
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
+        // Boot logic here
     }
 }

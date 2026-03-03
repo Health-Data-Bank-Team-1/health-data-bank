@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Casts\EncryptedArray;
 
 class HealthEntry extends Model
 {
@@ -20,16 +21,17 @@ class HealthEntry extends Model
     ];
 
     protected $casts = [
-        'encrypted_values' => 'array',
+        'timestamp' => 'datetime',
+        'encrypted_values' => EncryptedArray::class,
     ];
 
     public function submission()
     {
-        return $this->belongsTo(FormSubmission::class);
+        return $this->belongsTo(FormSubmission::class, 'submission_id');
     }
 
     public function account()
     {
-        return $this->belongsTo(Account::class);
+        return $this->belongsTo(Account::class, 'account_id');
     }
 }
