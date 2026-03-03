@@ -11,7 +11,7 @@ class FormIndex extends Component
 
     public function mount()
     {
-        $this->forms = FormTemplate::select('name', 'slug')->get();
+        $this->forms = FormTemplate::select('title', 'slug')->get();
     }
     public function render()
     {
