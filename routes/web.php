@@ -9,7 +9,8 @@ use App\Livewire\FormRenderer;
 use App\Http\Controllers\FormTemplateController;
 use App\Livewire\Admin\FormTemplatesIndex;
 use App\Http\Controllers\Api\Reports\DashboardReportController;
-
+use App\Livewire\HealthSummary;
+use App\Livewire\HealthGoals;
 
 Route::get('/', function () {
     return view('welcome');
@@ -34,6 +35,8 @@ Route::middleware([
         ->name('forms.index');
     Route::get('/forms/{form}', FormRenderer::class)
         ->name('forms.show');
+    Route::get('/health-summary', HealthSummary::class)
+        ->name('health-summary');
 
     //admin UI page (Livewire)
     Route::get('/admin/forms', FormTemplatesIndex::class)
@@ -53,5 +56,8 @@ Route::middleware([
             ->name('dashboard.trends.export');
     });
 
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/health-goals', HealthGoals::class)->name('health-goals');
+    });
 
 });

@@ -11,9 +11,8 @@ class FormTemplateSeeder extends Seeder
     public function run(): void
     {
         $nameform = FormTemplate::create([
-            'name' => 'Name Form',
+            'title' => 'Name Form',
             'version' => 1,
-            'status' => 'PUBLISHED',
             'description' => 'Name form for names',
         ]);
 
@@ -32,9 +31,8 @@ class FormTemplateSeeder extends Seeder
         ]);
 
         $radioform = FormTemplate::create([
-            'name' => 'Radio Form',
+            'title' => 'Radio Form',
             'version' => 1,
-            'status' => 'PUBLISHED',
             'description' => 'for testing radio button',
         ]);
 
@@ -61,9 +59,8 @@ class FormTemplateSeeder extends Seeder
         ]);
 
         $checkboxform = FormTemplate::create([
-            'name' => 'Checkbox Form',
+            'title' => 'Checkbox Form',
             'version' => 1,
-            'status' => 'PUBLISHED',
             'description' => 'for testing checkbox options',
         ]);
 
@@ -90,9 +87,8 @@ class FormTemplateSeeder extends Seeder
         ]);
 
         $dateform = FormTemplate::create([
-            'name' => 'Date Form',
+            'title' => 'Date Form',
             'version' => 1,
-            'status' => 'PUBLISHED',
             'description' => 'for testing date input',
         ]);
 
@@ -104,9 +100,8 @@ class FormTemplateSeeder extends Seeder
         ]);
 
         $numberform = FormTemplate::create([
-            'name' => 'Number Form',
+            'title' => 'Number Form',
             'version' => 1,
-            'status' => 'PUBLISHED',
             'description' => 'for testing number input',
         ]);
 

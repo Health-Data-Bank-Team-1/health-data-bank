@@ -6,23 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         $connection = config('audit.drivers.database.connection', config('database.default'));
-        $table = config('audit.drivers.database.table', 'audits');
+        $tableName  = config('audit.drivers.database.table', 'audits');
 
-        Schema::connection($connection)->create($table, function (Blueprint $table) {
-
+        Schema::connection($connection)->create($tableName, function (Blueprint $table) {
             $morphPrefix = config('audit.user.morph_prefix', 'user');
 
             $table->bigIncrements('id');
+
             $table->string($morphPrefix . '_type')->nullable();
-            $table->unsignedBigInteger($morphPrefix . '_id')->nullable();
+            $table->uuid($morphPrefix . '_id')->nullable();
+
             $table->string('event');
-            $table->morphs('auditable');
+
+            $table->string('auditable_type')->nullable();
+            $table->uuid('auditable_id')->nullable();
+
             $table->text('old_values')->nullable();
             $table->text('new_values')->nullable();
             $table->text('url')->nullable();
@@ -32,17 +33,15 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index([$morphPrefix . '_id', $morphPrefix . '_type']);
+            $table->index(['auditable_id', 'auditable_type']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         $connection = config('audit.drivers.database.connection', config('database.default'));
-        $table = config('audit.drivers.database.table', 'audits');
+        $tableName  = config('audit.drivers.database.table', 'audits');
 
-        Schema::connection($connection)->drop($table);
+        Schema::connection($connection)->drop($tableName);
     }
 };

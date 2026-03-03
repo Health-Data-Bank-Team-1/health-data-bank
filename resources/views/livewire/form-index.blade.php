@@ -1,5 +1,5 @@
-<div class="max-w-md w-full bg-white shadow rounded-lg overflow-hidden">
-    <ul class="divide-y divide-gray-200 max-h-64 overflow-y-auto">
+<div class="h-full w-full flex flex-col bg-white shadow rounded-lg overflow-hidden">
+    <ul class="divide-y divide-gray-200 flex-1 overflow-y-auto">
         @foreach ($forms as $form)
             <li>
                 <a href="{{ route('forms.show', $form) }}" class="flex items-center justify-between px-6 py-4 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition">

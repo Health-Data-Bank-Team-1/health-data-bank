@@ -7,6 +7,7 @@ use App\Services\TrendCalculationService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Services\AuditLogger;
 
 class TrendController extends Controller
 {
@@ -38,6 +39,19 @@ class TrendController extends Controller
             $from,
             $to,
             $bucket
+        );
+
+        AuditLogger::log(
+            'reporting_trends_view',
+            ['reporting', 'resource:trends'],
+            null,
+            [],
+            [
+                'metric' => $metric,
+                'bucket' => $bucket,
+                'from' => $validated['from'],
+                'to' => $validated['to'],
+            ]
         );
 
         return response()->json($out);

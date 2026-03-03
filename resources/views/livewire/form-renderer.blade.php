@@ -3,7 +3,7 @@
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
             <x-hdb-form-section submit="submit">
                 <x-slot name="title">
-                    {{ $form->name }}
+                    {{ $form->title }}
                 </x-slot>
 
                 <x-slot name="description">

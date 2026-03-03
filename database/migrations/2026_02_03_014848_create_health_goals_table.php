@@ -14,11 +14,15 @@ return new class extends Migration
         Schema::create('health_goals', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('account_id');
-            $table->float('target_value');
+            $table->string('metric_key')->default('alcohol_consumption');
+            $table->enum('comparison_operator', ['<=', '>=', '='])->default('<=');
+            $table->unsignedInteger('target_value');
+            $table->enum('timeframe', ['day', 'week', 'month'])->default('week');
             $table->date('start_date');
             $table->date('end_date')->nullable();
-            $table->enum('status', ['ACTIVE', 'MET', 'EXPIRED'])
-                ->default('ACTIVE');
+            $table->enum('status', ['ACTIVE', 'MET', 'EXPIRED'])->default('ACTIVE');
+            $table->timestamps();
+
             $table->foreign('account_id')
                 ->references('id')
                 ->on('accounts')

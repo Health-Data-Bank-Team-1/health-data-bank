@@ -21,5 +21,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(FormTemplateSeeder::class);
+        $this->call(UserHealthEntriesSeeder::class);
+
     }
 }

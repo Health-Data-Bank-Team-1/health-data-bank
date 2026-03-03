@@ -13,16 +13,9 @@ return new class extends Migration
     {
         Schema::create('form_templates', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name');
             $table->string('slug')->unique();
-
-            $table->integer('version');
-
-            $table->enum('status', ['DRAFT', 'PUBLISHED', 'ARCHIVED'])
-                ->default('DRAFT');
-
             $table->text('description')->nullable();
-
+            $table->integer('version')->default(1);
             $table->timestamp('created_at')->useCurrent();
         });
     }
