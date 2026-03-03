@@ -9,7 +9,7 @@
                         </h2>
                     </div>
                     <div>
-                        summary
+                        recent graphical report here
                     </div>
                 </div>
 

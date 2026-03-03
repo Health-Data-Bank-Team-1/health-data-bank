@@ -38,6 +38,9 @@ class HealthSummary extends Component
     public function render()
     {
         return view('livewire.health-summary')
-            ->layout('layouts.app');
+            ->layout('layouts.app')
+            ->layoutData([
+                'header' => 'Health Summary'
+            ]);
     }
 }
