@@ -8,6 +8,7 @@ use App\Livewire\FormIndex;
 use App\Livewire\FormRenderer;
 use App\Http\Controllers\FormTemplateController;
 use App\Livewire\Admin\FormTemplatesIndex;
+use App\Livewire\HealthSummary;
 
 Route::get('/', function () {
     return view('welcome');
@@ -32,6 +33,8 @@ Route::middleware([
         ->name('forms.index');
     Route::get('/forms/{form}', FormRenderer::class)
         ->name('forms.show');
+    Route::get('/health-summary', HealthSummary::class)
+        ->name('health-summary');
 
     //admin UI page (Livewire)
     Route::get('/admin/forms', FormTemplatesIndex::class)
