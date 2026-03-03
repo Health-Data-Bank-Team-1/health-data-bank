@@ -7,6 +7,12 @@ use App\Http\Controllers\Reporting\TrendController;
 use App\Http\Controllers\Admin\FormTemplateApprovalController;
 use App\Http\Controllers\Admin\FormTemplateVersionController;
 use App\Http\Controllers\Admin\AdminFormTemplateController;
+use App\Http\Controllers\Api\Reports\DashboardReportController;
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends']);
+    Route::get('/reports/dashboard/trends/export.csv', [DashboardReportController::class, 'exportTrendsCsv']);
+});
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
