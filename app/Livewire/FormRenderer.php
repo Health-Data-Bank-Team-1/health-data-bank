@@ -61,7 +61,7 @@ class FormRenderer extends Component
         }
 
         return redirect()
-            ->to('/user-form-select')
+            ->to('/user/form-select')
             ->with('flash.banner', 'Form submitted successfully!')
             ->with('flash.bannerStyle', 'success');
     }
@@ -69,6 +69,6 @@ class FormRenderer extends Component
     public function render()
     {
         return view('livewire.form-renderer')
-            ->layout('layouts.app');
+            ->layout('layouts.user');
     }
 }
