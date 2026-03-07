@@ -5,33 +5,39 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboards.user') }}">
+                    <a href="{{ route('dashboards.admin') }}">
                         Health DB
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('dashboards.user') }}" :active="request()->routeIs('dashboards.user')">
+                    <x-nav-link href="{{ route('dashboards.admin') }}" :active="request()->routeIs('dashboards.admin')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('user-form-select') }}" :active="request()->routeIs('user-form-select')">
-                        {{ __('Forms') }}
+                    <x-nav-link href="{{ route('admin.audit-log') }}" :active="request()->routeIs('admin.audit-log')">
+                        {{ __('Audit Log') }}
                     </x-nav-link>
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('my-progress') }}" :active="request()->routeIs('my-progress')">
-                        {{ __('My Progress') }}
+                    <x-nav-link href="{{ route('admin.report-review') }}" :active="request()->routeIs('admin.report-review')">
+                        {{ __('Report Review') }}
                     </x-nav-link>
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('user-todo') }}" :active="request()->routeIs('user-todo')">
-                        {{ __('TODO') }}
+                    <x-nav-link href="{{ route('admin.forms.index') }}" :active="request()->routeIs('admin.forms.index')">
+                        {{ __('Form Review') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('admin.database-management') }}" :active="request()->routeIs('admin.database-management')">
+                        {{ __('Database Management') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -69,7 +75,7 @@
                                 {{ __('Manage Account') }}
                             </div>
 
-                            <x-dropdown-link href="{{ route('user-profile') }}">
+                            <x-dropdown-link href="{{ route('admin-profile') }}">
                                 {{ __('Profile') }}
                             </x-dropdown-link>
 
@@ -113,26 +119,32 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link href="{{ route('dashboards.user') }}" :active="request()->routeIs('dashboards.user')">
+            <x-responsive-nav-link href="{{ route('dashboards.admin') }}" :active="request()->routeIs('dashboards.admin')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
         </div>
 
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link href="{{ route('user-form-select') }}" :active="request()->routeIs('user-form-select')">
-                {{ __('Forms') }}
+            <x-responsive-nav-link href="{{ route('admin.audit-log') }}" :active="request()->routeIs('admin.audit-log')">
+                {{ __('Audit Log') }}
             </x-responsive-nav-link>
         </div>
 
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link href="{{ route('my-progress') }}" :active="request()->routeIs('my-progress')">
-                {{ __('My Progress') }}
+            <x-responsive-nav-link href="{{ route('admin.report-review') }}" :active="request()->routeIs('admin.report-review')">
+                {{ __('Report Review') }}
             </x-responsive-nav-link>
         </div>
 
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link href="{{ route('user-todo') }}" :active="request()->routeIs('user-todo')">
-                {{ __('TODO') }}
+            <x-responsive-nav-link href="{{ route('admin.forms.index') }}" :active="request()->routeIs('admin.forms.index')">
+                {{ __('Form Review') }}
+            </x-responsive-nav-link>
+        </div>
+
+        <div class="pt-2 pb-3 space-y-1">
+            <x-responsive-nav-link href="{{ route('admin.database-management') }}" :active="request()->routeIs('admin.database-management')">
+                {{ __('Database Management') }}
             </x-responsive-nav-link>
         </div>
 
@@ -154,7 +166,7 @@
 
             <div class="mt-3 space-y-1">
                 <!-- Account Management -->
-                <x-responsive-nav-link href="{{ route('user-profile') }}" :active="request()->routeIs('user-profile')">
+                <x-responsive-nav-link href="{{ route('admin-profile') }}" :active="request()->routeIs('admin-profile')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
 
