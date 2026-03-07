@@ -23,7 +23,6 @@
             @endif
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {{-- LEFT: Existing forms --}}
                 <div class="rounded-lg border border-gray-200 p-4">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Existing Forms</h2>
 
@@ -60,7 +59,6 @@
                     @endif
                 </div>
 
-                {{-- RIGHT: Builder --}}
                 <div class="rounded-lg border border-gray-200 p-4">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-semibold text-gray-900">
@@ -78,7 +76,6 @@
                     @if($showForm)
                         <div class="space-y-6">
 
-                            {{-- Form Details --}}
                             <div class="rounded-lg border border-gray-200 p-4">
                                 <h3 class="text-md font-semibold text-gray-900 mb-4">Form Details</h3>
 
@@ -103,7 +100,6 @@
                                 </div>
                             </div>
 
-                            {{-- Field Builder --}}
                             <div class="rounded-lg border border-gray-200 p-4">
                                 <div class="flex items-center justify-between mb-4">
                                     <h3 class="text-md font-semibold text-gray-900">Form Fields</h3>
@@ -181,7 +177,6 @@
                                 @endforeach
                             </div>
 
-                            {{-- Preview --}}
                             <div class="rounded-lg border border-gray-200 p-4">
                                 <h3 class="text-md font-semibold text-gray-900 mb-4">Preview</h3>
 
@@ -223,7 +218,6 @@
                                 </div>
                             </div>
 
-                            {{-- Actions --}}
                             <div class="flex flex-wrap gap-2">
                                 <button
                                     wire:click="saveDraft"

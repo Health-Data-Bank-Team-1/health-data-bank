@@ -151,7 +151,12 @@
             </div>
 
             <div class="mt-3 space-y-1">
+<<<<<<< HEAD
                 <x-responsive-nav-link href="{{ route('user-profile') }}">
+=======
+                <!-- Account Management -->
+                <x-responsive-nav-link href="{{ route('user-profile') }}" :active="request()->routeIs('user-profile')">
+>>>>>>> aeda882 (add dashboards, layouts, nav bars for researcher and admin, placeholders)
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
 

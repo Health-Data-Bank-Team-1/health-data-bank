@@ -11,7 +11,9 @@
             <div class="md:hidden bg-gray-200 p-4">
                 <button @click="showReports = !showReports" class="w-full flex justify-between items-center text-gray-700 font-bold focus:outline-none">
                     <span>Reports Menu</span>
-                    <svg :class="showReports ? 'rotate-180' : ''" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <svg :class="showReports ? 'rotate-180' : ''" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
                 </button>
             </div>
 
