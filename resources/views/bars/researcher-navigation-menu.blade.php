@@ -5,33 +5,27 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboards.user') }}">
+                    <a href="{{ route('dashboards.researcher') }}">
                         Health DB
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('dashboards.user') }}" :active="request()->routeIs('dashboards.user')">
+                    <x-nav-link href="{{ route('dashboards.researcher') }}" :active="request()->routeIs('dashboards.researcher')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('user-form-select') }}" :active="request()->routeIs('user-form-select')">
+                    <x-nav-link href="{{ route('researcher.forms') }}" :active="request()->routeIs('researcher.forms')">
                         {{ __('Forms') }}
                     </x-nav-link>
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('my-progress') }}" :active="request()->routeIs('my-progress')">
-                        {{ __('My Progress') }}
-                    </x-nav-link>
-                </div>
-
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('user-todo') }}" :active="request()->routeIs('user-todo')">
-                        {{ __('TODO') }}
+                    <x-nav-link href="{{ route('researcher.reports') }}" :active="request()->routeIs('researcher.reports')">
+                        {{ __('Reports') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -69,7 +63,7 @@
                                 {{ __('Manage Account') }}
                             </div>
 
-                            <x-dropdown-link href="{{ route('user-profile') }}">
+                            <x-dropdown-link href="{{ route('researcher-profile') }}">
                                 {{ __('Profile') }}
                             </x-dropdown-link>
 
@@ -113,7 +107,7 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link href="{{ route('dashboards.user') }}" :active="request()->routeIs('dashboards.user')">
+            <x-responsive-nav-link href="{{ route('dashboards.researcher') }}" :active="request()->routeIs('dashboards.researcher')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
         </div>
@@ -154,7 +148,7 @@
 
             <div class="mt-3 space-y-1">
                 <!-- Account Management -->
-                <x-responsive-nav-link href="{{ route('user-profile') }}" :active="request()->routeIs('user-profile')">
+                <x-responsive-nav-link href="{{ route('researcher-profile') }}" :active="request()->routeIs('researcher-profile')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
 

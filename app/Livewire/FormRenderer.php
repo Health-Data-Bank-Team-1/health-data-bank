@@ -69,6 +69,6 @@ class FormRenderer extends Component
     public function render()
     {
         return view('livewire.form-renderer')
-            ->layout('layouts.app');
+            ->layout('layouts.user');
     }
 }
