@@ -9,6 +9,9 @@ use App\Livewire\FormRenderer;
 use App\Http\Controllers\FormTemplateController;
 use App\Livewire\Admin\FormTemplatesIndex;
 use App\Livewire\HealthSummary;
+use App\Livewire\Dashboards;
+use App\Livewire\Dashboards\UserDashboard;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return view('welcome');
@@ -21,8 +24,13 @@ Route::middleware([
 ])->group(function () {
 
     Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+        if (Auth::user()->hasRole('user')) {
+            return redirect('/dashboard-user');
+        }
+    });
+    Route::get('/dashboard-user', UserDashboard::class)
+        ->middleware('role:user')
+        ->name('dashboards.user');
     Route::get('/my-progress', MyProgress::class)
         ->name('my-progress');
     Route::get('/user-form-select', UserFormSelect::class)
