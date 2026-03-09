@@ -53,8 +53,7 @@ class AuditLogger
         ];
 
         //If an auditable model is provided AND supports manual audit creation, use it.
-        if ($auditable && method_exists($auditable, 'audits')) {
-            $auditable->audits()->create([
+        if ($auditable && $auditable->exists && method_exists($auditable, 'audits')) {            $auditable->audits()->create([
                 'user_type'  => $payload['user_type'],
                 'user_id'    => $payload['user_id'],
                 'event'      => $payload['event'],
