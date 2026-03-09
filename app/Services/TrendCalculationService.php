@@ -1,0 +1,121 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\HealthEntry;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
+use Illuminate\Support\Arr;
+
+class TrendCalculationService
+{
+    /**
+     * Build a bucketed time-series for one metric key.
+     *
+     * @return array{
+     *   metric:string,
+     *   bucket:string,
+     *   from:string,
+     *   to:string,
+     *   points: array<int, array{
+     *     bucket_start:string,
+     *     count:int,
+     *     min:float|null,
+     *     max:float|null,
+     *     avg:float|null,
+     *     latest:mixed,
+     *     latest_at:string|null
+     *   }>
+     * }
+     */
+    public function trendForAccount(
+        string $accountId,
+        string $metricKey,
+        CarbonInterface $from,
+        CarbonInterface $to,
+        string $bucket = 'day'
+    ): array {
+        //normalize bucket
+        $bucket = strtolower($bucket);
+
+        $entries = HealthEntry::query()
+            ->where('account_id', $accountId)
+            ->whereBetween('timestamp', [$from, $to])
+            ->orderBy('timestamp')
+            ->get(['timestamp', 'encrypted_values']);
+
+        //bucketStartIso => array of points [ts => Carbon, value => mixed]
+        $buckets = [];
+
+        foreach ($entries as $entry) {
+            $values = $entry->encrypted_values;
+
+            if (!is_array($values)) {
+                continue;
+            }
+
+            if (!array_key_exists($metricKey, $values)) {
+                continue;
+            }
+
+            $ts = $entry->timestamp instanceof \DateTimeInterface
+                ? CarbonImmutable::instance($entry->timestamp)
+                : CarbonImmutable::parse((string) $entry->timestamp);
+
+            $bucketStart = $this->bucketStart($ts, $bucket);
+            $bucketKey = $bucketStart->toIso8601String();
+
+            $buckets[$bucketKey][] = [
+                'ts' => $ts,
+                'value' => $values[$metricKey],
+            ];
+        }
+
+        ksort($buckets);
+
+        $points = [];
+        foreach ($buckets as $bucketStartIso => $bucketPoints) {
+            //ensure sorted by timestamp
+            usort($bucketPoints, fn ($a, $b) => $a['ts'] <=> $b['ts']);
+
+            $allValues = array_map(fn ($p) => $p['value'], $bucketPoints);
+
+            // numeric-only aggregates
+            $numeric = array_values(array_filter(
+                $allValues,
+                fn ($v) => is_int($v) || is_float($v) || (is_string($v) && is_numeric($v))
+            ));
+            $numeric = array_map('floatval', $numeric);
+
+            $latestPoint = end($bucketPoints) ?: null;
+
+            $points[] = [
+                'bucket_start' => $bucketStartIso,
+                'count' => count($numeric),
+                'min' => $numeric ? min($numeric) : null,
+                'max' => $numeric ? max($numeric) : null,
+                'avg' => $numeric ? (array_sum($numeric) / count($numeric)) : null,
+                'latest' => $latestPoint['value'] ?? null,
+                'latest_at' => isset($latestPoint['ts']) ? $latestPoint['ts']->toIso8601String() : null,
+            ];
+        }
+
+        return [
+            'metric' => $metricKey,
+            'bucket' => $bucket,
+            'from' => CarbonImmutable::instance($from)->toIso8601String(),
+            'to' => CarbonImmutable::instance($to)->toIso8601String(),
+            'points' => $points,
+        ];
+    }
+
+    private function bucketStart(CarbonImmutable $ts, string $bucket): CarbonImmutable
+    {
+        return match ($bucket) {
+            'day' => $ts->startOfDay(),
+            'week' => $ts->startOfWeek(),
+            'month' => $ts->startOfMonth(),
+            default => $ts->startOfDay(),
+        };
+    }
+}

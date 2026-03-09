@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
+use OwenIt\Auditing\Models\Audit;
+
 
 /**
  * AuditLogger
@@ -21,71 +24,105 @@ class AuditLogger
      *
      * @param  string       $event    Event name in snake_case (e.g., login_success)
      * @param  array        $tags     Tags for category/outcome (e.g., ['auth','outcome:success'])
-     * @param  mixed|null   $auditable A model instance being acted on (optional)
+     * @param  Model|null   $auditable A model instance being acted on (optional)
      * @param  array        $oldValues Safe "before" values (IDs only)
      * @param  array        $newValues Safe "after" values (IDs only)
      */
     public static function log(
         string $event,
         array $tags = [],
-        $auditable = null,
+        ?Model $auditable = null,
         array $oldValues = [],
         array $newValues = []
     ): void {
-        // Basic safety: don't let obviously sensitive keys through.
+        //don't let obviously sensitive keys through.
         self::guardAgainstSensitiveData($oldValues);
         self::guardAgainstSensitiveData($newValues);
 
         $user = Auth::user();
 
-        // If an auditable model is provided AND supports manual audit creation, use it.
-        // Otherwise, fallback to DB insert (optional). We keep it simple: require auditable models.
+        $payload = [
+            'user_type'  => $user ? get_class($user) : null,
+            'user_id'    => $user ? self::actorIdentifier($user) : null,
+            'event'      => $event,
+            'old_values' => empty($oldValues) ? [] : $oldValues,
+            'new_values' => empty($newValues) ? [] : $newValues,
+            'url'        => Request::fullUrl(),
+            'ip_address' => Request::ip(),
+            'user_agent' => substr((string) Request::userAgent(), 0, 1023),
+            'tags'       => empty($tags) ? null : implode(',', $tags),
+        ];
+
+        //If an auditable model is provided AND supports manual audit creation, use it.
         if ($auditable && method_exists($auditable, 'audits')) {
-            // Create an audit record via relationship so auditable_type/auditable_id are set correctly.
             $auditable->audits()->create([
-                'user_type'  => $user ? get_class($user) : null,
-                'user_id'    => $user ? $user->getAuthIdentifier() : null,
-                'event'      => $event,
-                'old_values' => empty($oldValues) ? null : json_encode($oldValues),
-                'new_values' => empty($newValues) ? null : json_encode($newValues),
-                'url'        => Request::fullUrl(),
-                'ip_address' => Request::ip(),
-                'user_agent' => substr((string) Request::userAgent(), 0, 1023),
-                'tags'       => empty($tags) ? null : implode(',', $tags),
+                'user_type'  => $payload['user_type'],
+                'user_id'    => $payload['user_id'],
+                'event'      => $payload['event'],
+                'old_values' => $payload['old_values'],
+                'new_values' => $payload['new_values'],
+                'url'        => $payload['url'],
+                'ip_address' => $payload['ip_address'],
+                'user_agent' => $payload['user_agent'],
+                'tags'       => $payload['tags'],
             ]);
             return;
         }
+        /**
+         * Fallback. Write a "system" audit row to the audits table,
+         * even when there's no specific auditable model.
+         */
 
-        // If no auditable is provided, you have two choices:
-        // 1) Require an auditable target for every event (recommended), OR
-        // 2) Create a small "SystemAudit" auditable model to attach system-wide events.
-        //
-        // For now, we do nothing if no auditable is provided to avoid malformed audits.
-        // This keeps the implementation safe and consistent.
-        // You can replace this with a SystemAudit target later.
+        Audit::create([
+            'user_type'      => $payload['user_type'],
+            'user_id'        => $payload['user_id'],
+            'event'          => $payload['event'],
+            'auditable_type' => null,
+            'auditable_id'   => null,
+            'old_values'     => $payload['old_values'],
+            'new_values'     => $payload['new_values'],
+            'url'            => $payload['url'],
+            'ip_address'     => $payload['ip_address'],
+            'user_agent'     => $payload['user_agent'],
+            'tags'           => $payload['tags'],
+        ]);
+
     }
 
     /**
+     * Prefer auditing by Account id when available, otherwise fall back to auth identifier.
+     */
+    private static function actorIdentifier($user): string
+    {
+        if (!empty($user->account_id)) {
+            return (string) $user->account_id;
+        }
+
+        return (string) $user->getAuthIdentifier();
+    }
+
+
+    /**
      * Guardrail: Prevent logging sensitive content.
-     * This is conservative: if a key looks like it could contain PHI, block it.
+     * If a key looks like it could contain PHI, block it.
      */
     private static function guardAgainstSensitiveData(array $data): void
     {
         $blockedKeys = [
             'password', 'pass', 'pwd', 'token', 'secret',
             'email', 'name', 'address', 'dob', 'date_of_birth',
-            'health', 'symptom', 'diagnosis', 'notes', 'form_response', 'responses'
+            'health', 'symptom', 'diagnosis', 'notes', 'form_response', 'encrypted_values', 'responses'
         ];
 
         foreach ($data as $key => $value) {
             $k = strtolower((string) $key);
             foreach ($blockedKeys as $blocked) {
                 if (str_contains($k, $blocked)) {
-                    // Fail closed: throw to prevent accidental PHI logging.
+                    //Fail closed: throw to prevent accidental PHI logging.
                     throw new \InvalidArgumentException("AuditLogger blocked sensitive key: {$key}");
                 }
             }
-            // Also block large free-text blobs
+            //Also block large free-text blobs
             if (is_string($value) && strlen($value) > 500) {
                 throw new \InvalidArgumentException("AuditLogger blocked large text value for key: {$key}");
             }

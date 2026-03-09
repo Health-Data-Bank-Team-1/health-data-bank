@@ -6,6 +6,7 @@ use App\Models\HealthEntry;
 use App\Models\Account;
 use App\Models\FormSubmission;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class HealthEntryFactory extends Factory
 {
@@ -14,12 +15,13 @@ class HealthEntryFactory extends Factory
     public function definition(): array
     {
         return [
+            'id' => (string) Str::uuid(),
+            'submission_id' => null,
             'account_id' => Account::factory(),
-            'submission_id' => FormSubmission::factory(),
-            'timestamp' => $this->faker->dateTime(),
+            'timestamp' => now()->subMinutes($this->faker->numberBetween(0, 60 * 24 * 14)),
             'encrypted_values' => [
-                'heart_rate' => $this->faker->numberBetween(60, 100),
-                'blood_pressure' => $this->faker->numberBetween(90, 140),
+                'bp' => $this->faker->numberBetween(100, 150),
+                'hr' => $this->faker->numberBetween(55, 110),
             ],
         ];
     }

@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\FormTemplate;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
+use App\Models\FormTemplate;
 
 class FormTemplateFactory extends Factory
 {
@@ -13,21 +12,16 @@ class FormTemplateFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => (string) Str::uuid(),
-            'version' => 1,
-            'status' => $this->faker->randomElement(['DRAFT', 'PUBLISHED', 'ARCHIVED']),
-            'description' => $this->faker->sentence(),
-            'created_at' => now(),
-        ];
-    }
+            'title' => $this->faker->words(2, true),
+            'schema' => [
+                'fields' => ['bp']
+            ],
 
-    /**
-     * Indicate that the template is published.
-     */
-    public function published(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'status' => 'PUBLISHED',
-        ]);
+            'version' => 1,
+            'approval_status' => 'pending',
+            'approved_by' => null,
+            'approved_at' => null,
+            'rejection_reason' => null,
+        ];
     }
 }

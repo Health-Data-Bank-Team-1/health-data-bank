@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Account;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class AccountFactory extends Factory
 {
@@ -12,19 +13,46 @@ class AccountFactory extends Factory
     public function definition(): array
     {
         return [
-            'account_type' => $this->faker->randomElement(['User', 'Researcher', 'HealthcareProvider', 'Admin']),
+            'id' => (string) Str::uuid(),
+
+            // MUST match enum values exactly
+            'account_type' => 'User',
+
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
+
+            // MUST match enum values exactly
             'status' => 'ACTIVE',
         ];
     }
 
-    public function deactivated()
+    public function user(): static
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'status' => 'DEACTIVATED',
-            ];
-        });
+        return $this->state(fn () => ['account_type' => 'User']);
+    }
+
+    public function researcher(): static
+    {
+        return $this->state(fn () => ['account_type' => 'Researcher']);
+    }
+
+    public function healthcareProvider(): static
+    {
+        return $this->state(fn () => ['account_type' => 'HealthcareProvider']);
+    }
+
+    public function admin(): static
+    {
+        return $this->state(fn () => ['account_type' => 'Admin']);
+    }
+
+    public function active(): static
+    {
+        return $this->state(fn () => ['status' => 'ACTIVE']);
+    }
+
+    public function deactivated(): static
+    {
+        return $this->state(fn () => ['status' => 'DEACTIVATED']);
     }
 }

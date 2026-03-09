@@ -10,6 +10,10 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Account;
 
 class User extends Authenticatable
 {
@@ -18,6 +22,7 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
     use HasProfilePhoto;
+    use HasRoles, HasUuids;
     use HasTeams;
     use Notifiable;
     use TwoFactorAuthenticatable;
@@ -27,10 +32,19 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+    public $incrementing = false;
+    protected $keyType = 'string';
+
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
+    }
+
     protected $fillable = [
         'name',
         'email',
         'password',
+        'account_id',
     ];
 
     /**
@@ -59,6 +73,7 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+
     protected function casts(): array
     {
         return [

@@ -20,6 +20,7 @@ class FormField extends Model
 
     protected $casts = [
         'validation_rules' => 'array',
+        'options' => 'array',
     ];
 
     public function template()

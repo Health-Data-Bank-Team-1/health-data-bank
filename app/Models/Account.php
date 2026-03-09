@@ -19,6 +19,11 @@ class Account extends Model
         'status',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function credentials()
     {
         return $this->hasOne(AuthenticationCredential::class);

@@ -18,7 +18,7 @@ class FormSubmissionFactory extends Factory
             'id' => (string) Str::uuid(),
             'account_id' => Account::factory(),
             'form_template_id' => FormTemplate::factory(),
-            'status' => 'SUBMITTED',
+            'status' => 'submitted',
             'submitted_at' => now(),
         ];
     }

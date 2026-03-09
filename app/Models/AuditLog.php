@@ -15,6 +15,16 @@ class AuditLog extends Model
         'actor_id',
         'action_type',
         'timestamp',
+        'route',
+        'method',
+        'ip',
+        'user_agent',
+        'meta',
+    ];
+
+    protected $casts = [
+        'timestamp' => 'datetime',
+        'meta' => 'array',
     ];
 
     public function actor()
