@@ -45,6 +45,19 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
+        //cohort suppression responses
+        $exceptions->render(function (
+            \App\Exceptions\CohortSuppressedException $e,
+                                                      $request
+        ) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => 'CohortSuppressed',
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+        });
+
     })
 
     ->create();

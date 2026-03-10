@@ -4,9 +4,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PatientController;
 use App\Http\Controllers\Reporting\TrendController;
+use App\Http\Controllers\Reporting\ResearcherAggregateController;
 use App\Http\Controllers\Admin\FormTemplateApprovalController;
 use App\Http\Controllers\Admin\FormTemplateVersionController;
 use App\Http\Controllers\Admin\AdminFormTemplateController;
+use App\Services\CohortFilterBuilder;
+use App\Services\KThresholdService;
 use App\Http\Controllers\Api\Reports\DashboardReportController;
 use App\Http\Controllers\Researcher\ResearcherCohortController;
 use App\Http\Controllers\Researcher\ResearcherReportController;
@@ -15,6 +18,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends']);
     Route::get('/reports/dashboard/trends/export.csv', [DashboardReportController::class, 'exportTrendsCsv']);
 });
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -47,6 +51,11 @@ Route::middleware('auth:sanctum')->get(
 Route::middleware(['auth:sanctum', 'role:admin'])->post(
     'form-templates/{template}/rollback/{version}',
     [FormTemplateVersionController::class, 'rollback']
+);
+
+Route::middleware(['auth:sanctum', 'role:researcher'])->get(
+    '/research/reporting/aggregate',
+    [ResearcherAggregateController::class, 'index']
 );
 
 Route::middleware('auth:sanctum')->get('/me/summary',
