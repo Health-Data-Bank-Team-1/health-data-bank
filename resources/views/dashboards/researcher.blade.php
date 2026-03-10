@@ -28,6 +28,9 @@
                     <div>
                         res reports here
                     </div>
+                    <x-link-button href="{{ route('researcher.report-generator') }}">
+                        New Report
+                    </x-link-button>
                 </div>
             </div>
         </div>
