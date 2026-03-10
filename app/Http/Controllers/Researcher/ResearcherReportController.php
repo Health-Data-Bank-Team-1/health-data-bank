@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Exceptions\CohortSuppressedException;
+use App\Models\Report;
+use App\Models\AggregatedData;
 
 class ResearcherReportController extends Controller
 {
@@ -191,6 +193,56 @@ class ResearcherReportController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Failed to export aggregated report.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function append(Request $request, string $reportId)
+    {
+        $validated = $request->validate([
+            'metrics' => ['required', 'array'],
+            'anonymization_level' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        try {
+            $user = $request->user();
+
+            $report = Report::where('id', $reportId)
+                ->where('researcher_id', $user->account_id)
+                ->first();
+
+            if (!$report) {
+                return response()->json([
+                    'message' => 'Report not found or not owned by researcher'
+                ], 404);
+            }
+
+            $data = AggregatedData::create([
+                'report_id' => $report->id,
+                'metrics' => $validated['metrics'],
+                'anonymization_level' => $validated['anonymization_level'] ?? 1,
+            ]);
+
+            AuditLogger::log(
+                'researcher_report_appended',
+                ['reporting', 'researcher', 'outcome:success'],
+                null,
+                [],
+                [
+                    'report_id' => $report->id,
+                    'aggregated_data_id' => $data->id,
+                ]
+            );
+
+            return response()->json([
+                'message' => 'Report appended successfully',
+                'report_id' => $report->id,
+                'data' => $data
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Failed to append report',
                 'error' => $e->getMessage(),
             ], 500);
         }
