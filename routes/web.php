@@ -34,64 +34,64 @@ Route::middleware([
 
     Route::get('/dashboard', function () {
         if (Auth::user()->hasRole('user')) {
-            return redirect('/dashboard-user');
+            return redirect('/user/dashboard');
         } elseif (Auth::user()->hasRole('researcher')) {
-            return redirect('/dashboard-researcher');
+            return redirect('/researcher/dashboard');
         } elseif (Auth::user()->hasRole('admin')) {
-            return redirect('/dashboard-admin');
+            return redirect('/admin/dashboard');
         }
     });
-    Route::get('/user-profile', UserProfile::class)
+    Route::get('/user/profile', UserProfile::class)
         ->middleware('role:user')
         ->name('user-profile');
-    Route::get('/dashboard-user', UserDashboard::class)
+    Route::get('/user/dashboard', UserDashboard::class)
         ->middleware('role:user')
         ->name('dashboards.user');
-    Route::get('/my-progress', MyProgress::class)
+    Route::get('/user/my-progress', MyProgress::class)
         ->middleware('role:user')
         ->name('my-progress');
-    Route::get('/user-form-select', UserFormSelect::class)
+    Route::get('/user/form-select', UserFormSelect::class)
         ->middleware('role:user')
         ->name('user-form-select');
-    Route::get('/user-todo', UserTodo::class)
+    Route::get('/user/todo', UserTodo::class)
         ->middleware('role:user')
         ->name('user-todo');
-    Route::get('/forms', FormIndex::class)
+    Route::get('/user/forms', FormIndex::class)
         ->middleware('role:user')
         ->name('forms.index');
-    Route::get('/forms/{form}', FormRenderer::class)
+    Route::get('/user/forms/{form}', FormRenderer::class)
         ->middleware('role:user')
         ->name('forms.show');
-    Route::get('/health-summary', HealthSummary::class)
+    Route::get('/user/health-summary', HealthSummary::class)
         ->middleware('role:user')
         ->name('health-summary');
 
-    Route::get('/researcher-profile', ResearcherProfile::class)
+    Route::get('/researcher/profile', ResearcherProfile::class)
         ->middleware('role:researcher')
         ->name('researcher-profile');
-    Route::get('/dashboard-researcher', ResearcherDashboard::class)
+    Route::get('/researcher/dashboard', ResearcherDashboard::class)
         ->middleware('role:researcher')
         ->name('dashboards.researcher');
-    Route::get('/researcher-forms', ResearcherForms::class)
+    Route::get('/researcher/forms', ResearcherForms::class)
         ->middleware('role:researcher')
         ->name('researcher.forms');
-    Route::get('/researcher-reports', ResearcherReports::class)
+    Route::get('/researcher/reports', ResearcherReports::class)
         ->middleware('role:researcher')
         ->name('researcher.reports');
 
-    Route::get('/admin-profile', AdminProfile::class)
+    Route::get('/admin/profile', AdminProfile::class)
         ->middleware('role:admin')
         ->name('admin-profile');
-    Route::get('/dashboard-admin', AdminDashboard::class)
+    Route::get('/admin/dashboard', AdminDashboard::class)
         ->middleware('role:admin')
         ->name('dashboards.admin');
-    Route::get('/admin-audit-log', AuditLog::class)
+    Route::get('/admin/audit-log', AuditLog::class)
         ->middleware('role:admin')
         ->name('admin.audit-log');
-    Route::get('/admin-database-management', DatabaseManagement::class)
+    Route::get('/admin/database-management', DatabaseManagement::class)
         ->middleware('role:admin')
         ->name('admin.database-management');
-    Route::get('/admin-report-review', ReportReview::class)
+    Route::get('/admin/report-review', ReportReview::class)
         ->middleware('role:admin')
         ->name('admin.report-review');
     //admin UI page (Livewire)
