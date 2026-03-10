@@ -113,20 +113,14 @@
         </div>
 
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link href="{{ route('user-form-select') }}" :active="request()->routeIs('user-form-select')">
+            <x-responsive-nav-link href="{{ route('researcher.forms') }}" :active="request()->routeIs('researcher.forms')">
                 {{ __('Forms') }}
             </x-responsive-nav-link>
         </div>
 
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link href="{{ route('my-progress') }}" :active="request()->routeIs('my-progress')">
-                {{ __('My Progress') }}
-            </x-responsive-nav-link>
-        </div>
-
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link href="{{ route('user-todo') }}" :active="request()->routeIs('user-todo')">
-                {{ __('TODO') }}
+            <x-responsive-nav-link href="{{ route('researcher.reports') }}" :active="request()->routeIs('researcher.reports')">
+                {{ __('Reports') }}
             </x-responsive-nav-link>
         </div>
 
