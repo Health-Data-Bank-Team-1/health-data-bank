@@ -26,9 +26,9 @@
                         </h2>
                     </div>
                     <div>
-                        res reports here
+                        <livewire:researcher.report-index />
                     </div>
-                    <x-link-button href="{{ route('researcher.report-generator') }}">
+                    <x-link-button class="w-full mt-2" href="{{ route('researcher.report-generator') }}">
                         New Report
                     </x-link-button>
                 </div>

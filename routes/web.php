@@ -17,6 +17,8 @@ use App\Livewire\Profiles\ResearcherProfile;
 use App\Livewire\Researcher\ResearcherForms;
 use App\Livewire\Researcher\ResearcherReports;
 use App\Livewire\Researcher\ResearcherReportGenerator;
+use App\Livewire\Researcher\ReportIndex;
+use App\Livewire\Researcher\ReportRenderer;
 use App\Livewire\Dashboards\AdminDashboard;
 use App\Livewire\Profiles\AdminProfile;
 use App\Livewire\Admin\AuditLog;
@@ -82,6 +84,12 @@ Route::middleware([
     Route::get('/researcher-report-generator', ResearcherReportGenerator::class)
         ->middleware('role:researcher')
         ->name('researcher.report-generator');
+    Route::get('/researcher-report-index', ReportIndex::class)
+        ->middleware('role:researcher')
+        ->name('researcher.report-index');
+    Route::get('/researcher-report/{report}', ResearcherReports::class)
+        ->middleware('role:researcher')
+        ->name('researcher.reports.show');
 
     Route::get('/admin-profile', AdminProfile::class)
         ->middleware('role:admin')
