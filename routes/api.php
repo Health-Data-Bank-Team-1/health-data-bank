@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\FormTemplateApprovalController;
 use App\Http\Controllers\Admin\FormTemplateVersionController;
 use App\Http\Controllers\Admin\AdminFormTemplateController;
 use App\Http\Controllers\Api\Reports\DashboardReportController;
+use App\Http\Controllers\Researcher\ResearcherCohortController;
+use App\Http\Controllers\Researcher\ResearcherReportController;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends']);
@@ -55,3 +57,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reporting/trends', [TrendController::class, 'index'])
         ->name('reporting.trends.index');
 });
+
+/**
+ * To use this once researcher role exists
+ * Route::middleware(['auth:sanctum', 'role:researcher'])->group(function () {
+ * Route::post('/researcher/cohorts', [ResearcherCohortController::class, 'index']);
+ * });**/
+
+Route::post('/researcher/cohorts', [ResearcherCohortController::class, 'index']);
+
+Route::post('/researcher/reports/aggregated', [ResearcherReportController::class, 'aggregated']);
+Route::post('/researcher/reports/aggregated/export.csv', [ResearcherReportController::class, 'exportAggregatedCsv']);
