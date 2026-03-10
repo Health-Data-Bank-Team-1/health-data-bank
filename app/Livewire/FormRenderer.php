@@ -61,7 +61,7 @@ class FormRenderer extends Component
         }
 
         return redirect()
-            ->to('/user-form-select')
+            ->to('/user/form-select')
             ->with('flash.banner', 'Form submitted successfully!')
             ->with('flash.bannerStyle', 'success');
     }
