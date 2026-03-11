@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('health_goals', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('account_id');
-            $table->string('metric_key')->default('alcohol_consumption');
-            $table->enum('comparison_operator', ['<=', '>=', '='])->default('<=');
+            $table->string('metric_key');
+            $table->enum('comparison_operator', ['<=', '>=', '=']);
             $table->unsignedInteger('target_value');
             $table->enum('timeframe', ['day', 'week', 'month'])->default('week');
             $table->date('start_date');

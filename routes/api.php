@@ -4,9 +4,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PatientController;
 use App\Http\Controllers\Reporting\TrendController;
+use App\Http\Controllers\Reporting\ResearcherAggregateController;
 use App\Http\Controllers\Admin\FormTemplateApprovalController;
 use App\Http\Controllers\Admin\FormTemplateVersionController;
 use App\Http\Controllers\Admin\AdminFormTemplateController;
+use App\Services\CohortFilterBuilder;
+use App\Services\KThresholdService;
 use App\Http\Controllers\Api\Reports\DashboardReportController;
 use App\Http\Controllers\Researcher\ResearcherCohortController;
 use App\Http\Controllers\Researcher\ResearcherReportController;
@@ -49,22 +52,25 @@ Route::middleware(['auth:sanctum', 'role:admin'])->post(
     [FormTemplateVersionController::class, 'rollback']
 );
 
+Route::middleware(['auth:sanctum', 'role:researcher'])->get(
+    '/research/reporting/aggregate',
+    [ResearcherAggregateController::class, 'index']
+);
+
+Route::middleware(['auth:sanctum', 'role:researcher'])->group(function () {
+    // Create a cohort
+    Route::post('/researcher/cohorts', [ResearcherCohortController::class, 'store']);
+    // Generate aggregated report
+    Route::post('/researcher/reports/aggregated', [ResearcherReportController::class, 'aggregated']);
+    // Export aggregated report as CSV
+    Route::post('/researcher/reports/aggregated/export.csv', [ResearcherReportController::class, 'exportAggregatedCsv']);
+});
+
 Route::middleware('auth:sanctum')->get('/me/summary',
     [\App\Http\Controllers\Api\MeSummaryController::class, 'show']);
-
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reporting/trends', [TrendController::class, 'index'])
         ->name('reporting.trends.index');
 });
 
-/**
- * To use this once researcher role exists
- * Route::middleware(['auth:sanctum', 'role:researcher'])->group(function () {
- * Route::post('/researcher/cohorts', [ResearcherCohortController::class, 'index']);
- * });**/
-
-Route::post('/researcher/cohorts', [ResearcherCohortController::class, 'index']);
-
-Route::post('/researcher/reports/aggregated', [ResearcherReportController::class, 'aggregated']);
-Route::post('/researcher/reports/aggregated/export.csv', [ResearcherReportController::class, 'exportAggregatedCsv']);

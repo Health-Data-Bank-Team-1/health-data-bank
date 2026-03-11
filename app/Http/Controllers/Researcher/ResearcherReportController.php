@@ -3,152 +3,184 @@
 namespace App\Http\Controllers\Researcher;
 
 use App\Http\Controllers\Controller;
+use App\Services\AggregatedMetricsService;
+use App\Services\AuditLogger;
+use App\Services\CohortFilterBuilder;
+use App\Services\KThresholdService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use App\Services\AuditLogger;
+use App\Exceptions\CohortSuppressedException;
 
 class ResearcherReportController extends Controller
 {
-    public function aggregated(Request $request)
-    {
-        $filters = $request->all();
+    public function aggregated(
+        Request $request,
+        CohortFilterBuilder $cohortBuilder,
+        KThresholdService $threshold,
+        AggregatedMetricsService $aggregator
+    ) {
+        $validated = $request->validate([
+            'cohort_id' => ['required', 'uuid'],
+            'from' => ['required', 'date'],
+            'to' => ['required', 'date', 'after_or_equal:from'],
+            'keys' => ['sometimes', 'string'],
+        ]);
 
         try {
-            $baseQuery = DB::table('health_goals')
-                ->join('accounts', 'health_goals.account_id', '=', 'accounts.id');
+            $cohort = DB::table('researcher_cohorts')
+                ->where('id', $validated['cohort_id'])
+                ->first();
 
-            if (!empty($filters['metric_key'])) {
-                $baseQuery->where('health_goals.metric_key', $filters['metric_key']);
+            if (!$cohort) {
+                return response()->json([
+                    'message' => 'Cohort not found.',
+                ], 404);
             }
 
-            if (!empty($filters['status'])) {
-                $baseQuery->where('health_goals.status', $filters['status']);
+            $filters = json_decode($cohort->filters_json, true) ?? [];
+
+            $keys = [];
+            if (!empty($validated['keys'])) {
+                $keys = array_values(array_filter(array_map('trim', explode(',', $validated['keys']))));
             }
 
-            if (!empty($filters['timeframe'])) {
-                $baseQuery->where('health_goals.timeframe', $filters['timeframe']);
-            }
+            $cohortQuery = $cohortBuilder->build($filters);
+            $accountIds = $cohortQuery->pluck('id')->all();
 
-            if (!empty($filters['start_date'])) {
-                $baseQuery->whereDate('health_goals.start_date', '>=', $filters['start_date']);
-            }
+            $threshold->enforce(count($accountIds), 10);
 
-            if (!empty($filters['end_date'])) {
-                $baseQuery->whereDate('health_goals.end_date', '<=', $filters['end_date']);
-            }
+            $from = CarbonImmutable::parse($validated['from'])->startOfDay();
+            $to = CarbonImmutable::parse($validated['to'])->endOfDay();
 
-            $rows = (clone $baseQuery)->select(
-                'health_goals.metric_key',
-                'health_goals.status',
-                'health_goals.target_value'
-            )->get();
+            $metrics = $aggregator->aggregateForCohort(
+                $accountIds,
+                $from,
+                $to,
+                $keys
+            );
 
-            $report = [
-                'cohort_size' => $rows->count(),
-                'active_goals' => $rows->where('status', 'ACTIVE')->count(),
-                'expired_goals' => $rows->where('status', 'EXPIRED')->count(),
-                'average_target_value' => round($rows->avg('target_value') ?? 0, 2),
-                'metric_breakdown' => $rows->groupBy('metric_key')->map(function ($group) {
-                    return $group->count();
-                })->toArray(),
-            ];
             AuditLogger::log(
-                'researcher_aggregated_report_viewed',
+                'aggregated_report_viewed',
                 ['reporting', 'researcher', 'outcome:success'],
                 null,
                 [],
                 [
-                    'filters' => $filters,
-                    'cohort_size' => $report['cohort_size'],
+                    'cohort_id' => $validated['cohort_id'],
+                    'cohort_size' => count($accountIds),
+                    'from' => $from->toDateString(),
+                    'to' => $to->toDateString(),
+                    'keys_count' => count($keys),
                 ]
             );
 
             return response()->json([
-                'message' => 'Aggregated report generated successfully',
-                'filters_applied' => $filters,
-                'report' => $report,
+                'message' => 'Aggregated report generated successfully.',
+                'data' => [
+                    'cohort_id' => $validated['cohort_id'],
+                    'cohort_name' => $cohort->name,
+                    'cohort_size' => count($accountIds),
+                    'from' => $from->toIso8601String(),
+                    'to' => $to->toIso8601String(),
+                    'metrics' => $metrics,
+                ],
             ]);
+        } catch (CohortSuppressedException $e) {
+            return response()->json([
+                'message' => 'Cohort suppressed due to minimum size rule.',
+                'errors' => [
+                    'cohort' => [$e->getMessage()],
+                ],
+            ], 422);
         } catch (\Throwable $e) {
             return response()->json([
-                'message' => 'Failed to generate aggregated report',
+                'message' => 'Failed to generate aggregated report.',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-    public function exportAggregatedCsv(Request $request): StreamedResponse
-    {
-        $filters = $request->all();
+    public function exportAggregatedCsv(
+        Request $request,
+        CohortFilterBuilder $cohortBuilder,
+        KThresholdService $threshold,
+        AggregatedMetricsService $aggregator
+    ): StreamedResponse {
+        $validated = $request->validate([
+            'cohort_id' => ['required', 'uuid'],
+            'from' => ['required', 'date'],
+            'to' => ['required', 'date', 'after_or_equal:from'],
+            'keys' => ['sometimes', 'string'],
+        ]);
 
-        $baseQuery = DB::table('health_goals')
-            ->join('accounts', 'health_goals.account_id', '=', 'accounts.id');
+        try {
+            $cohort = DB::table('researcher_cohorts')
+                ->where('id', $validated['cohort_id'])
+                ->first();
 
-        if (!empty($filters['metric_key'])) {
-            $baseQuery->where('health_goals.metric_key', $filters['metric_key']);
-        }
-
-        if (!empty($filters['status'])) {
-            $baseQuery->where('health_goals.status', $filters['status']);
-        }
-
-        if (!empty($filters['timeframe'])) {
-            $baseQuery->where('health_goals.timeframe', $filters['timeframe']);
-        }
-
-        if (!empty($filters['start_date'])) {
-            $baseQuery->whereDate('health_goals.start_date', '>=', $filters['start_date']);
-        }
-
-        if (!empty($filters['end_date'])) {
-            $baseQuery->whereDate('health_goals.end_date', '<=', $filters['end_date']);
-        }
-
-        $rows = (clone $baseQuery)->select(
-            'health_goals.metric_key',
-            'health_goals.status',
-            'health_goals.target_value'
-        )->get();
-
-        $report = [
-            'cohort_size' => $rows->count(),
-            'active_goals' => $rows->where('status', 'ACTIVE')->count(),
-            'expired_goals' => $rows->where('status', 'EXPIRED')->count(),
-            'average_target_value' => round($rows->avg('target_value') ?? 0, 2),
-            'metric_breakdown' => $rows->groupBy('metric_key')->map(function ($group) {
-                return $group->count();
-            })->toArray(),
-        ];
-        AuditLogger::log(
-            'researcher_aggregated_report_exported',
-            ['reporting', 'researcher', 'outcome:success', 'format:csv'],
-            null,
-            [],
-            [
-                'filters' => $filters,
-                'cohort_size' => $report['cohort_size'],
-                'format' => 'csv',
-            ]
-        );
-
-        $filename = 'aggregated_report.csv';
-
-        return response()->streamDownload(function () use ($report) {
-            $handle = fopen('php://output', 'w');
-
-            fputcsv($handle, ['metric', 'value']);
-            fputcsv($handle, ['cohort_size', $report['cohort_size']]);
-            fputcsv($handle, ['active_goals', $report['active_goals']]);
-            fputcsv($handle, ['expired_goals', $report['expired_goals']]);
-            fputcsv($handle, ['average_target_value', $report['average_target_value']]);
-
-            foreach ($report['metric_breakdown'] as $metric => $count) {
-                fputcsv($handle, ["metric_breakdown_{$metric}", $count]);
+            if (!$cohort) {
+                abort(404, 'Cohort not found.');
             }
 
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv',
-        ]);
+            $filters = json_decode($cohort->filters_json, true) ?? [];
+
+            $keys = [];
+            if (!empty($validated['keys'])) {
+                $keys = array_values(array_filter(array_map('trim', explode(',', $validated['keys']))));
+            }
+
+            $cohortQuery = $cohortBuilder->build($filters);
+            $accountIds = $cohortQuery->pluck('id')->all();
+
+            $threshold->enforce(count($accountIds), 10);
+
+            $from = CarbonImmutable::parse($validated['from'])->startOfDay();
+            $to = CarbonImmutable::parse($validated['to'])->endOfDay();
+
+            $metrics = $aggregator->aggregateForCohort(
+                $accountIds,
+                $from,
+                $to,
+                $keys
+            );
+
+            AuditLogger::log(
+                'aggregated_report_exported',
+                ['reporting', 'researcher', 'outcome:success', 'format:csv'],
+                null,
+                [],
+                [
+                    'cohort_id' => $validated['cohort_id'],
+                    'cohort_size' => count($accountIds),
+                    'from' => $from->toDateString(),
+                    'to' => $to->toDateString(),
+                    'keys_count' => count($keys),
+                    'format' => 'csv',
+                ]
+            );
+
+            $filename = 'researcher_aggregated_report.csv';
+
+            return response()->streamDownload(function () use ($metrics) {
+                $handle = fopen('php://output', 'w');
+
+                fputcsv($handle, ['metric_key', 'count', 'avg']);
+
+                foreach ($metrics as $metricKey => $values) {
+                    fputcsv($handle, [
+                        $metricKey,
+                        $values['count'] ?? 0,
+                        $values['avg'] ?? '',
+                    ]);
+                }
+
+                fclose($handle);
+            }, $filename, [
+                'Content-Type' => 'text/csv',
+            ]);
+        } catch (CohortSuppressedException $e) {
+            abort(422, $e->getMessage());
+        }
     }
 }
