@@ -3,27 +3,23 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SummaryQueryRequest;
 use App\Services\AuditLogger;
 use App\Services\PersonalSummaryService;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class MeSummaryController extends Controller
 {
-    public function show(Request $request, PersonalSummaryService $svc)
+    public function show(SummaryQueryRequest $request, PersonalSummaryService $svc)
     {
-        $request->validate([
-            'from' => ['required', 'date'],
-            'to' => ['required', 'date', 'after:from'],
-            'keys' => ['sometimes', 'string'], //comma-separated: hr,weight,etc
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
         abort_unless($user?->account_id, 422, 'User has no account attached.');
 
         $keys = [];
         if ($request->filled('keys')) {
-            $keys = array_values(array_filter(array_map('trim', explode(',', $request->keys))));
+            $keys = array_values(array_filter(array_map('trim', explode(',', $validated['keys']))));
         }
 
         AuditLogger::log(
@@ -32,19 +28,19 @@ class MeSummaryController extends Controller
             null,
             [],
             [
-                'from' => $request->from,
-                'to' => $request->to,
-                'keys' => $keys, //list of metric keys only
+                'from' => $validated['from'],
+                'to' => $validated['to'],
+                'keys_count' => count($keys),
             ]
         );
 
-        return response()->json(
-            $svc->summaryForAccount(
-                $user->account_id,
-                Carbon::parse($request->from),
-                Carbon::parse($request->to),
-                $keys
-            )
+        $result = $svc->summary(
+            $user->account_id,
+            Carbon::parse($validated['from']),
+            Carbon::parse($validated['to']),
+            $keys
         );
+
+        return response()->json($result);
     }
 }

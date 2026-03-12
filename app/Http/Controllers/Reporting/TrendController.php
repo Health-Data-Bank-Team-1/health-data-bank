@@ -3,22 +3,16 @@
 namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\TrendQueryRequest;
 use App\Services\TrendCalculationService;
-use Carbon\CarbonImmutable;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Services\AuditLogger;
+use Carbon\CarbonImmutable;
 
 class TrendController extends Controller
 {
-    public function index(Request $request, TrendCalculationService $service)
+    public function index(TrendQueryRequest $request, TrendCalculationService $service)
     {
-        $validated = $request->validate([
-            'metric' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9_\-\.]+$/'],
-            'from' => ['required', 'date'],
-            'to' => ['required', 'date', 'after_or_equal:from'],
-            'bucket' => ['sometimes', Rule::in(['day', 'week', 'month'])],
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
         if (!$user || !$user->account_id) {
@@ -28,12 +22,24 @@ class TrendController extends Controller
         }
 
         $metric = $validated['metric'];
+        $from = CarbonImmutable::parse($validated['from']);
+        $to = CarbonImmutable::parse($validated['to']);
         $bucket = $validated['bucket'] ?? 'day';
 
-        $from = CarbonImmutable::parse($validated['from'])->startOfDay();
-        $to = CarbonImmutable::parse($validated['to'])->endOfDay();
+        AuditLogger::log(
+            'reporting_trends_view',
+            ['reporting', 'metric:' . $metric],
+            null,
+            [],
+            [
+                'metric' => $metric,
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+                'bucket' => $bucket,
+            ]
+        );
 
-        $out = $service->trendForAccount(
+        $result = $service->calculate(
             $user->account_id,
             $metric,
             $from,
@@ -41,19 +47,6 @@ class TrendController extends Controller
             $bucket
         );
 
-        AuditLogger::log(
-            'reporting_trends_view',
-            ['reporting', 'resource:trends'],
-            null,
-            [],
-            [
-                'metric' => $metric,
-                'bucket' => $bucket,
-                'from' => $validated['from'],
-                'to' => $validated['to'],
-            ]
-        );
-
-        return response()->json($out);
+        return response()->json($result);
     }
 }
