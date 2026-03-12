@@ -35,7 +35,7 @@ class DiffUserWithRolesSeeder extends Seeder
 
         $res->assignRole('researcher');
 
-        $res = User::factory()->withPersonalTeam()->create([
+        $admin = User::factory()->withPersonalTeam()->create([
             'name' => 'Test Admin',
             'email' => 'admin@example.com',
         ]);
@@ -45,6 +45,18 @@ class DiffUserWithRolesSeeder extends Seeder
             ['id' => (string) Str::uuid()]
         );
 
-        $res->assignRole('admin');
+        $admin->assignRole('admin');
+
+        $provider = User::factory()->withPersonalTeam()->create([
+            'name' => 'Test Provider',
+            'email' => 'provider@example.com',
+        ]);
+
+        Role::firstOrCreate(
+            ['name' => 'provider', 'guard_name' => 'web'],
+            ['id' => (string) Str::uuid()]
+        );
+
+        $provider->assignRole('provider');
     }
 }
