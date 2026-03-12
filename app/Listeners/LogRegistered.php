@@ -12,7 +12,7 @@ class LogRegistered
         AuditLogger::log(
             'register_success',
             ['auth', 'outcome:success'],
-            $event->user,
+            null,
             [],
             []
         );

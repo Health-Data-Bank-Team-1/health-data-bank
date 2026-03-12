@@ -43,7 +43,7 @@ class TrendController extends Controller
 
         AuditLogger::log(
             'reporting_trends_view',
-            ['reporting', 'resource:trends'],
+            ['reporting', 'resource:trends', 'outcome:success'],
             null,
             [],
             [
