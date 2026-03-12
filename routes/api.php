@@ -19,6 +19,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reports/dashboard/trends/export.csv', [DashboardReportController::class, 'exportTrendsCsv']);
 });
 
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -69,8 +70,8 @@ Route::middleware(['auth:sanctum', 'role:researcher'])->group(function () {
 Route::middleware('auth:sanctum')->get('/me/summary',
     [\App\Http\Controllers\Api\MeSummaryController::class, 'show']);
 
+
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reporting/trends', [TrendController::class, 'index'])
         ->name('reporting.trends.index');
 });
-
