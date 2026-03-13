@@ -28,6 +28,7 @@ class ReportAccessAuditLogTest extends TestCase
 
         $this->assertDatabaseHas('audits', [
             'event' => 'reporting_trends_view',
+            'user_id' => $account->id,
         ]);
     }
 
@@ -48,6 +49,7 @@ class ReportAccessAuditLogTest extends TestCase
 
         $this->assertDatabaseHas('audits', [
             'event' => 'reporting_summary_view',
+            'user_id' => $account->id,
         ]);
     }
 }
