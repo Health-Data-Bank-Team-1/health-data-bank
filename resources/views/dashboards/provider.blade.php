@@ -15,7 +15,7 @@
                         </h2>
                     </div>
                     <div>
-                        provider patients here
+                        <livewire:provider.patient-index />
                     </div>
                 </div>
 
@@ -26,7 +26,7 @@
                         </h2>
                     </div>
                     <div>
-                        provider reports here
+                        reports
                     </div>
                 </div>
             </div>

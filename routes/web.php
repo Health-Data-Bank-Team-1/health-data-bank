@@ -28,6 +28,9 @@ use App\Livewire\Dashboards\ProviderDashboard;
 use App\Livewire\Profiles\ProviderProfile;
 use App\Livewire\Provider\ProviderPatients;
 use App\Livewire\Provider\ProviderReports;
+use App\Livewire\Provider\PatientIndex;
+use App\Livewire\Provider\PatientRenderer;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -134,4 +137,10 @@ Route::middleware([
     Route::get('/provider/reports', ProviderReports::class)
         ->middleware('role:provider')
         ->name('provider.reports');
+    Route::get('/provider/patient-index', PatientIndex::class)
+        ->middleware('role:provider')
+        ->name('provider.patient-index');
+    Route::get('/provider/patients/{patient}', PatientRenderer::class)
+        ->middleware('role:provider')
+        ->name('provider.patients.show');
 });
