@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\MyProgress;
 use App\Livewire\UserFormSelect;
@@ -9,6 +10,20 @@ use App\Livewire\FormRenderer;
 use App\Http\Controllers\FormTemplateController;
 use App\Livewire\Admin\FormTemplatesIndex;
 use App\Livewire\HealthSummary;
+use App\Livewire\Dashboards\UserDashboard;
+use App\Livewire\Profiles\UserProfile;
+use App\Livewire\Dashboards\ResearcherDashboard;
+use App\Livewire\Profiles\ResearcherProfile;
+use App\Livewire\Researcher\ResearcherForms;
+use App\Livewire\Researcher\ResearcherReports;
+use App\Livewire\Researcher\ResearcherReportGenerator;
+use App\Livewire\Researcher\ReportIndex;
+use App\Livewire\Researcher\ReportRenderer;
+use App\Livewire\Dashboards\AdminDashboard;
+use App\Livewire\Profiles\AdminProfile;
+use App\Livewire\Admin\AuditLog;
+use App\Livewire\Admin\DatabaseManagement;
+use App\Livewire\Admin\ReportReview;
 use App\Livewire\Admin\AuditLogViewer;
 
 Route::get('/', function () {
@@ -22,21 +37,76 @@ Route::middleware([
 ])->group(function () {
 
     Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-    Route::get('/my-progress', MyProgress::class)
+        if (Auth::user()->hasRole('user')) {
+            return redirect('/user/dashboard');
+        } elseif (Auth::user()->hasRole('researcher')) {
+            return redirect('/researcher/dashboard');
+        } elseif (Auth::user()->hasRole('admin')) {
+            return redirect('/admin/dashboard');
+        }
+    });
+    Route::get('/user/profile', UserProfile::class)
+        ->middleware('role:user')
+        ->name('user-profile');
+    Route::get('/user/dashboard', UserDashboard::class)
+        ->middleware('role:user')
+        ->name('dashboards.user');
+    Route::get('/user/my-progress', MyProgress::class)
+        ->middleware('role:user')
         ->name('my-progress');
-    Route::get('/user-form-select', UserFormSelect::class)
+    Route::get('/user/form-select', UserFormSelect::class)
+        ->middleware('role:user')
         ->name('user-form-select');
-    Route::get('/user-todo', UserTodo::class)
+    Route::get('/user/todo', UserTodo::class)
+        ->middleware('role:user')
         ->name('user-todo');
-    Route::get('/forms', FormIndex::class)
+    Route::get('/user/forms', FormIndex::class)
+        ->middleware('role:user')
         ->name('forms.index');
-    Route::get('/forms/{form}', FormRenderer::class)
+    Route::get('/user/forms/{form}', FormRenderer::class)
+        ->middleware('role:user')
         ->name('forms.show');
-    Route::get('/health-summary', HealthSummary::class)
+    Route::get('/user/health-summary', HealthSummary::class)
+        ->middleware('role:user')
         ->name('health-summary');
 
+    Route::get('/researcher/profile', ResearcherProfile::class)
+        ->middleware('role:researcher')
+        ->name('researcher-profile');
+    Route::get('/researcher/dashboard', ResearcherDashboard::class)
+        ->middleware('role:researcher')
+        ->name('dashboards.researcher');
+    Route::get('/researcher/forms', ResearcherForms::class)
+        ->middleware('role:researcher')
+        ->name('researcher.forms');
+    Route::get('/researcher/reports', ResearcherReports::class)
+        ->middleware('role:researcher')
+        ->name('researcher.reports');
+    Route::get('/researcher/report-generator', ResearcherReportGenerator::class)
+        ->middleware('role:researcher')
+        ->name('researcher.report-generator');
+    Route::get('/researcher/report-index', ReportIndex::class)
+        ->middleware('role:researcher')
+        ->name('researcher.report-index');
+    Route::get('/researcher/reports/{report}', ResearcherReports::class)
+        ->middleware('role:researcher')
+        ->name('researcher.reports.show');
+
+    Route::get('/admin/profile', AdminProfile::class)
+        ->middleware('role:admin')
+        ->name('admin-profile');
+    Route::get('/admin/dashboard', AdminDashboard::class)
+        ->middleware('role:admin')
+        ->name('dashboards.admin');
+    Route::get('/admin/audit-log', AuditLog::class)
+        ->middleware('role:admin')
+        ->name('admin.audit-log');
+    Route::get('/admin/database-management', DatabaseManagement::class)
+        ->middleware('role:admin')
+        ->name('admin.database-management');
+    Route::get('/admin/report-review', ReportReview::class)
+        ->middleware('role:admin')
+        ->name('admin.report-review');
     //admin UI page (Livewire)
     Route::get('/admin/forms', FormTemplatesIndex::class)
         ->middleware('role:admin')
