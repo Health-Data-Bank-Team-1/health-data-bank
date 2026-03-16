@@ -69,7 +69,7 @@
                                     href="{{ route('health-goals') }}"
                                     class="block rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-600 hover:bg-gray-50"
                                 >
-                                    No health goals have been set yet. Click here to add one.
+                                    No health goals have been set yet.
                                 </a>
                             @endif
                         </div>
@@ -83,7 +83,7 @@
                         </div>
 
                         <div class="mt-4">
-                            <livewire:compare-group />
+                            <livewire:personal-comparison/>
                         </div>
                     </div>
                 </div>

@@ -8,9 +8,8 @@ use App\Services\CohortFilterBuilder;
 use App\Services\KThresholdService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
-use App\Exceptions\CohortSuppressedException;
 use Illuminate\Support\Str;
+use App\Exceptions\CohortSuppressedException;
 
 class ResearcherCohortController extends Controller
 {
@@ -23,21 +22,27 @@ class ResearcherCohortController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'purpose' => ['required', 'string', 'max:500'],
 
-            // allowed cohort filters
-            'account_type' => ['sometimes', 'in:User,Researcher,HealthcareProvider,Admin'],
+            // demographic / participant filters
+            'age_min' => ['sometimes', 'integer', 'min:0', 'max:120'],
+            'age_max' => ['sometimes', 'integer', 'min:0', 'max:120', 'gte:age_min'],
+            'gender' => ['sometimes', 'string', 'max:50'],
+
+            // participant status / enrollment filters
             'account_status' => ['sometimes', 'in:ACTIVE,DEACTIVATED'],
             'created_from' => ['sometimes', 'date'],
             'created_to' => ['sometimes', 'date', 'after_or_equal:created_from'],
         ]);
-
+        
         $filters = [
-            'account_type' => $validated['account_type'] ?? null,
-            'account_status' => $validated['account_status'] ?? null,
+            'account_type' => 'User',
+            'account_status' => $validated['account_status'] ?? 'ACTIVE',
+            'age_min' => $validated['age_min'] ?? null,
+            'age_max' => $validated['age_max'] ?? null,
+            'gender' => $validated['gender'] ?? null,
             'created_from' => $validated['created_from'] ?? null,
             'created_to' => $validated['created_to'] ?? null,
         ];
 
-        // remove null filters before storing
         $filters = array_filter($filters, fn ($value) => $value !== null);
 
         try {
@@ -46,11 +51,9 @@ class ResearcherCohortController extends Controller
             $accountIds = $cohortQuery->pluck('id')->all();
             $cohortSize = count($accountIds);
 
-            // teammate's service enforces minimum threshold
             $threshold->enforce($cohortSize, 10);
 
             $user = $request->user();
-
             $cohortId = Str::uuid()->toString();
 
             DB::table('researcher_cohorts')->insert([

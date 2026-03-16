@@ -20,6 +20,12 @@ class HealthGoal extends Model
         'status',
     ];
 
+    protected $casts = [
+        'target_value' => 'integer',
+        'start_date' => 'date',
+        'end_date' => 'date',
+    ];
+
     public function account()
     {
         return $this->belongsTo(Account::class);

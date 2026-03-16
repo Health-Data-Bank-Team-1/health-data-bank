@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\PermissionRegistrar;
@@ -40,18 +41,31 @@ class ResearcherCohortEndpointTest extends TestCase
 
         $user->assignRole('researcher');
 
-        Account::factory()->count(10)->create([
+        $accounts = Account::factory()->count(10)->create([
             'account_type' => 'User',
             'status' => 'ACTIVE',
         ]);
 
+        foreach ($accounts as $account) {
+            DB::table('participant_profiles')->insert([
+                'account_id' => $account->id,
+                'gender' => 'female',
+                'date_of_birth' => '2000-01-01',
+                'location' => 'PEI',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
         Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/researcher/cohorts', [
-            'name' => 'Active User Cohort',
-            'purpose' => 'Used for aggregated reporting',
-            'account_type' => 'User',
-            'account_status' => 'ACTIVE',
+            'name' => 'PEI Women 18-30',
+            'purpose' => 'Aggregate wellness trends',
+            'gender' => 'female',
+            'location' => 'PEI',
+            'age_min' => 18,
+            'age_max' => 30,
         ]);
 
         $response->assertStatus(201)
@@ -70,8 +84,10 @@ class ResearcherCohortEndpointTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('researcher_cohorts', [
-            'name' => 'Active User Cohort',
-            'purpose' => 'Used for aggregated reporting',
+            'name' => 'PEI Women 18-30',
+            'purpose' => 'Aggregate wellness trends',
+            'estimated_size' => 10,
+            'version' => 1,
         ]);
     }
 
@@ -80,7 +96,10 @@ class ResearcherCohortEndpointTest extends TestCase
         $response = $this->postJson('/api/researcher/cohorts', [
             'name' => 'Test Cohort',
             'purpose' => 'Testing guest access',
-            'account_type' => 'User',
+            'gender' => 'female',
+            'location' => 'PEI',
+            'age_min' => 18,
+            'age_max' => 30,
         ]);
 
         $response->assertStatus(401);
@@ -102,13 +121,16 @@ class ResearcherCohortEndpointTest extends TestCase
         $response = $this->postJson('/api/researcher/cohorts', [
             'name' => 'Admin Test Cohort',
             'purpose' => 'Should be forbidden',
-            'account_type' => 'User',
+            'gender' => 'female',
+            'location' => 'PEI',
+            'age_min' => 18,
+            'age_max' => 30,
         ]);
 
         $response->assertStatus(403);
     }
 
-    public function test_invalid_date_range_fails_validation(): void
+    public function test_invalid_age_range_fails_validation(): void
     {
         $researcherAccount = Account::factory()->create([
             'account_type' => 'Researcher',
@@ -124,15 +146,16 @@ class ResearcherCohortEndpointTest extends TestCase
         Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/researcher/cohorts', [
-            'name' => 'Invalid Date Cohort',
+            'name' => 'Invalid Age Cohort',
             'purpose' => 'Validation test',
-            'account_type' => 'User',
-            'created_from' => '2026-03-10',
-            'created_to' => '2026-01-01',
+            'gender' => 'female',
+            'location' => 'PEI',
+            'age_min' => 40,
+            'age_max' => 18,
         ]);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['created_to']);
+            ->assertJsonValidationErrors(['age_max']);
     }
 
     public function test_cohort_creation_fails_when_k_threshold_is_not_met(): void
@@ -148,18 +171,31 @@ class ResearcherCohortEndpointTest extends TestCase
 
         $user->assignRole('researcher');
 
-        Account::factory()->count(2)->create([
+        $accounts = Account::factory()->count(2)->create([
             'account_type' => 'User',
             'status' => 'ACTIVE',
         ]);
+
+        foreach ($accounts as $account) {
+            DB::table('participant_profiles')->insert([
+                'account_id' => $account->id,
+                'gender' => 'female',
+                'date_of_birth' => '2000-01-01',
+                'location' => 'PEI',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/researcher/cohorts', [
             'name' => 'Too Small Cohort',
             'purpose' => 'Threshold test',
-            'account_type' => 'User',
-            'account_status' => 'ACTIVE',
+            'gender' => 'female',
+            'location' => 'PEI',
+            'age_min' => 18,
+            'age_max' => 30,
         ]);
 
         $response->assertStatus(422)

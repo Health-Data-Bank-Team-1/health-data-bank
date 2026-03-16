@@ -66,7 +66,7 @@ class ResearcherReportExportTest extends TestCase
             'purpose' => 'CSV export testing',
             'filters_json' => json_encode([
                 'account_type' => 'User',
-                'account_status' => 'ACTIVE',
+                'account_status' => 'ACTIVE'
             ]),
             'estimated_size' => 10,
             'version' => 1,
@@ -88,8 +88,8 @@ class ResearcherReportExportTest extends TestCase
         );
 
         $response->assertOk();
-        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
 
+        $response->assertHeader('content-type', 'text/csv; charset=utf-8');
         $content = $response->streamedContent();
 
         $this->assertStringContainsString('metric_key,count,avg', $content);
@@ -97,7 +97,7 @@ class ResearcherReportExportTest extends TestCase
         $this->assertStringContainsString('weight,10,154.5', $content);
     }
 
-    public function test_guest_cannot_export_aggregated_report_csv(): void
+    public function test_guest_cannot_export_aggregated_report(): void
     {
         $response = $this->postJson('/api/researcher/reports/aggregated/export.csv', [
             'cohort_id' => (string) Str::uuid(),
@@ -108,7 +108,7 @@ class ResearcherReportExportTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_non_researcher_cannot_export_aggregated_report_csv(): void
+    public function test_non_researcher_cannot_export_aggregated_report(): void
     {
         $account = Account::factory()->create([
             'account_type' => 'Admin',
@@ -121,7 +121,7 @@ class ResearcherReportExportTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        $response = $this->post('/api/researcher/reports/aggregated/export.csv', [
+        $response = $this->postJson('/api/researcher/reports/aggregated/export.csv', [
             'cohort_id' => (string) Str::uuid(),
             'from' => '2026-02-01',
             'to' => '2026-02-28',

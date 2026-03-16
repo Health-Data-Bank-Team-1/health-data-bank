@@ -11,6 +11,8 @@ use App\Livewire\Admin\FormTemplatesIndex;
 use App\Http\Controllers\Api\Reports\DashboardReportController;
 use App\Livewire\HealthSummary;
 use App\Livewire\HealthGoals;
+use App\Livewire\PersonalComparison;
+use App\Livewire\PersonalComparisonChart;
 
 Route::get('/', function () {
     return view('welcome');
@@ -60,4 +62,8 @@ Route::middleware([
         Route::get('/health-goals', HealthGoals::class)->name('health-goals');
     });
 
+    Route::middleware(['auth'])->get('/comparison', PersonalComparison::class)
+        ->name('comparison');
+    Route::middleware(['auth'])->get('/comparison/chart', PersonalComparisonChart::class)
+        ->name('comparison.chart');
 });

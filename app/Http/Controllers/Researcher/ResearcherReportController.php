@@ -62,7 +62,7 @@ class ResearcherReportController extends Controller
             );
 
             AuditLogger::log(
-                'aggregated_report_viewed',
+                'researcher_aggregated_report_viewed',
                 ['reporting', 'researcher', 'outcome:success'],
                 null,
                 [],
@@ -106,7 +106,7 @@ class ResearcherReportController extends Controller
         CohortFilterBuilder $cohortBuilder,
         KThresholdService $threshold,
         AggregatedMetricsService $aggregator
-    ): StreamedResponse {
+    ): StreamedResponse|\Illuminate\Http\JsonResponse {
         $validated = $request->validate([
             'cohort_id' => ['required', 'uuid'],
             'from' => ['required', 'date'],
@@ -120,7 +120,9 @@ class ResearcherReportController extends Controller
                 ->first();
 
             if (!$cohort) {
-                abort(404, 'Cohort not found.');
+                return response()->json([
+                    'message' => 'Cohort not found.',
+                ], 404);
             }
 
             $filters = json_decode($cohort->filters_json, true) ?? [];
@@ -146,7 +148,7 @@ class ResearcherReportController extends Controller
             );
 
             AuditLogger::log(
-                'aggregated_report_exported',
+                'researcher_aggregated_report_exported',
                 ['reporting', 'researcher', 'outcome:success', 'format:csv'],
                 null,
                 [],
@@ -180,7 +182,17 @@ class ResearcherReportController extends Controller
                 'Content-Type' => 'text/csv',
             ]);
         } catch (CohortSuppressedException $e) {
-            abort(422, $e->getMessage());
+            return response()->json([
+                'message' => 'Cohort suppressed due to minimum size rule.',
+                'errors' => [
+                    'cohort' => [$e->getMessage()],
+                ],
+            ], 422);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Failed to export aggregated report.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Models\FormField;
 use App\Models\HealthGoal;
+use App\Services\GoalProgressService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -13,20 +15,15 @@ class HealthGoals extends Component
     public $editingGoalId = null;
     public bool $showForm = false;
 
-    public $metric_key = 'alcohol_consumption';
-    public $comparison_operator = '<=';
-    public $target_value = 2;
-    public $timeframe = 'week';
+    public $metric_key;
+    public $comparison_operator;
+    public $target_value;
+    public $timeframe;
     public $start_date;
     public $end_date;
     public $status = 'ACTIVE';
 
-    public array $metricOptions = [
-        'alcohol_consumption' => 'Alcohol Consumption',
-        'sleep_hours' => 'Sleep Hours',
-        'stress_level' => 'Stress Level',
-        'exercise_frequency' => 'Exercise Frequency',
-    ];
+    public array $metricOptions = [];
 
     public array $operatorOptions = [
         '<=' => 'At most',
@@ -42,8 +39,19 @@ class HealthGoals extends Component
 
     public function mount()
     {
+        $this->loadMetricOptions();
         $this->loadGoals();
         $this->resetForm();
+    }
+
+    private function loadMetricOptions(): void
+    {
+        $this->metricOptions = FormField::query()
+            ->where('goal_enabled', true)
+            ->whereIn('field_type', ['number', 'decimal'])
+            ->orderBy('label')
+            ->pluck('label', 'metric_key')
+            ->toArray();
     }
 
     private function accountId(): ?string
@@ -64,15 +72,24 @@ class HealthGoals extends Component
             return;
         }
 
+        $progressService = app(GoalProgressService::class);
+
         $this->goals = HealthGoal::where('account_id', $accountId)
             ->orderByDesc('created_at')
-            ->get();
+            ->get()
+            ->map(function (HealthGoal $goal) use ($progressService) {
+                return [
+                    'goal' => $goal,
+                    'progress' => $progressService->calculate($goal),
+                ];
+            })
+            ->toArray();
     }
 
     public function resetForm(): void
     {
         $this->editingGoalId = null;
-        $this->metric_key = 'alcohol_consumption';
+        $this->metric_key = array_key_first($this->metricOptions);
         $this->comparison_operator = '<=';
         $this->target_value = 2;
         $this->timeframe = 'week';
@@ -89,15 +106,20 @@ class HealthGoals extends Component
 
     public function editGoal(string $goalId): void
     {
-        $goal = HealthGoal::findOrFail($goalId);
+        $accountId = $this->accountId();
+
+        abort_unless($accountId, 403, 'Account mapping failed.');
+
+        $goal = HealthGoal::where('account_id', $accountId)
+            ->findOrFail($goalId);
 
         $this->editingGoalId = $goal->id;
         $this->metric_key = $goal->metric_key;
         $this->comparison_operator = $goal->comparison_operator;
         $this->target_value = $goal->target_value;
         $this->timeframe = $goal->timeframe;
-        $this->start_date = $goal->start_date;
-        $this->end_date = $goal->end_date;
+        $this->start_date = $goal->start_date?->toDateString() ?? $goal->start_date;
+        $this->end_date = $goal->end_date?->toDateString();
         $this->status = $goal->status;
 
         $this->showForm = true;
@@ -112,9 +134,9 @@ class HealthGoals extends Component
     public function save(): void
     {
         $this->validate([
-            'metric_key' => ['required', 'string'],
+            'metric_key' => ['required', 'in:' . implode(',', array_keys($this->metricOptions))],
             'comparison_operator' => ['required', 'in:<=,>=,='],
-            'target_value' => ['required', 'integer', 'min:0'],
+            'target_value' => ['required', 'numeric', 'min:0'],
             'timeframe' => ['required', 'in:day,week,month'],
             'start_date' => ['required', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
@@ -126,7 +148,8 @@ class HealthGoals extends Component
         abort_unless($accountId, 403, 'Account mapping failed.');
 
         if ($this->editingGoalId) {
-            $goal = HealthGoal::findOrFail($this->editingGoalId);
+            $goal = HealthGoal::where('account_id', $accountId)
+                ->findOrFail($this->editingGoalId);
 
             $goal->update([
                 'metric_key' => $this->metric_key,

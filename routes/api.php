@@ -13,6 +13,8 @@ use App\Services\KThresholdService;
 use App\Http\Controllers\Api\Reports\DashboardReportController;
 use App\Http\Controllers\Researcher\ResearcherCohortController;
 use App\Http\Controllers\Researcher\ResearcherReportController;
+use App\Http\Controllers\Api\HealthGoalController;
+use App\Http\Controllers\Api\PersonalComparisonController;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends']);
@@ -75,3 +77,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reporting/trends', [TrendController::class, 'index'])
         ->name('reporting.trends.index');
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/goals', [HealthGoalController::class, 'index']);
+    Route::post('/goals', [HealthGoalController::class, 'store']);
+    Route::get('/goals/{goalId}', [HealthGoalController::class, 'show']);
+    Route::put('/goals/{goalId}', [HealthGoalController::class, 'update']);
+});
+
+Route::middleware('auth:sanctum')->get(
+    '/me/comparison',
+    [PersonalComparisonController::class, 'show']
+);

@@ -38,44 +38,78 @@
 
                     @if(count($goals))
                         <div class="space-y-4">
-                            @foreach($goals as $goal)
+                            @foreach($goals as $item)
+                                @php
+                                    $goal = $item['goal'];
+                                    $progress = $item['progress'];
+                                @endphp
+
                                 <div class="rounded-lg border border-gray-200 p-4">
                                     <p class="text-sm text-gray-700">
                                         <strong>Metric:</strong>
-                                        {{ $metricOptions[$goal->metric_key] ?? $goal->metric_key }}
+                                        {{ $metricOptions[$goal['metric_key']] ?? $goal['metric_key'] }}
                                     </p>
 
                                     <p class="text-sm text-gray-700 mt-2">
                                         <strong>Rule:</strong>
-                                        {{ $operatorOptions[$goal->comparison_operator] ?? $goal->comparison_operator }}
+                                        {{ $operatorOptions[$goal['comparison_operator']] ?? $goal['comparison_operator'] }}
                                     </p>
 
                                     <p class="text-sm text-gray-700 mt-2">
-                                        <strong>Target:</strong> {{ $goal->target_value }}
+                                        <strong>Target:</strong> {{ $goal['target_value'] }}
                                     </p>
 
                                     <p class="text-sm text-gray-700 mt-2">
                                         <strong>Timeframe:</strong>
-                                        {{ $timeframeOptions[$goal->timeframe] ?? $goal->timeframe }}
+                                        {{ $timeframeOptions[$goal['timeframe']] ?? $goal['timeframe'] }}
                                     </p>
 
                                     <p class="text-sm text-gray-700 mt-2">
-                                        <strong>Status:</strong> {{ $goal->status }}
+                                        <strong>Status:</strong> {{ $goal['status'] }}
                                     </p>
 
                                     <p class="text-sm text-gray-700 mt-2">
-                                        <strong>Active From:</strong> {{ $goal->start_date }}
+                                        <strong>Current Value:</strong> {{ $progress['current_value'] }}
                                     </p>
 
-                                    @if($goal->end_date)
+                                    <p class="text-sm text-gray-700 mt-2">
+                                        <strong>Progress:</strong> {{ $progress['progress_percent'] }}%
+                                    </p>
+
+                                    <div class="mt-2">
+                                        <div class="w-full bg-gray-200 rounded-full h-3">
+                                            <div
+                                                class="bg-indigo-600 h-3 rounded-full"
+                                                style="width: {{ min(100, max(0, $progress['progress_percent'])) }}%;"
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    <p class="text-sm text-gray-700 mt-2">
+                                        <strong>Entries Used:</strong> {{ $progress['entry_count'] }}
+                                    </p>
+
+                                    <p class="text-sm text-gray-700 mt-2">
+                                        <strong>From:</strong> {{ $progress['evaluated_from'] }}
+                                    </p>
+
+                                    <p class="text-sm text-gray-700 mt-2">
+                                        <strong>Till:</strong> {{ $progress['evaluated_to'] }}
+                                    </p>
+
+                                    <p class="text-sm text-gray-700 mt-2">
+                                        <strong>Active From:</strong> {{ $goal['start_date'] }}
+                                    </p>
+
+                                    @if($goal['end_date'])
                                         <p class="text-sm text-gray-700 mt-2">
-                                            <strong>End Date:</strong> {{ $goal->end_date }}
+                                            <strong>End Date:</strong> {{ $goal['end_date'] }}
                                         </p>
                                     @endif
 
                                     <div class="mt-4">
                                         <button
-                                            wire:click="editGoal('{{ $goal->id }}')"
+                                            wire:click="editGoal('{{ $goal['id'] }}')"
                                             class="px-3 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
                                         >
                                             Edit
@@ -85,7 +119,14 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="text-sm text-gray-600">No health goals have been created yet.</p>
+                        <div class="rounded-md bg-gray-50 border border-dashed border-gray-300 p-4">
+                            <p class="text-sm text-gray-600">
+                                No health goals have been created yet.
+                            </p>
+                            <p class="text-sm text-gray-500 mt-1">
+                                Click <strong>Add Goal</strong> to create your first goal.
+                            </p>
+                        </div>
                     @endif
                 </div>
 
@@ -103,6 +144,9 @@
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
                                 </select>
+                                @error('metric_key')
+                                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
@@ -112,11 +156,17 @@
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
                                 </select>
+                                @error('comparison_operator')
+                                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Target</label>
-                                <input type="number" wire:model="target_value" class="w-full rounded-md border-gray-300">
+                                <input type="number" step="any" wire:model="target_value" class="w-full rounded-md border-gray-300">
+                                @error('target_value')
+                                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
@@ -126,16 +176,25 @@
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
                                 </select>
+                                @error('timeframe')
+                                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
                                 <input type="date" wire:model="start_date" class="w-full rounded-md border-gray-300">
+                                @error('start_date')
+                                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
                                 <input type="date" wire:model="end_date" class="w-full rounded-md border-gray-300">
+                                @error('end_date')
+                                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
@@ -145,6 +204,9 @@
                                     <option value="MET">Met</option>
                                     <option value="EXPIRED">Expired</option>
                                 </select>
+                                @error('status')
+                                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div class="flex gap-2">
@@ -152,7 +214,7 @@
                                     wire:click="save"
                                     class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                                 >
-                                    Save Goal
+                                    {{ $editingGoalId ? 'Update Goal' : 'Save Goal' }}
                                 </button>
 
                                 <button
@@ -164,9 +226,11 @@
                             </div>
                         </div>
                     @else
-                        <p class="text-sm text-gray-600">
-                            Click <strong>Add Goal</strong> to create a new health goal, or choose <strong>Edit</strong> on an existing goal.
-                        </p>
+                        <div class="rounded-md bg-gray-50 border border-dashed border-gray-300 p-4">
+                            <p class="text-sm text-gray-600">
+                                Click <strong>Add Goal</strong> to create a new health goal, or choose <strong>Edit</strong> on an existing goal.
+                            </p>
+                        </div>
                     @endif
                 </div>
             </div>
