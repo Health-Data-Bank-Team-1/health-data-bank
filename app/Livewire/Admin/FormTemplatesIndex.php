@@ -4,12 +4,10 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Layout;
 use App\Models\FormTemplate;
 use App\Services\FormTemplateApprovalService;
 use App\Exceptions\WorkflowException;
 
-#[Layout('layouts.app')]
 class FormTemplatesIndex extends Component
 {
     use WithPagination;
@@ -101,8 +99,9 @@ class FormTemplatesIndex extends Component
 
         return view('livewire.admin.form-templates-index', [
             'templates' => $templates,
-        ]);
+        ])->layout('layouts.admin')
+            ->layoutData([
+                'header' => 'Form Review'
+            ]);
     }
 }
-
-
