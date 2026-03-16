@@ -2,15 +2,17 @@
 
 namespace App\Livewire\Provider;
 
-use Livewire\Component;
 use App\Models\Account;
 use App\Models\HealthEntry;
 use App\Services\AuditLogger;
+use Livewire\Component;
 
 class PatientRenderer extends Component
 {
     public $patientAccount;
+
     public $healthEntries;
+
 
     public function mount($patient)
     {
@@ -18,12 +20,6 @@ class PatientRenderer extends Component
             ->where('id', $patient)
             ->where('account_type', 'User')
             ->first();
-
-        if (!$patientAccount) {
-            return response()->json([
-                'message' => 'Patient not found.',
-            ], 404);
-        }
 
         $this->patientAccount = $patientAccount;
 
