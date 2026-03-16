@@ -13,6 +13,8 @@ use App\Http\Controllers\Provider\PatientRecordController;
 use App\Http\Controllers\Provider\ProviderDashboardController;
 use App\Services\CohortFilterBuilder;
 use App\Services\KThresholdService;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminAuditLogController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -74,4 +76,13 @@ Route::middleware('auth:sanctum')->get('/me/summary',
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reporting/trends', [TrendController::class, 'index'])
         ->name('reporting.trends.index');
+});
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
+});
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/admin/audits', [AdminAuditLogController::class, 'index']);
+    Route::get('/admin/audits/export.csv', [AdminAuditLogController::class, 'exportCsv']);
 });

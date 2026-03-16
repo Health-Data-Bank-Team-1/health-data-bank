@@ -9,6 +9,7 @@ use App\Livewire\FormRenderer;
 use App\Http\Controllers\FormTemplateController;
 use App\Livewire\Admin\FormTemplatesIndex;
 use App\Livewire\HealthSummary;
+use App\Livewire\Admin\AuditLogViewer;
 
 Route::get('/', function () {
     return view('welcome');
@@ -40,6 +41,10 @@ Route::middleware([
     Route::get('/admin/forms', FormTemplatesIndex::class)
         ->middleware('role:admin')
         ->name('admin.forms.index');
+
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/admin/audits', AuditLogViewer::class)->name('admin.audits.index');
+    });
 
     Route::prefix('form-templates')->group(function () {
         Route::post('/', [FormTemplateController::class, 'store'])->name('form-templates.store');
