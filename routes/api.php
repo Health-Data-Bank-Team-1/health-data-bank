@@ -8,6 +8,9 @@ use App\Http\Controllers\Reporting\ResearcherAggregateController;
 use App\Http\Controllers\Admin\FormTemplateApprovalController;
 use App\Http\Controllers\Admin\FormTemplateVersionController;
 use App\Http\Controllers\Admin\AdminFormTemplateController;
+use App\Http\Controllers\Provider\PatientSearchController;
+use App\Http\Controllers\Provider\PatientRecordController;
+use App\Http\Controllers\Provider\ProviderDashboardController;
 use App\Services\CohortFilterBuilder;
 use App\Services\KThresholdService;
 use App\Http\Controllers\Api\Reports\DashboardReportController;
@@ -68,6 +71,20 @@ Route::middleware(['auth:sanctum', 'role:researcher'])->group(function () {
     // Export aggregated report as CSV
     Route::post('/researcher/reports/aggregated/export.csv', [ResearcherReportController::class, 'exportAggregatedCsv']);
 });
+Route::middleware(['auth:sanctum', 'role:provider'])->get(
+    '/provider/patients/search',
+    [PatientSearchController::class, 'index']
+);
+
+Route::middleware(['auth:sanctum', 'role:provider'])->get(
+    '/provider/patients/{patient}/record',
+    [PatientRecordController::class, 'show']
+);
+
+Route::middleware(['auth:sanctum', 'role:provider'])->get(
+    '/provider/dashboard',
+    [ProviderDashboardController::class, 'index']
+);
 
 Route::middleware('auth:sanctum')->get('/me/summary',
     [\App\Http\Controllers\Api\MeSummaryController::class, 'show']);
