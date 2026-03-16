@@ -7,6 +7,8 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\Account;
 use Illuminate\Support\Str;
+use App\Models\HealthEntry;
+use Carbon\Carbon;
 
 class ProviderWithPatients extends Seeder
 {
@@ -41,6 +43,18 @@ class ProviderWithPatients extends Seeder
 
             $user = User::factory()->create([
                 'account_id' => $account->id,
+            ]);
+
+            HealthEntry::factory()->create([
+                'account_id' => $account->id,
+                'timestamp' => Carbon::parse('2026-02-01 10:00:00'),
+                'encrypted_values' => ['weight' => 170, 'meals_per_day' => 2],
+            ]);
+
+            HealthEntry::factory()->create([
+                'account_id' => $account->id,
+                'timestamp' => Carbon::parse('2026-02-02 10:00:00'),
+                'encrypted_values' => ['weight' => 174, 'meals_per_day' => 3],
             ]);
 
             $provider_account->patients()->attach($account->id);
