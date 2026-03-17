@@ -73,6 +73,6 @@ class PersonalComparison extends Component
     public function render()
     {
         return view('livewire.personal-comparison')
-            ->layout('layouts.app');
+            ->layout('layouts.user');
     }
 }

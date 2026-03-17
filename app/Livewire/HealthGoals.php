@@ -182,6 +182,6 @@ class HealthGoals extends Component
     public function render()
     {
         return view('livewire.health-goals')
-            ->layout('layouts.app');
+            ->layout('layouts.user');
     }
 }
