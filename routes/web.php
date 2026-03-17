@@ -8,6 +8,7 @@ use App\Livewire\UserTodo;
 use App\Livewire\FormIndex;
 use App\Livewire\FormRenderer;
 use App\Http\Controllers\FormTemplateController;
+use App\Http\Controllers\Provider\ProviderFeedbackController;
 use App\Livewire\Admin\FormTemplatesIndex;
 use App\Livewire\HealthSummary;
 use App\Livewire\Dashboards\UserDashboard;
@@ -106,10 +107,13 @@ Route::middleware([
     Route::get('/admin/report-review', ReportReview::class)
         ->middleware('role:admin')
         ->name('admin.report-review');
-    //admin UI page (Livewire)
     Route::get('/admin/forms', FormTemplatesIndex::class)
         ->middleware('role:admin')
         ->name('admin.forms.index');
+
+    Route::get('/provider/patients/{patient}/feedback', [ProviderFeedbackController::class, 'create'])
+        ->middleware('role:provider')
+        ->name('provider.feedback');
 
     Route::prefix('form-templates')->group(function () {
         Route::post('/', [FormTemplateController::class, 'store'])->name('form-templates.store');

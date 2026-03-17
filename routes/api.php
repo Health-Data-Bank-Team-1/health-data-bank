@@ -11,6 +11,8 @@ use App\Http\Controllers\Admin\AdminFormTemplateController;
 use App\Http\Controllers\Provider\PatientSearchController;
 use App\Http\Controllers\Provider\PatientRecordController;
 use App\Http\Controllers\Provider\ProviderDashboardController;
+use App\Http\Controllers\Provider\ProviderFeedbackController;
+
 use App\Services\CohortFilterBuilder;
 use App\Services\KThresholdService;
 
@@ -23,25 +25,17 @@ Route::apiResource('patients', PatientController::class);
 Route::middleware(['auth:sanctum', 'role:admin'])
     ->prefix('admin/forms')
     ->group(function () {
-
         Route::get('/', [AdminFormTemplateController::class, 'index']);
-
         Route::post('{template}/approve', [FormTemplateApprovalController::class, 'approve']);
         Route::post('{template}/reject', [FormTemplateApprovalController::class, 'reject']);
         Route::post('{template}/submit', [FormTemplateApprovalController::class, 'submit']);
     });
 
-/*
- * Form Template Versioning
- */
-
-//get version history
 Route::middleware('auth:sanctum')->get(
     'form-templates/{template}/versions',
     [FormTemplateVersionController::class, 'index']
 );
 
-//rollback to a version (admin only)
 Route::middleware(['auth:sanctum', 'role:admin'])->post(
     'form-templates/{template}/rollback/{version}',
     [FormTemplateVersionController::class, 'rollback']
@@ -67,9 +61,13 @@ Route::middleware(['auth:sanctum', 'role:provider'])->get(
     [ProviderDashboardController::class, 'index']
 );
 
+Route::middleware(['auth:sanctum', 'role:provider'])->post(
+    '/provider/feedback',
+    [ProviderFeedbackController::class, 'store']
+);
+
 Route::middleware('auth:sanctum')->get('/me/summary',
     [\App\Http\Controllers\Api\MeSummaryController::class, 'show']);
-
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reporting/trends', [TrendController::class, 'index'])

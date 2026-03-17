@@ -68,4 +68,14 @@ class Account extends Model
     {
         return $this->hasMany(AuditLog::class, 'actor_id');
     }
+
+    public function receivedProviderFeedback()
+    {
+        return $this->hasMany(ProviderFeedback::class, 'patient_account_id');
+    }
+
+    public function submittedProviderFeedback()
+    {
+        return $this->hasMany(ProviderFeedback::class, 'provider_account_id');
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Provider;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\HealthEntry;
+use App\Models\ProviderFeedback;
 use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 
@@ -28,6 +29,25 @@ class PatientRecordController extends Controller
             ->orderByDesc('timestamp')
             ->get(['id', 'timestamp', 'encrypted_values']);
 
+        $feedback = ProviderFeedback::query()
+            ->with(['provider:id,name'])
+            ->where('patient_account_id', $patientAccount->id)
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function (ProviderFeedback $item) {
+                return [
+                    'id' => $item->id,
+                    'feedback' => $item->feedback,
+                    'recommended_actions' => $item->recommended_actions,
+                    'created_at' => $item->created_at,
+                    'updated_at' => $item->updated_at,
+                    'provider' => [
+                        'id' => $item->provider?->id,
+                        'name' => $item->provider?->name,
+                    ],
+                ];
+            });
+
         AuditLogger::log(
             'provider_patient_record_view',
             ['provider', 'resource:patient_record'],
@@ -47,6 +67,7 @@ class PatientRecordController extends Controller
                 'account_type' => $patientAccount->account_type,
             ],
             'health_entries' => $healthEntries,
+            'feedback' => $feedback,
         ]);
     }
 }
