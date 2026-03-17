@@ -13,6 +13,18 @@ use App\Http\Controllers\Provider\PatientRecordController;
 use App\Http\Controllers\Provider\ProviderDashboardController;
 use App\Services\CohortFilterBuilder;
 use App\Services\KThresholdService;
+use App\Http\Controllers\Api\Reports\DashboardReportController;
+use App\Http\Controllers\Researcher\ResearcherCohortController;
+use App\Http\Controllers\Researcher\ResearcherReportController;
+use App\Http\Controllers\Api\HealthGoalController;
+use App\Http\Controllers\Api\PersonalComparisonController;
+use App\Http\Controllers\Admin\ReportModerationController;
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends']);
+    Route::get('/reports/dashboard/trends/export.csv', [DashboardReportController::class, 'exportTrendsCsv']);
+});
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -52,6 +64,15 @@ Route::middleware(['auth:sanctum', 'role:researcher'])->get(
     [ResearcherAggregateController::class, 'index']
 );
 
+Route::middleware(['auth:sanctum', 'role:researcher'])->group(function () {
+    // Create a cohort
+    Route::post('/researcher/cohorts', [ResearcherCohortController::class, 'store']);
+    // Generate aggregated report
+    Route::post('/researcher/reports/aggregated', [ResearcherReportController::class, 'aggregated']);
+    // Export aggregated report as CSV
+    Route::post('/researcher/reports/aggregated/export.csv', [ResearcherReportController::class, 'exportAggregatedCsv']);
+});
+
 Route::middleware(['auth:sanctum', 'role:provider'])->get(
     '/provider/patients/search',
     [PatientSearchController::class, 'index']
@@ -75,3 +96,26 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reporting/trends', [TrendController::class, 'index'])
         ->name('reporting.trends.index');
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/goals', [HealthGoalController::class, 'index']);
+    Route::post('/goals', [HealthGoalController::class, 'store']);
+    Route::get('/goals/{goalId}', [HealthGoalController::class, 'show']);
+    Route::put('/goals/{goalId}', [HealthGoalController::class, 'update']);
+});
+
+Route::middleware('auth:sanctum')->get(
+    '/me/comparison',
+    [PersonalComparisonController::class, 'show']
+);
+
+// Report Moderation Routes - Just auth:sanctum
+Route::middleware(['auth:sanctum'])
+    ->prefix('admin/reports')
+    ->group(function () {
+        Route::post('{report}/archive', [ReportModerationController::class, 'archive']);
+        Route::post('{report}/delete', [ReportModerationController::class, 'delete']);
+        Route::post('{reportId}/restore', [ReportModerationController::class, 'restore']);
+        Route::post('{reportId}/permanent-delete', [ReportModerationController::class, 'permanentDelete']);
+        Route::get('{reportId}/moderation-status', [ReportModerationController::class, 'status']);
+    });
