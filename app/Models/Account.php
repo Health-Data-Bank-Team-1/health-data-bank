@@ -90,6 +90,7 @@ class Account extends Model
             'provider_id'
         );
     }
+
     public function reminderSettings()
     {
         return $this->hasMany(ReminderSetting::class);
@@ -98,5 +99,15 @@ class Account extends Model
     public function notifications()
     {
         return $this->hasMany(Notification::class);
+    }
+
+    public function receivedProviderFeedback()
+    {
+        return $this->hasMany(ProviderFeedback::class, 'patient_account_id');
+    }
+
+    public function submittedProviderFeedback()
+    {
+        return $this->hasMany(ProviderFeedback::class, 'provider_account_id');
     }
 }
