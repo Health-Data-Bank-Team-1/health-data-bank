@@ -13,31 +13,22 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->renderable(function (Throwable $e, $request) {
-
             if ($e instanceof AuthorizationException || $e instanceof AccessDeniedHttpException) {
-
-                $actor = $request->user();
-
-                if ($actor) {
-                    AuditLogger::log(
-                        'access_denied',
-                        ['authz', 'outcome:blocked'],
-                        $actor,
-                        [],
-                        [
-                            'method' => $request->method(),
-                            'route'  => optional($request->route())->getName() ?? 'unknown',
-                            'path'   => $request->path(),
-                            'reason' => class_basename($e),
-                            'ip_address' => $request->ip(),
-                            'user_agent' => $request->userAgent(),
-                        ]
-                    );
-                }
+                AuditLogger::log(
+                    'access_denied',
+                    ['auth', 'outcome:blocked'],
+                    null,
+                    [],
+                    [
+                        'method' => $request->method(),
+                        'route'  => optional($request->route())->getName() ?? 'unknown',
+                        'path'   => $request->path(),
+                        'reason' => class_basename($e),
+                    ]
+                );
             }
 
             return null;
         });
     }
 }
-

@@ -9,7 +9,11 @@ use App\Livewire\FormIndex;
 use App\Livewire\FormRenderer;
 use App\Http\Controllers\FormTemplateController;
 use App\Livewire\Admin\FormTemplatesIndex;
+use App\Http\Controllers\Api\Reports\DashboardReportController;
 use App\Livewire\HealthSummary;
+use App\Livewire\HealthGoals;
+use App\Livewire\PersonalComparison;
+use App\Livewire\PersonalComparisonChart;
 use App\Livewire\Dashboards\UserDashboard;
 use App\Livewire\Profiles\UserProfile;
 use App\Livewire\Dashboards\ResearcherDashboard;
@@ -115,4 +119,21 @@ Route::middleware([
         Route::post('/', [FormTemplateController::class, 'store'])->name('form-templates.store');
         Route::put('{template}', [FormTemplateController::class, 'update'])->name('form-templates.update');
     });
+
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends'])
+            ->name('dashboard.trends');
+
+        Route::get('/reports/dashboard/trends/export.csv', [DashboardReportController::class, 'exportTrendsCsv'])
+            ->name('dashboard.trends.export');
+    });
+
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/health-goals', HealthGoals::class)->name('health-goals');
+    });
+
+    Route::middleware(['auth'])->get('/comparison', PersonalComparison::class)
+        ->name('comparison');
+    Route::middleware(['auth'])->get('/comparison/chart', PersonalComparisonChart::class)
+        ->name('comparison.chart');
 });
