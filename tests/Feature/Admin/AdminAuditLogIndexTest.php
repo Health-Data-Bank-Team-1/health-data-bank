@@ -57,7 +57,7 @@ class AdminAuditLogIndexTest extends TestCase
         ]);
 
         $this->actingAs($admin, 'sanctum')
-            ->getJson('/api/admin/audits')
+            ->getJson('/api/admin/audit-log')
             ->assertOk()
             ->assertJsonStructure([
                 'current_page',
@@ -126,7 +126,7 @@ class AdminAuditLogIndexTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin, 'sanctum')
-            ->getJson('/api/admin/audits?event=login_failure')
+            ->getJson('/api/admin/audit-log?event=login_failure')
             ->assertOk();
 
         $this->assertCount(1, $response->json('data'));
@@ -178,7 +178,7 @@ class AdminAuditLogIndexTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin, 'sanctum')
-            ->getJson('/api/admin/audits?tag=reporting')
+            ->getJson('/api/admin/audit-log?tag=reporting')
             ->assertOk();
 
         $this->assertCount(1, $response->json('data'));
@@ -197,7 +197,7 @@ class AdminAuditLogIndexTest extends TestCase
         ]);
 
         $this->actingAs($user, 'sanctum')
-            ->getJson('/api/admin/audits')
+            ->getJson('/api/admin/audit-log')
             ->assertForbidden();
     }
 }

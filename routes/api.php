@@ -97,14 +97,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->name('reporting.trends.index');
 });
 
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
-});
-
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/admin/audits', [AdminAuditLogController::class, 'index']);
-    Route::get('/admin/audits/export.csv', [AdminAuditLogController::class, 'exportCsv']);
-});
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/goals', [HealthGoalController::class, 'index']);
     Route::post('/goals', [HealthGoalController::class, 'store']);
@@ -116,3 +108,13 @@ Route::middleware('auth:sanctum')->get(
     '/me/comparison',
     [PersonalComparisonController::class, 'show']
 );
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
+});
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/admin/audit-log', [AdminAuditLogController::class, 'index'])
+        ->name('admin.audit-log.index');
+
+});

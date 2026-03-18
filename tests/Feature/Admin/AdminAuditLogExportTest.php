@@ -35,17 +35,19 @@ class AdminAuditLogExportTest extends TestCase
                 'url' => '/login',
                 'ip_address' => '127.0.0.1',
                 'user_agent' => 'PHPUnit',
-                'tags' => "['auth','outcome:success']",
+                'tags' => '["auth","outcome:success"]',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ]);
 
-        $response = $this->actingAs($admin, 'sanctum')
-            ->get('/api/admin/audits/export.csv');
+        $response = $this->actingAs($admin)
+            ->get(route('admin.audit-log.export'));
 
         $response->assertOk();
-        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('content-type');
+        $this->assertStringContainsString('text/csv', $response->headers->get('content-type'));
+        $this->assertStringContainsString('audit_logs.csv', $response->headers->get('content-disposition'));
 
         $content = $response->streamedContent();
 
@@ -72,11 +74,11 @@ class AdminAuditLogExportTest extends TestCase
                 'auditable_type' => null,
                 'auditable_id' => null,
                 'old_values' => null,
-                'new_values' => "{'reason':'invalid_credentials'}",
+                'new_values' => '{"reason":"invalid_credentials"}',
                 'url' => '/login',
                 'ip_address' => '127.0.0.1',
                 'user_agent' => 'PHPUnit',
-                'tags' => "['auth','outcome:failure']",
+                'tags' => '["auth","outcome:failure"]',
                 'created_at' => now()->subMinute(),
                 'updated_at' => now()->subMinute(),
             ],
@@ -91,14 +93,14 @@ class AdminAuditLogExportTest extends TestCase
                 'url' => '/logout',
                 'ip_address' => '127.0.0.1',
                 'user_agent' => 'PHPUnit',
-                'tags' => "['auth','outcome:success']",
+                'tags' => '["auth","outcome:success"]',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ]);
 
-        $response = $this->actingAs($admin, 'sanctum')
-            ->get('/api/admin/audits/export.csv?event=logout');
+        $response = $this->actingAs($admin)
+            ->get(route('admin.audit-log.export', ['event' => 'logout']));
 
         $response->assertOk();
 
@@ -119,8 +121,47 @@ class AdminAuditLogExportTest extends TestCase
             'account_id' => $account->id,
         ]);
 
-        $this->actingAs($user, 'sanctum')
-            ->get('/api/admin/audits/export.csv')
+        $this->actingAs($user)
+            ->get(route('admin.audit-log.export'))
             ->assertForbidden();
+    }
+
+    public function test_export_writes_audit_log_exported_event(): void
+    {
+        $account = Account::factory()->create([
+            'account_type' => 'Admin',
+            'status' => 'ACTIVE',
+        ]);
+
+        $admin = User::factory()->create([
+            'account_id' => $account->id,
+        ]);
+
+        DB::table('audits')->insert([
+            [
+                'user_type' => User::class,
+                'user_id' => $account->id,
+                'event' => 'login_success',
+                'auditable_type' => null,
+                'auditable_id' => null,
+                'old_values' => null,
+                'new_values' => null,
+                'url' => '/login',
+                'ip_address' => '127.0.0.1',
+                'user_agent' => 'PHPUnit',
+                'tags' => '["auth","outcome:success"]',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.audit-log.export'))
+            ->assertOk();
+
+        $this->assertDatabaseHas('audits', [
+            'event' => 'audit_log_exported',
+            'user_id' => $account->id,
+        ]);
     }
 }
