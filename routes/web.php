@@ -28,6 +28,7 @@ use App\Livewire\Profiles\AdminProfile;
 use App\Livewire\Admin\AuditLog;
 use App\Livewire\Admin\DatabaseManagement;
 use App\Livewire\Admin\ReportReview;
+use App\Livewire\Admin\AuditLogViewer;
 use App\Livewire\Dashboards\ProviderDashboard;
 use App\Livewire\Profiles\ProviderProfile;
 use App\Livewire\Provider\ProviderPatients;
@@ -56,7 +57,9 @@ Route::middleware([
         } elseif (Auth::user()->hasRole('provider')) {
             return redirect('/provider/dashboard');
         }
-    });
+        return redirect('/');
+    })->name('dashboard');
+
     Route::get('/user/profile', UserProfile::class)
         ->middleware('role:user')
         ->name('user-profile');
@@ -123,6 +126,10 @@ Route::middleware([
     Route::get('/admin/forms', FormTemplatesIndex::class)
         ->middleware('role:admin')
         ->name('admin.forms.index');
+
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/admin/audit-log', AuditLogViewer::class)->name('admin.audit-log.index');
+    });
 
     Route::prefix('form-templates')->group(function () {
         Route::post('/', [FormTemplateController::class, 'store'])->name('form-templates.store');

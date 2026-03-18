@@ -1,1 +1,1 @@
-<div>audit log</div>
+<a href="{{ route('admin.audits.index') }}">Audit Log</a>
