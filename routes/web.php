@@ -28,6 +28,13 @@ use App\Livewire\Profiles\AdminProfile;
 use App\Livewire\Admin\AuditLog;
 use App\Livewire\Admin\DatabaseManagement;
 use App\Livewire\Admin\ReportReview;
+use App\Livewire\Dashboards\ProviderDashboard;
+use App\Livewire\Profiles\ProviderProfile;
+use App\Livewire\Provider\ProviderPatients;
+use App\Livewire\Provider\ProviderReports;
+use App\Livewire\Provider\PatientIndex;
+use App\Livewire\Provider\PatientRenderer;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -46,6 +53,8 @@ Route::middleware([
             return redirect('/researcher/dashboard');
         } elseif (Auth::user()->hasRole('admin')) {
             return redirect('/admin/dashboard');
+        } elseif (Auth::user()->hasRole('provider')) {
+            return redirect('/provider/dashboard');
         }
     });
     Route::get('/user/profile', UserProfile::class)
@@ -120,6 +129,24 @@ Route::middleware([
         Route::put('{template}', [FormTemplateController::class, 'update'])->name('form-templates.update');
     });
 
+    Route::get('/provider/profile', ProviderProfile::class)
+        ->middleware('role:provider')
+        ->name('provider-profile');
+    Route::get('/provider/dashboard', ProviderDashboard::class)
+        ->middleware('role:provider')
+        ->name('dashboards.provider');
+    Route::get('/provider/patients', ProviderPatients::class)
+        ->middleware('role:provider')
+        ->name('provider.patients');
+    Route::get('/provider/reports', ProviderReports::class)
+        ->middleware('role:provider')
+        ->name('provider.reports');
+    Route::get('/provider/patient-index', PatientIndex::class)
+        ->middleware('role:provider')
+        ->name('provider.patient-index');
+    Route::get('/provider/patients/{patient}', PatientRenderer::class)
+        ->middleware('role:provider')
+        ->name('provider.patients.show');
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends'])
             ->name('dashboard.trends');

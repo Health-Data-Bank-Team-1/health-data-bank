@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Role;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,6 +20,7 @@ class DatabaseSeeder extends Seeder
         $this->call(FormTemplateSeeder::class);
         $this->call(UserHealthEntriesSeeder::class);
         $this->call(ReportSeeder::class);
+        $this->call(ProviderWithPatients::class);
 
     }
 }
