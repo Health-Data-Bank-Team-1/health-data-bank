@@ -2,22 +2,26 @@
 
 namespace Tests\Feature\Admin;
 
-use Tests\TestCase;
-use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
+use Spatie\Permission\PermissionRegistrar;
 use App\Models\FormTemplate;
 use App\Models\Role;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\User;
+use Tests\TestCase;
 
 class FormTemplateApprovalTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Helper: authenticate as an admin user
-     */
     private function actingAsAdmin(): User
     {
-        Role::firstOrCreate(['name' => 'admin']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        Role::firstOrCreate(
+            ['name' => 'admin', 'guard_name' => 'web'],
+            ['id' => (string) Str::uuid()]
+        );
 
         $admin = User::factory()->create();
         $admin->assignRole('admin');

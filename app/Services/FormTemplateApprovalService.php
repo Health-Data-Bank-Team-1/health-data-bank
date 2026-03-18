@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\FormTemplate;
 use App\Models\FormTemplateVersion;
 use App\Models\User;
-use App\Services\AuditLogger;
 use App\Exceptions\WorkflowException;
 
 class FormTemplateApprovalService
@@ -24,15 +23,18 @@ class FormTemplateApprovalService
         $old = ['approval_status' => $template->approval_status];
 
         $template->update([
-            'approval_status' => 'pending'
+            'approval_status' => 'pending',
         ]);
 
         AuditLogger::log(
-            'form_template_submitted',
-            ['form', 'workflow'],
-            $template,
+            'form_template_submitted_for_approval',
+            ['forms', 'resource:template', 'workflow:approval', 'outcome:success'],
+            null,
             $old,
-            ['approval_status' => 'pending']
+            [
+                'template_id' => (string) $template->id,
+                'approval_status' => 'pending',
+            ]
         );
     }
 
@@ -53,18 +55,20 @@ class FormTemplateApprovalService
             'approval_status' => 'approved',
             'approved_by' => $admin->id,
             'approved_at' => now(),
-            'rejection_reason' => null
+            'rejection_reason' => null,
         ]);
 
         AuditLogger::log(
             'form_template_approved',
-            ['form', 'workflow', 'outcome:approved'],
-            $template,
+            ['forms', 'resource:template', 'workflow:approval', 'outcome:success'],
+            null,
             $old,
-            ['approval_status' => 'approved']
+            [
+                'template_id' => (string) $template->id,
+                'approval_status' => 'approved',
+            ]
         );
 
-        // Create immutable version snapshot
         $this->createVersionSnapshot($template, $admin->id);
     }
 
@@ -85,15 +89,19 @@ class FormTemplateApprovalService
             'approval_status' => 'rejected',
             'approved_by' => $admin->id,
             'approved_at' => now(),
-            'rejection_reason' => $reason
+            'rejection_reason' => $reason,
         ]);
 
         AuditLogger::log(
             'form_template_rejected',
-            ['form', 'workflow', 'outcome:rejected'],
-            $template,
+            ['forms', 'resource:template', 'workflow:approval', 'outcome:success'],
+            null,
             $old,
-            ['approval_status' => 'rejected']
+            [
+                'template_id' => (string) $template->id,
+                'approval_status' => 'rejected',
+                'has_reason' => true,
+            ]
         );
     }
 
@@ -107,10 +115,8 @@ class FormTemplateApprovalService
         FormTemplateVersion::create([
             'form_template_id' => $template->id,
             'version' => $nextVersion + 1,
-
             'title' => $template->title,
             'schema' => $template->schema,
-
             'created_by' => $adminId,
         ]);
     }
