@@ -90,6 +90,6 @@ class AuditLogViewer extends Component
             'to' => $this->to,
         ]);
 
-        return redirect("/api/admin/audits/export.csv?$params");
+        return redirect("/api/admin/audit-log/export.csv?$params");
     }
 }

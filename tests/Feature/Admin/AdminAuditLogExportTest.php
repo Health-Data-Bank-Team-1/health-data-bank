@@ -42,7 +42,7 @@ class AdminAuditLogExportTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin, 'sanctum')
-            ->get('/api/admin/audits/export.csv');
+            ->get('/api/admin/audit-log/export.csv');
 
         $response->assertOk();
         $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
@@ -98,7 +98,7 @@ class AdminAuditLogExportTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin, 'sanctum')
-            ->get('/api/admin/audits/export.csv?event=logout');
+            ->get('/api/admin/audit-log/export.csv?event=logout');
 
         $response->assertOk();
 
@@ -120,7 +120,7 @@ class AdminAuditLogExportTest extends TestCase
         ]);
 
         $this->actingAs($user, 'sanctum')
-            ->get('/api/admin/audits/export.csv')
+            ->get('/api/admin/audit-log/export.csv')
             ->assertForbidden();
     }
 }

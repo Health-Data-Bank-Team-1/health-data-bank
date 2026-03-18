@@ -57,7 +57,9 @@ Route::middleware([
         } elseif (Auth::user()->hasRole('provider')) {
             return redirect('/provider/dashboard');
         }
-    });
+        return redirect('/');
+    })->name('dashboard');
+
     Route::get('/user/profile', UserProfile::class)
         ->middleware('role:user')
         ->name('user-profile');
@@ -126,7 +128,7 @@ Route::middleware([
         ->name('admin.forms.index');
 
     Route::middleware(['auth', 'verified'])->group(function () {
-        Route::get('/admin/audits', AuditLogViewer::class)->name('admin.audits.index');
+        Route::get('/admin/audit-log', AuditLogViewer::class)->name('admin.audit-log.index');
     });
 
     Route::prefix('form-templates')->group(function () {
