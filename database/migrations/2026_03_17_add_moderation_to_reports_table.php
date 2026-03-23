@@ -6,58 +6,67 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('reports', function (Blueprint $table) {
-            // Soft delete for archival
-            if (!Schema::hasColumn('reports', 'deleted_at')) {
-                $table->softDeletes()->nullable();
-            }
-            
-            // Moderation status: pending, approved, archived, deleted
-            if (!Schema::hasColumn('reports', 'moderation_status')) {
-                $table->string('moderation_status', 50)->default('approved');
-            }
-            
-            // Reason for deletion/archival
-            if (!Schema::hasColumn('reports', 'moderation_reason')) {
-                $table->text('moderation_reason')->nullable();
-            }
-            
-            // Who performed the moderation (UUID)
-            if (!Schema::hasColumn('reports', 'moderated_by')) {
-                $table->uuid('moderated_by')->nullable();
-            }
-            
-            // When moderation occurred
-            if (!Schema::hasColumn('reports', 'moderated_at')) {
-                $table->timestamp('moderated_at')->nullable();
-            }
+            // Archiving columns
+            $table->boolean('is_archived')->default(false)->after('report_type');
+            $table->text('archive_reason')->nullable()->after('is_archived');
+            $table->uuid('archived_by')->nullable()->after('archive_reason');
+            $table->timestamp('archived_at')->nullable()->after('archived_by');
+
+            // Soft delete columns
+            $table->uuid('deleted_by')->nullable()->after('archived_at');
+            $table->text('deletion_reason')->nullable()->after('deleted_by');
+            $table->timestamp('deleted_at')->nullable()->after('deletion_reason');
+
+            // Restoration columns
+            $table->uuid('restored_by')->nullable()->after('deleted_at');
+            $table->text('restoration_reason')->nullable()->after('restored_by');
+            $table->timestamp('restored_at')->nullable()->after('restoration_reason');
+
+            // Moderation tracking
+            $table->string('moderation_status')->default('pending')->after('restored_at');
+            $table->text('moderation_reason')->nullable()->after('moderation_status');
+            $table->uuid('moderated_by')->nullable()->after('moderation_reason');
+            $table->timestamp('moderated_at')->nullable()->after('moderated_by');
+
+            // Approval tracking
+            $table->boolean('is_approved')->default(false)->after('moderated_at');
+
+            // Foreign keys
+            $table->foreign('archived_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('deleted_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('restored_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('moderated_by')->references('id')->on('users')->onDelete('set null');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('reports', function (Blueprint $table) {
-            $columns = [
+            $table->dropForeign(['archived_by']);
+            $table->dropForeign(['deleted_by']);
+            $table->dropForeign(['restored_by']);
+            $table->dropForeign(['moderated_by']);
+
+            $table->dropColumn([
+                'is_archived',
+                'archive_reason',
+                'archived_by',
+                'archived_at',
+                'deleted_by',
+                'deletion_reason',
                 'deleted_at',
+                'restored_by',
+                'restoration_reason',
+                'restored_at',
                 'moderation_status',
                 'moderation_reason',
                 'moderated_by',
                 'moderated_at',
-            ];
-            
-            foreach ($columns as $column) {
-                if (Schema::hasColumn('reports', $column)) {
-                    $table->dropColumn($column);
-                }
-            }
+                'is_approved',
+            ]);
         });
     }
 };

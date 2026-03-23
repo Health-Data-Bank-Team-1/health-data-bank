@@ -3,32 +3,45 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Report extends Model
 {
     use HasUuid, HasFactory, SoftDeletes;
 
-    // Disable timestamps since the reports table doesn't have created_at/updated_at
     public $timestamps = false;
 
     protected $fillable = [
         'researcher_id',
         'report_type',
+        'is_archived',
+        'archive_reason',
+        'archived_by',
+        'archived_at',
+        'deleted_by',
+        'deletion_reason',
+        'deleted_at',
+        'restored_by',
+        'restoration_reason',
+        'restored_at',
         'moderation_status',
         'moderation_reason',
         'moderated_by',
         'moderated_at',
+        'is_approved',
     ];
 
     protected $casts = [
-        'moderated_at' => 'datetime',
+        'is_archived' => 'boolean',
+        'is_approved' => 'boolean',
+        'archived_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'restored_at' => 'datetime',
+        'moderated_at' => 'datetime',
     ];
 
-    // Relationships
     public function researcher()
     {
         return $this->belongsTo(Account::class, 'researcher_id');
@@ -39,37 +52,23 @@ class Report extends Model
         return $this->hasMany(AggregatedData::class);
     }
 
-    public function moderator()
+    public function archivedBy()
+    {
+        return $this->belongsTo(User::class, 'archived_by');
+    }
+
+    public function deletedBy()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    public function restoredBy()
+    {
+        return $this->belongsTo(User::class, 'restored_by');
+    }
+
+    public function moderatedBy()
     {
         return $this->belongsTo(User::class, 'moderated_by');
-    }
-
-    // Scopes
-    public function scopeActive($query)
-    {
-        return $query->where('moderation_status', 'approved')
-                     ->whereNull('deleted_at');
-    }
-
-    public function scopeArchived($query)
-    {
-        return $query->where('moderation_status', 'archived')
-                     ->orWhereNotNull('deleted_at');
-    }
-
-    public function scopePendingModeration($query)
-    {
-        return $query->where('moderation_status', 'pending');
-    }
-
-    // Accessors
-    public function isArchived()
-    {
-        return $this->moderation_status === 'archived' || $this->deleted_at !== null;
-    }
-
-    public function isApproved()
-    {
-        return $this->moderation_status === 'approved' && $this->deleted_at === null;
     }
 }

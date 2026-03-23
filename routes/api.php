@@ -19,6 +19,7 @@ use App\Http\Controllers\Researcher\ResearcherReportController;
 use App\Http\Controllers\Api\HealthGoalController;
 use App\Http\Controllers\Api\PersonalComparisonController;
 use App\Http\Controllers\Admin\ReportModerationController;
+use App\Models\Report;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends']);
@@ -109,13 +110,18 @@ Route::middleware('auth:sanctum')->get(
     [PersonalComparisonController::class, 'show']
 );
 
-// Report Moderation Routes - Just auth:sanctum
-Route::middleware(['auth:sanctum'])
+// Report Moderation Routes - Admin only
+Route::middleware(['auth:sanctum', 'role:admin'])
     ->prefix('admin/reports')
     ->group(function () {
+        // Bind report model with withTrashed to include soft-deleted reports
+        Route::bind('report', function ($value) {
+            return Report::withTrashed()->findOrFail($value);
+        });
+
         Route::post('{report}/archive', [ReportModerationController::class, 'archive']);
         Route::post('{report}/delete', [ReportModerationController::class, 'delete']);
-        Route::post('{reportId}/restore', [ReportModerationController::class, 'restore']);
-        Route::post('{reportId}/permanent-delete', [ReportModerationController::class, 'permanentDelete']);
-        Route::get('{reportId}/moderation-status', [ReportModerationController::class, 'status']);
+        Route::post('{report}/restore', [ReportModerationController::class, 'restore']);
+        Route::post('{report}/permanent-delete', [ReportModerationController::class, 'permanentDelete']);
+        Route::get('{report}/moderation-status', [ReportModerationController::class, 'status']);
     });
