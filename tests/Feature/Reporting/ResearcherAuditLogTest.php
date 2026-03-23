@@ -116,7 +116,7 @@ class ResearcherAuditLogTest extends TestCase
         ])->assertOk();
 
         $this->assertDatabaseHas('audits', [
-            'event' => 'aggregated_report_viewed',
+            'event' => 'researcher_aggregated_report_viewed',
         ]);
     }
 
@@ -175,7 +175,7 @@ class ResearcherAuditLogTest extends TestCase
         ])->assertOk();
 
         $this->assertDatabaseHas('audits', [
-            'event' => 'aggregated_report_exported',
+            'event' => 'researcher_aggregated_report_exported',
         ]);
     }
 }

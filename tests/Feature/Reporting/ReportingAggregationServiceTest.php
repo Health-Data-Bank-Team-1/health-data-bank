@@ -109,4 +109,48 @@ class ReportingAggregationServiceTest extends TestCase
         $this->assertEquals('90', $out['hr']['latest']);
         $this->assertEquals('2026-02-01T12:00:00+00:00', $out['hr']['latest_at']);
     }
+
+    public function test_it_respects_only_keys_filter(): void
+    {
+        $account = Account::factory()->create([
+            'account_type' => 'User',
+            'status' => 'ACTIVE',
+        ]);
+
+        HealthEntry::factory()->create([
+            'account_id' => $account->id,
+            'timestamp' => Carbon::parse('2026-02-01 10:00:00'),
+            'encrypted_values' => [
+                'hr' => 70,
+                'bp' => 120,
+                'weight' => 170,
+            ],
+        ]);
+
+        HealthEntry::factory()->create([
+            'account_id' => $account->id,
+            'timestamp' => Carbon::parse('2026-02-02 10:00:00'),
+            'encrypted_values' => [
+                'hr' => 90,
+                'bp' => 130,
+                'weight' => 174,
+            ],
+        ]);
+
+        $svc = app(ReportingAggregationService::class);
+
+        $out = $svc->aggregateForAccount(
+            $account->id,
+            Carbon::parse('2026-02-01 00:00:00'),
+            Carbon::parse('2026-02-03 00:00:00'),
+            ['hr']
+        );
+
+        $this->assertArrayHasKey('hr', $out);
+        $this->assertArrayNotHasKey('bp', $out);
+        $this->assertArrayNotHasKey('weight', $out);
+
+        $this->assertEquals(2, $out['hr']['count']);
+        $this->assertEquals(80.0, $out['hr']['avg']);
+    }
 }

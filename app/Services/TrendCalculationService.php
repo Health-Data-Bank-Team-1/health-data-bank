@@ -5,10 +5,13 @@ namespace App\Services;
 use App\Models\HealthEntry;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
-use Illuminate\Support\Arr;
 
 class TrendCalculationService
 {
+    public function __construct(
+        private readonly ReportingAggregationService $aggregation
+    ) {}
+
     /**
      * Build a bucketed time-series for one metric key.
      *
@@ -35,7 +38,6 @@ class TrendCalculationService
         CarbonInterface $to,
         string $bucket = 'day'
     ): array {
-        //normalize bucket
         $bucket = strtolower($bucket);
 
         $entries = HealthEntry::query()
@@ -44,7 +46,7 @@ class TrendCalculationService
             ->orderBy('timestamp')
             ->get(['timestamp', 'encrypted_values']);
 
-        //bucketStartIso => array of points [ts => Carbon, value => mixed]
+        //bucketStartIso => array of points [ts => CarbonImmutable, value => mixed]
         $buckets = [];
 
         foreach ($entries as $entry) {
@@ -74,29 +76,15 @@ class TrendCalculationService
         ksort($buckets);
 
         $points = [];
+
         foreach ($buckets as $bucketStartIso => $bucketPoints) {
-            //ensure sorted by timestamp
             usort($bucketPoints, fn ($a, $b) => $a['ts'] <=> $b['ts']);
 
-            $allValues = array_map(fn ($p) => $p['value'], $bucketPoints);
-
-            // numeric-only aggregates
-            $numeric = array_values(array_filter(
-                $allValues,
-                fn ($v) => is_int($v) || is_float($v) || (is_string($v) && is_numeric($v))
-            ));
-            $numeric = array_map('floatval', $numeric);
-
-            $latestPoint = end($bucketPoints) ?: null;
+            $stats = $this->aggregation->aggregatePointSeries($bucketPoints);
 
             $points[] = [
                 'bucket_start' => $bucketStartIso,
-                'count' => count($numeric),
-                'min' => $numeric ? min($numeric) : null,
-                'max' => $numeric ? max($numeric) : null,
-                'avg' => $numeric ? (array_sum($numeric) / count($numeric)) : null,
-                'latest' => $latestPoint['value'] ?? null,
-                'latest_at' => isset($latestPoint['ts']) ? $latestPoint['ts']->toIso8601String() : null,
+                ...$stats,
             ];
         }
 
