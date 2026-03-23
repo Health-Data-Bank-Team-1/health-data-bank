@@ -191,4 +191,58 @@ class DashboardReportControllerTest extends TestCase
         $content = $response->streamedContent();
         $this->assertStringContainsString('period,value', $content);
     }
+
+    public function test_dashboard_trends_rejects_unsupported_metric(): void
+    {
+        $account = Account::factory()->create([
+            'account_type' => 'User',
+            'status' => 'ACTIVE',
+        ]);
+
+        $user = User::factory()->create([
+            'account_id' => $account->id,
+        ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/reports/dashboard/trends?metric=bad_metric&group_by=day&date_from=2026-03-01&date_to=2026-03-02')
+            ->assertStatus(422);
+    }
+
+    public function test_dashboard_trends_rejects_unsupported_group_by(): void
+    {
+        $account = Account::factory()->create([
+            'account_type' => 'User',
+            'status' => 'ACTIVE',
+        ]);
+
+        $user = User::factory()->create([
+            'account_id' => $account->id,
+        ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/reports/dashboard/trends?metric=submission_count&group_by=year&date_from=2026-03-01&date_to=2026-03-02')
+            ->assertStatus(422);
+    }
+
+    public function test_dashboard_trends_returns_403_when_user_has_no_account_mapping(): void
+    {
+        $user = User::factory()->create([
+            'account_id' => null,
+        ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/reports/dashboard/trends?group_by=day&date_from=2026-03-01&date_to=2026-03-02')
+            ->assertStatus(403);
+    }
+
+    public function test_dashboard_trends_export_returns_403_when_user_has_no_account_mapping(): void
+    {
+        $user = User::factory()->create([
+            'account_id' => null,
+        ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->get('/api/reports/dashboard/trends/export.csv?group_by=day&date_from=2026-03-01&date_to=2026-03-02')
+            ->assertStatus(403);
+    }
 }

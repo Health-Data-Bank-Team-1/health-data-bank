@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\StoreHealthGoalRequest;
 use App\Http\Controllers\UpdateHealthGoalRequest;
 use App\Models\HealthGoal;
+use App\Services\AuditLogger;
 use App\Services\GoalProgressService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,7 +30,17 @@ class HealthGoalController extends Controller
     {
         $accountId = $this->resolveAccountId($request);
 
-        abort_unless($accountId, 403, 'Account mapping failed.');
+        if (!$accountId) {
+            AuditLogger::log(
+                'health_goal_index_blocked',
+                ['goals', 'resource:health_goal', 'outcome:blocked'],
+                null,
+                [],
+                ['reason_code' => 'account_mapping_failed']
+            );
+
+            abort(403, 'Account mapping failed.');
+        }
 
         $goals = HealthGoal::where('account_id', $accountId)
             ->orderByDesc('created_at')
@@ -41,6 +52,14 @@ class HealthGoalController extends Controller
                 ];
             });
 
+        AuditLogger::log(
+            'health_goal_index_viewed',
+            ['goals', 'resource:health_goal', 'outcome:success'],
+            null,
+            [],
+            ['goal_count' => $goals->count()]
+        );
+
         return response()->json($goals);
     }
 
@@ -48,12 +67,35 @@ class HealthGoalController extends Controller
     {
         $accountId = $this->resolveAccountId($request);
 
-        abort_unless($accountId, 403, 'Account mapping failed.');
+        if (!$accountId) {
+            AuditLogger::log(
+                'health_goal_create_blocked',
+                ['goals', 'resource:health_goal', 'outcome:blocked'],
+                null,
+                [],
+                ['reason_code' => 'account_mapping_failed']
+            );
+
+            abort(403, 'Account mapping failed.');
+        }
 
         $goal = HealthGoal::create([
             'account_id' => $accountId,
             ...$request->validated(),
         ]);
+
+        AuditLogger::log(
+            'health_goal_created',
+            ['goals', 'resource:health_goal', 'outcome:success'],
+            $goal,
+            [],
+            [
+                'goal_id' => $goal->id,
+                'metric_key' => $goal->metric_key,
+                'timeframe' => $goal->timeframe,
+                'status' => $goal->status,
+            ]
+        );
 
         return response()->json([
             'goal' => $goal,
@@ -65,10 +107,33 @@ class HealthGoalController extends Controller
     {
         $accountId = $this->resolveAccountId($request);
 
-        abort_unless($accountId, 403, 'Account mapping failed.');
+        if (!$accountId) {
+            AuditLogger::log(
+                'health_goal_view_blocked',
+                ['goals', 'resource:health_goal', 'outcome:blocked'],
+                null,
+                [],
+                ['reason_code' => 'account_mapping_failed']
+            );
+
+            abort(403, 'Account mapping failed.');
+        }
 
         $goal = HealthGoal::where('account_id', $accountId)
             ->findOrFail($goalId);
+
+        AuditLogger::log(
+            'health_goal_viewed',
+            ['goals', 'resource:health_goal', 'outcome:success'],
+            $goal,
+            [],
+            [
+                'goal_id' => $goal->id,
+                'metric_key' => $goal->metric_key,
+                'timeframe' => $goal->timeframe,
+                'status' => $goal->status,
+            ]
+        );
 
         return response()->json([
             'goal' => $goal,
@@ -80,16 +145,41 @@ class HealthGoalController extends Controller
     {
         $accountId = $this->resolveAccountId($request);
 
-        abort_unless($accountId, 403, 'Account mapping failed.');
+        if (!$accountId) {
+            AuditLogger::log(
+                'health_goal_update_blocked',
+                ['goals', 'resource:health_goal', 'outcome:blocked'],
+                null,
+                [],
+                ['reason_code' => 'account_mapping_failed']
+            );
+
+            abort(403, 'Account mapping failed.');
+        }
 
         $goal = HealthGoal::where('account_id', $accountId)
             ->findOrFail($goalId);
 
         $goal->update($request->validated());
 
+        $freshGoal = $goal->fresh();
+
+        AuditLogger::log(
+            'health_goal_updated',
+            ['goals', 'resource:health_goal', 'outcome:success'],
+            $freshGoal,
+            [],
+            [
+                'goal_id' => $freshGoal->id,
+                'metric_key' => $freshGoal->metric_key,
+                'timeframe' => $freshGoal->timeframe,
+                'status' => $freshGoal->status,
+            ]
+        );
+
         return response()->json([
-            'goal' => $goal->fresh(),
-            'progress' => $this->progressService->calculate($goal->fresh()),
+            'goal' => $freshGoal,
+            'progress' => $this->progressService->calculate($freshGoal),
         ]);
     }
 }
