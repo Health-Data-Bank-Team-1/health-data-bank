@@ -138,8 +138,8 @@
                     @if($showForm)
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Health Metric</label>
-                                <select wire:model="metric_key" class="w-full rounded-md border-gray-300">
+                                <label for="metric_key" class="block text-sm font-medium text-gray-700 mb-1">Health Metric</label>
+                                <select id="metric_key" wire:model="metric_key" class="w-full rounded-md border-gray-300">
                                     @foreach($metricOptions as $value => $label)
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
@@ -150,8 +150,8 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Goal Type</label>
-                                <select wire:model="comparison_operator" class="w-full rounded-md border-gray-300">
+                                <label for="comparison_operator" class="block text-sm font-medium text-gray-700 mb-1">Goal Type</label>
+                                <select id="comparison_operator" wire:model="comparison_operator" class="w-full rounded-md border-gray-300">
                                     @foreach($operatorOptions as $value => $label)
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
@@ -162,16 +162,16 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Target</label>
-                                <input type="number" step="any" wire:model="target_value" class="w-full rounded-md border-gray-300">
+                                <label for="target_value" class="block text-sm font-medium text-gray-700 mb-1">Target</label>
+                                <input id="target_value" type="number" step="any" wire:model="target_value" class="w-full rounded-md border-gray-300">
                                 @error('target_value')
                                 <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Timeframe</label>
-                                <select wire:model="timeframe" class="w-full rounded-md border-gray-300">
+                                <label for="timeframe" class="block text-sm font-medium text-gray-700 mb-1">Timeframe</label>
+                                <select id="timeframe" wire:model="timeframe" class="w-full rounded-md border-gray-300">
                                     @foreach($timeframeOptions as $value => $label)
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
@@ -182,24 +182,24 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                                <input type="date" wire:model="start_date" class="w-full rounded-md border-gray-300">
+                                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                <input id="start_date" type="date" wire:model="start_date" class="w-full rounded-md border-gray-300">
                                 @error('start_date')
                                 <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                                <input type="date" wire:model="end_date" class="w-full rounded-md border-gray-300">
+                                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                                <input id="end_date" type="date" wire:model="end_date" class="w-full rounded-md border-gray-300">
                                 @error('end_date')
                                 <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                <select wire:model="status" class="w-full rounded-md border-gray-300">
+                                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <select id="status" wire:model="status" class="w-full rounded-md border-gray-300">
                                     <option value="ACTIVE">Active</option>
                                     <option value="MET">Met</option>
                                     <option value="EXPIRED">Expired</option>

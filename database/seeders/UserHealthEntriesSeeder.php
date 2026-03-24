@@ -7,11 +7,14 @@ use App\Models\HealthEntry;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
 use App\Models\User;
+use Illuminate\Support\Str;
+use App\Models\Role;
 
 class UserHealthEntriesSeeder extends Seeder
 {
     public function run(): void
     {
+
 
         $account = Account::factory()->create([
             'name' => 'Test Summary',
@@ -25,6 +28,13 @@ class UserHealthEntriesSeeder extends Seeder
             'email' => 'summary@example.com',
             'account_id' => $account->id,
         ]);
+
+        Role::firstOrCreate(
+            ['name' => 'user', 'guard_name' => 'web'],
+            ['id' => (string) Str::uuid()]
+        );
+
+        $user->assignRole('user');
 
         HealthEntry::factory()->create([
             'account_id' => $account->id,
