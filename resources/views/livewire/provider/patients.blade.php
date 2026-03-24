@@ -1,8 +1,15 @@
+<x-slot name="header">
+    <h1 class="font-semibold text-xl text-gray-800 leading-tight">
+        {{ __('Patients') }}
+    </h1>
+</x-slot>
+
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
             <div>
                 <div class="flex justify-center px-4 py-2 mt-4">
+                    <x-label for="search" value="Search" class="mt-4 mr-2 block"/>
                     <x-input id="search" class="mt-1 block w-full" wire:model="search"
                         placeholder="Search patients..." />
                     <x-button wire:click="getPatients()" class="ml-2">Search</x-button>

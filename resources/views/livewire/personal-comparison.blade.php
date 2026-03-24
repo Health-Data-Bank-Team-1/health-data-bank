@@ -7,8 +7,8 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
-                    <label class="text-sm font-medium">Metric</label>
-                    <select wire:model="metric_key" class="w-full border rounded p-2">
+                    <label for="metric_key" class="text-sm font-medium">Metric</label>
+                    <select id="metric_key" wire:model="metric_key" class="w-full border rounded p-2">
                         @foreach($metricOptions as $key => $label)
                             <option value="{{ $key }}">{{ $label }}</option>
                         @endforeach
@@ -16,33 +16,33 @@
                 </div>
 
                 <div>
-                    <label class="text-sm font-medium">Gender</label>
-                    <input type="text" wire:model="gender" class="w-full border rounded p-2">
+                    <label for="gender" class="text-sm font-medium">Gender</label>
+                    <input id="gender" type="text" wire:model="gender" class="w-full border rounded p-2">
                 </div>
 
                 <div>
-                    <label class="text-sm font-medium">Location</label>
-                    <input type="text" wire:model="location" class="w-full border rounded p-2">
+                    <label for="location" class="text-sm font-medium">Location</label>
+                    <input id="location" type="text" wire:model="location" class="w-full border rounded p-2">
                 </div>
 
                 <div>
-                    <label class="text-sm font-medium">Age Min</label>
-                    <input type="number" wire:model="age_min" class="w-full border rounded p-2">
+                    <label for="age_min" class="text-sm font-medium">Age Min</label>
+                    <input id="age_min" type="number" wire:model="age_min" class="w-full border rounded p-2">
                 </div>
 
                 <div>
-                    <label class="text-sm font-medium">Age Max</label>
-                    <input type="number" wire:model="age_max" class="w-full border rounded p-2">
+                    <label for="age_max" class="text-sm font-medium">Age Max</label>
+                    <input id="age_max" type="number" wire:model="age_max" class="w-full border rounded p-2">
                 </div>
 
                 <div>
-                    <label class="text-sm font-medium">From</label>
-                    <input type="date" wire:model="from" class="w-full border rounded p-2">
+                    <label for="from" class="text-sm font-medium">From</label>
+                    <input id="from" type="date" wire:model="from" class="w-full border rounded p-2">
                 </div>
 
                 <div>
-                    <label class="text-sm font-medium">To</label>
-                    <input type="date" wire:model="to" class="w-full border rounded p-2">
+                    <label for="to" class="text-sm font-medium">To</label>
+                    <input id="to" type="date" wire:model="to" class="w-full border rounded p-2">
                 </div>
             </div>
 

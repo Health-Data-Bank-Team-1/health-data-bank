@@ -1,33 +1,38 @@
-<div class="p-6 space-y-4">
+<x-slot name="header">
+    <h1 class="font-semibold text-xl text-gray-800 leading-tight">
+        {{ __('Form Review') }}
+    </h1>
+</x-slot>
 
-    {{-- Header --}}
-    <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-semibold">Admin — Form Templates</h1>
-    </div>
+<div class="p-6 space-y-4">
 
     {{-- Flash messages --}}
     @if (session('success'))
-        <div class="p-3 rounded bg-green-100 text-green-800">
+        <div class="p-3 rounded bg-green-100 text-black">
             {{ session('success') }}
         </div>
     @endif
 
     @if (session('error'))
-        <div class="p-3 rounded bg-red-100 text-red-800">
+        <div class="p-3 rounded bg-red-100 text-black">
             {{ session('error') }}
         </div>
     @endif
 
     {{-- Filters --}}
     <div class="flex gap-3 items-center">
+        <x-label for="search" value="Search"/>
         <input
+            id="search"
             type="text"
             wire:model.debounce.400ms="search"
             placeholder="Search title..."
             class="w-full max-w-md rounded border-gray-300 focus:ring focus:ring-indigo-200"
         />
 
+        <x-label for="approvalStatus" value="Status"/>
         <select
+            id="approvalStatus"
             wire:model="approvalStatus"
             class="rounded border-gray-300 focus:ring focus:ring-indigo-200"
         >
