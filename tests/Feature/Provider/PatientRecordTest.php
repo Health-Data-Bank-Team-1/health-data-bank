@@ -7,6 +7,7 @@ use App\Models\HealthEntry;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
@@ -68,6 +69,11 @@ class PatientRecordTest extends TestCase
             'status' => 'ACTIVE',
         ]);
 
+        DB::table('provider_patient')->insert([
+            'provider_id' => $providerAccount->id,
+            'patient_id' => $patient->id,
+        ]);
+
         HealthEntry::factory()->create([
             'account_id' => $patient->id,
             'timestamp' => '2026-02-10 10:00:00',
@@ -110,6 +116,32 @@ class PatientRecordTest extends TestCase
             ->assertStatus(404)
             ->assertJson([
                 'message' => 'Patient not found.',
+            ]);
+    }
+
+    public function test_provider_cannot_access_unlinked_patient_record(): void
+    {
+        $providerAccount = Account::factory()->create([
+            'account_type' => 'HealthcareProvider',
+            'status' => 'ACTIVE',
+        ]);
+
+        $providerUser = User::factory()->create([
+            'account_id' => $providerAccount->id,
+        ]);
+
+        $providerUser->assignRole('provider');
+
+        $patient = Account::factory()->create([
+            'account_type' => 'User',
+            'status' => 'ACTIVE',
+        ]);
+
+        $this->actingAs($providerUser, 'sanctum')
+            ->getJson("/api/provider/patients/{$patient->id}/record")
+            ->assertStatus(403)
+            ->assertJson([
+                'message' => 'You are not authorized to access this patient record.',
             ]);
     }
 }

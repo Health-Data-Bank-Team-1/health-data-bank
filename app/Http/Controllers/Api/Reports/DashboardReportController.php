@@ -175,6 +175,8 @@ class DashboardReportController extends Controller
         return response()->streamDownload(function () use ($accountId, $groupBy, $dateFrom, $dateTo, $validated, $metric) {
             try {
                 $out = fopen('php://output', 'w');
+                // Add UTF-8 BOM for spreadsheet compatibility.
+                fwrite($out, "\xEF\xBB\xBF");
                 fputcsv($out, ['period', 'value']);
 
                 $query = DB::table('form_submissions')
@@ -250,7 +252,8 @@ class DashboardReportController extends Controller
                 throw $e;
             }
         }, $filename, [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-store, no-cache',
         ]);
     }
 }
