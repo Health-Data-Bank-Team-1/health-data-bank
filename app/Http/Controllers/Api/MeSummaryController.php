@@ -24,13 +24,13 @@ class MeSummaryController extends Controller
 
         AuditLogger::log(
             'reporting_summary_view',
-            ['reporting', 'resource:summary'],
+            ['reporting', 'resource:summary', 'outcome:success'],
             null,
             [],
             [
-                'from' => $validated['from'],
-                'to' => $validated['to'],
-                'keys_count' => count($keys),
+                'from' => $request->from,
+                'to' => $request->to,
+                'keys' => $keys,
             ]
         );
 

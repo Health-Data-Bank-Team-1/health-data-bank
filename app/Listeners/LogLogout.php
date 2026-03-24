@@ -12,7 +12,7 @@ class LogLogout
         AuditLogger::log(
             'logout',
             ['auth', 'outcome:success'],
-            $event->user,
+            null,
             [],
             []
         );

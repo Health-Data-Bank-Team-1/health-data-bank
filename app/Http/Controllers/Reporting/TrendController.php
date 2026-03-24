@@ -28,7 +28,7 @@ class TrendController extends Controller
 
         AuditLogger::log(
             'reporting_trends_view',
-            ['reporting', 'metric:' . $metric],
+            ['reporting', 'resource:trends', 'outcome:success'],
             null,
             [],
             [

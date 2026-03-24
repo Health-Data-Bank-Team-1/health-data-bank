@@ -99,9 +99,6 @@ class FormTemplatesIndex extends Component
 
         return view('livewire.admin.form-templates-index', [
             'templates' => $templates,
-        ])->layout('layouts.admin')
-            ->layoutData([
-                'header' => 'Form Review'
-            ]);
+        ])->layout('layouts.admin');
     }
 }

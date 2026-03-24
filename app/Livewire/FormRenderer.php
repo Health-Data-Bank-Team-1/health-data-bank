@@ -53,12 +53,7 @@ class FormRenderer extends Component
 
     public function submit()
     {
-        $validated = $this->validate();
-
-        // replace loop with submission endpoint, here to simulate loading
-        for ($i=1;$i<3;++$i) {
-            sleep(1);
-        }
+        $this->validate();
 
         return redirect()
             ->to('/user/form-select')

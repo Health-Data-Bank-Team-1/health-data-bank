@@ -68,4 +68,24 @@ class Account extends Model
     {
         return $this->hasMany(AuditLog::class, 'actor_id');
     }
+
+    public function patients()
+    {
+        return $this->belongsToMany(
+            Account::class,
+            'provider_patient',
+            'provider_id',
+            'patient_id'
+        );
+    }
+
+    public function providers()
+    {
+        return $this->belongsToMany(
+            Account::class,
+            'provider_patient',
+            'patient_id',
+            'provider_id'
+        );
+    }
 }
