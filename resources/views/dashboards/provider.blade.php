@@ -1,7 +1,7 @@
 <x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+    <h1 class="font-semibold text-xl text-gray-800 leading-tight">
         {{ __('Dashboard') }}
-    </h2>
+    </h1>
 </x-slot>
 
 <div class="py-12">
@@ -14,6 +14,9 @@
                             <a href="{{ route('provider.patients') }}">Patients</a>
                         </h2>
                     </div>
+                    <x-link-button class="w-full mt-2" href="{{ route('provider.patients') }}">
+                        Access Patient Files
+                    </x-link-button>
                     <div>
                         <livewire:provider.patient-index />
                     </div>
@@ -25,9 +28,9 @@
                             <a href="{{ route('provider.reports') }}">Reports</a>
                         </h2>
                     </div>
-                    <div>
-                        reports
-                    </div>
+                    <x-link-button class="w-full mt-2" href="{{ route('provider.reports') }}">
+                        Manage Reports
+                    </x-link-button>
                 </div>
             </div>
         </div>

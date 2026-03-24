@@ -39,7 +39,7 @@ class FormTemplate extends Model
     //Relationships
     public function fields()
     {
-        return $this->hasMany(FormField::class);
+        return $this->hasMany(FormField::class, 'form_template_id');
     }
 
     public function submissions()

@@ -2,41 +2,36 @@
 
 namespace App\Livewire\Researcher;
 
+use App\Models\FormField;
 use Livewire\Component;
 
 class ResearcherReportGenerator extends Component
 {
-    public $filters = [];
+    public string $from = '';
+    public string $to = '';
+    public ?string $gender = null;
+    public ?string $location = null;
+    public ?int $age_min = null;
+    public ?int $age_max = null;
+    public array $metricOptions = [];
 
-    public function mount()
+    public function mount(): void
     {
-        $this->filters = [
-            ['field' => '', 'operator' => '', 'value' => '']
-        ];
-    }
+        $this->from = now()->subMonth()->toDateString();
+        $this->to = now()->toDateString();
 
-    public function addFilter()
-    {
-        $this->filters[] = ['field' => '', 'operator' => '', 'value' => ''];
-    }
-
-    public function removeFilter($index)
-    {
-        unset($this->filters[$index]);
-        $this->filters = array_values($this->filters);
-    }
-
-    public function generateCohort()
-    {
-        $this->dispatch('cohortGenerated', filters: $this->filters);
+        $this->metricOptions = FormField::query()
+            ->where('goal_enabled', true)
+            ->whereIn('field_type', ['number', 'integer', 'decimal'])
+            ->orderBy('label')
+            ->pluck('label', 'metric_key')
+            ->toArray();
     }
 
     public function render()
     {
         return view('livewire.researcher.report-generator')
             ->layout('layouts.researcher')
-            ->layoutData([
-                'header' => 'Report Generator'
-            ]);
+            ->layoutData([]);
     }
 }

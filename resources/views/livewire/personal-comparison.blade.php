@@ -1,10 +1,6 @@
 <div class="pt-4 pb-12">
     <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 mt-4">
         <div class="bg-white shadow-xl sm:rounded-lg p-6">
-            <h1 class="text-2xl font-bold mb-6">
-                Personal Health Comparison
-            </h1>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
                     <label class="text-sm font-medium">Metric</label>
@@ -49,7 +45,7 @@
             <div class="flex gap-2 mt-2">
                 <button
                     wire:click="compare"
-                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+                    class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700"
                 >
                     Compare
                 </button>

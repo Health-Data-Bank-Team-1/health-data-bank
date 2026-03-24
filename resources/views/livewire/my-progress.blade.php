@@ -8,12 +8,6 @@
                             <a href="{{ route('health-summary') }}">Health Summary</a>
                         </h2>
                     </div>
-                    <div>
-                        @include('livewire.trend-chart', [
-                            'title' => 'Submission Trend',
-                            'metric' => 'submission_count',
-                            'groupBy' => 'day' ])
-                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-6">
@@ -82,7 +76,7 @@
                             </h2>
                         </div>
 
-                        <div class="mt-4">
+                        <div class>
                             <livewire:personal-comparison/>
                         </div>
                     </div>
