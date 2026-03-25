@@ -4,6 +4,14 @@
 Suggestions are generated based on aggregated reporting data and trends.
 They are computed per account and are not persisted (computed on demand).
 
+## Metric Behavior
+
+Metric-specific behavior (e.g., numeric vs non-numeric, thresholds, and trend margins) is defined centrally in the HealthMetricRegistry.
+
+- Only metrics marked as numeric will participate in threshold and trend rules.
+- Threshold and trend rules are only applied when enabled for a given metric.
+- Non-numeric metrics may still produce "insufficient_data" suggestions but will not generate threshold or trend-based suggestions.
+
 ## Data Sources
 - Aggregated metrics (averages, counts)
 - Trend data (changes over time)
@@ -46,7 +54,8 @@ Output:
 
 Condition:
 - Average value exceeds threshold
-- Example: hr > 85
+- Threshold values are defined per metric in the HealthMetricRegistry.
+  Example: Heart rate may have a threshold of 85 bpm.
 
 Output:
 - type: high_value
@@ -58,6 +67,8 @@ Output:
 
 Condition:
 - Metric trend shows consistent increase (bad direction)
+- Latest average exceeds earliest average by a configured margin
+- Trend margins are defined per metric in the HealthMetricRegistry.
 
 Output:
 - type: negative_trend
@@ -68,8 +79,22 @@ Output:
 
 Condition:
 - Metric trend shows improvement
+- Latest average exceeds earliest average by a configured margin
+- Trend margins are defined per metric in the HealthMetricRegistry.
 
 Output:
 - type: positive_trend
 - severity: low
 - message: "Metric trend is improving."
+
+## Post-processing
+
+- Duplicate suggestions (same type and metric) are removed.
+- Suggestions are sorted by severity (high → medium → low).
+
+## Unknown Metrics
+
+If a metric is not defined in the HealthMetricRegistry:
+- It may still be included in aggregation results.
+- Numeric detection falls back to generic numeric checks.
+- Threshold and trend rules are not applied unless explicitly defined.

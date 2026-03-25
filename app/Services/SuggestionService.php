@@ -8,7 +8,8 @@ class SuggestionService
 {
     public function __construct(
         private readonly ReportingAggregationService $aggregation,
-        private readonly TrendCalculationService $trend
+        private readonly TrendCalculationService $trend,
+        private readonly HealthMetricRegistry $metrics
     ) {
     }
 
@@ -47,8 +48,6 @@ class SuggestionService
         }
 
         $suggestions = [];
-        $thresholds = $this->baseThresholds();
-        $margins = $this->trendMargins();
 
         foreach ($agg as $metric => $row) {
             $count = $row['count'] ?? 0;
@@ -59,42 +58,55 @@ class SuggestionService
             }
 
             if (
-                isset($thresholds[$metric]) &&
-                is_numeric($avg) &&
-                (float) $avg > $thresholds[$metric]
+                $this->metrics->hasMetric($metric) &&
+                $this->metrics->thresholdEnabled($metric) &&
+                $this->metrics->isNumeric($metric) &&
+                is_numeric($avg)
             ) {
-                $suggestions[] = $this->buildHighValueSuggestion(
-                    $metric,
-                    (float) $avg,
-                    $thresholds[$metric]
-                );
-            }
+                $threshold = $this->metrics->thresholdFor($metric);
 
-            if (isset($margins[$metric])) {
-                $trendAnalysis = $this->detectTrendDirection(
-                    $accountId,
-                    $metric,
-                    $from,
-                    $to,
-                    $margins[$metric]
-                );
-
-                if ($trendAnalysis['direction'] === 'up') {
-                    $suggestions[] = $this->buildNegativeTrendSuggestion(
+                if ($threshold !== null && (float) $avg > $threshold) {
+                    $suggestions[] = $this->buildHighValueSuggestion(
                         $metric,
-                        $trendAnalysis['first_avg'],
-                        $trendAnalysis['last_avg'],
-                        $trendAnalysis['margin']
+                        (float) $avg,
+                        $threshold
                     );
                 }
+            }
 
-                if ($trendAnalysis['direction'] === 'down') {
-                    $suggestions[] = $this->buildPositiveTrendSuggestion(
+            if (
+                $this->metrics->hasMetric($metric) &&
+                $this->metrics->trendEnabled($metric) &&
+                $this->metrics->isNumeric($metric)
+            ) {
+                $margin = $this->metrics->trendMarginFor($metric);
+
+                if ($margin !== null) {
+                    $trendAnalysis = $this->detectTrendDirection(
+                        $accountId,
                         $metric,
-                        $trendAnalysis['first_avg'],
-                        $trendAnalysis['last_avg'],
-                        $trendAnalysis['margin']
+                        $from,
+                        $to,
+                        $margin
                     );
+
+                    if ($trendAnalysis['direction'] === 'up') {
+                        $suggestions[] = $this->buildNegativeTrendSuggestion(
+                            $metric,
+                            $trendAnalysis['first_avg'],
+                            $trendAnalysis['last_avg'],
+                            $trendAnalysis['margin']
+                        );
+                    }
+
+                    if ($trendAnalysis['direction'] === 'down') {
+                        $suggestions[] = $this->buildPositiveTrendSuggestion(
+                            $metric,
+                            $trendAnalysis['first_avg'],
+                            $trendAnalysis['last_avg'],
+                            $trendAnalysis['margin']
+                        );
+                    }
                 }
             }
         }
@@ -180,28 +192,6 @@ class SuggestionService
         ];
     }
 
-    /**
-     * @return array<string, float>
-     */
-    private function baseThresholds(): array
-    {
-        return [
-            'hr' => 85.0,
-            'weight' => 200.0,
-        ];
-    }
-
-    /**
-     * @return array<string, float>
-     */
-    private function trendMargins(): array
-    {
-        return [
-            'hr' => 5.0,
-            'weight' => 3.0,
-        ];
-    }
-
     private function severityRank(string $severity): int
     {
         return match ($severity) {
@@ -253,6 +243,7 @@ class SuggestionService
             'message' => 'More data is needed for reliable insights for this metric.',
             'context' => [
                 'count' => $count,
+                'label' => $this->metrics->labelFor($metric),
             ],
         ];
     }
@@ -278,6 +269,8 @@ class SuggestionService
             'context' => [
                 'avg' => $avg,
                 'threshold' => $threshold,
+                'label' => $this->metrics->labelFor($metric),
+                'unit' => $this->metrics->unitFor($metric),
             ],
         ];
     }
@@ -308,6 +301,8 @@ class SuggestionService
                 'first_avg' => $firstAvg,
                 'last_avg' => $lastAvg,
                 'margin' => $margin,
+                'label' => $this->metrics->labelFor($metric),
+                'unit' => $this->metrics->unitFor($metric),
             ],
         ];
     }
@@ -338,6 +333,8 @@ class SuggestionService
                 'first_avg' => $firstAvg,
                 'last_avg' => $lastAvg,
                 'margin' => $margin,
+                'label' => $this->metrics->labelFor($metric),
+                'unit' => $this->metrics->unitFor($metric),
             ],
         ];
     }

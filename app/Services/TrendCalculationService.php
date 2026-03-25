@@ -10,7 +10,8 @@ class TrendCalculationService
 {
     public function __construct(
         private readonly ReportingAggregationService $aggregation
-    ) {}
+    ) {
+    }
 
     /**
      * Build a bucketed time-series for one metric key.
@@ -46,7 +47,7 @@ class TrendCalculationService
             ->orderBy('timestamp')
             ->get(['timestamp', 'encrypted_values']);
 
-        //bucketStartIso => array of points [ts => CarbonImmutable, value => mixed]
+        // bucketStartIso => array of points [ts => CarbonImmutable, value => mixed]
         $buckets = [];
 
         foreach ($entries as $entry) {
@@ -80,7 +81,7 @@ class TrendCalculationService
         foreach ($buckets as $bucketStartIso => $bucketPoints) {
             usort($bucketPoints, fn ($a, $b) => $a['ts'] <=> $b['ts']);
 
-            $stats = $this->aggregation->aggregatePointSeries($bucketPoints);
+            $stats = $this->aggregation->aggregateMetricPointSeries($metricKey, $bucketPoints);
 
             $points[] = [
                 'bucket_start' => $bucketStartIso,

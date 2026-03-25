@@ -7,6 +7,11 @@ use Carbon\CarbonInterface;
 
 class AggregatedMetricsService
 {
+    public function __construct(
+        private readonly HealthMetricRegistry $metrics
+    ) {
+    }
+
     /**
      * @param array<int, string> $accountIds
      * @param array<int, string> $onlyKeys
@@ -38,7 +43,7 @@ class AggregatedMetricsService
                     continue;
                 }
 
-                if (is_int($value) || is_float($value) || (is_string($value) && is_numeric($value))) {
+                if ($this->isNumericMetricValue($key, $value)) {
                     $series[$key][] = (float) $value;
                 }
             }
@@ -54,5 +59,16 @@ class AggregatedMetricsService
         }
 
         return $out;
+    }
+
+    private function isNumericMetricValue(string $metric, mixed $value): bool
+    {
+        if ($this->metrics->hasMetric($metric)) {
+            if (!$this->metrics->isNumeric($metric)) {
+                return false;
+            }
+        }
+
+        return is_int($value) || is_float($value) || (is_string($value) && is_numeric($value));
     }
 }
