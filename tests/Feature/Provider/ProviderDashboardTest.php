@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Provider;
 
+use App\Livewire\Dashboards\ProviderDashboard;
 use App\Models\Account;
 use App\Models\HealthEntry;
 use App\Models\Role;
@@ -10,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
+use Livewire\Livewire;
 
 class ProviderDashboardTest extends TestCase
 {
@@ -111,5 +113,43 @@ class ProviderDashboardTest extends TestCase
         $response->assertJsonPath('totals.active_patients', 2);
         $response->assertJsonPath('totals.deactivated_patients', 1);
         $response->assertJsonPath('totals.patients_with_health_entries', 2);
+    }
+
+
+    public function test_the_component_can_render()
+    {
+        $providerAccount = Account::factory()->create([
+            'account_type' => 'HealthcareProvider',
+            'status' => 'ACTIVE',
+        ]);
+
+        $providerUser = User::factory()->create([
+            'account_id' => $providerAccount->id,
+        ]);
+
+        $providerUser->assignRole('provider');
+
+        $this->actingAs($providerUser);
+        $component = Livewire::test(ProviderDashboard::class);
+        $component->assertStatus(200);
+    }
+
+    public function test_elements_are_present()
+    {
+        $providerAccount = Account::factory()->create([
+            'account_type' => 'HealthcareProvider',
+            'status' => 'ACTIVE',
+        ]);
+
+        $providerUser = User::factory()->create([
+            'account_id' => $providerAccount->id,
+        ]);
+
+        $providerUser->assignRole('provider');
+
+        $this->actingAs($providerUser);
+        Livewire::test(ProviderDashboard::class)
+            ->assertSee('Patients')
+            ->assertSee('Reports');
     }
 }
