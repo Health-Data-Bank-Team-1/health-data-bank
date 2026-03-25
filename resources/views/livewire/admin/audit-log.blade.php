@@ -177,12 +177,16 @@
 
                     <tr class="hover:bg-gray-50 {{ $isRisky ? 'bg-red-50' : '' }}">
                         <td class="px-4 py-3">
+                            @php
+                                $time = \Carbon\Carbon::parse($audit->created_at)
+                                    ->timezone(config('app.timezone'));
+                            @endphp
                             <div class="whitespace-nowrap">
                                 <div class="text-gray-900">
-                                    {{ \Carbon\Carbon::parse($audit->created_at)->format('Y-m-d') }}
+                                    {{ $time->format('M d, Y') }}
                                 </div>
                                 <div class="text-xs text-gray-500">
-                                    {{ \Carbon\Carbon::parse($audit->created_at)->format('H:i:s') }}
+                                    {{ $time->format('h:i A') }}
                                 </div>
                             </div>
                         </td>

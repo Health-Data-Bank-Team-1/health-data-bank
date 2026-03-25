@@ -6,7 +6,6 @@
 
 <div class="p-6 space-y-4">
 
-
     {{-- Flash messages --}}
     @if (session('success'))
         <div class="p-3 rounded bg-green-100 text-black">
