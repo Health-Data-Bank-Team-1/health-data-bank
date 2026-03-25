@@ -41,7 +41,14 @@ class HealthGoalController extends Controller
                 ];
             });
 
-        return response()->json($goals);
+        return ApiResponse::success(
+        [
+            'goal' => $goal,
+            'progress' => $this->progressService->calculate($goal),
+        ],
+        'Goal created successfully.',
+        201
+    );
     }
 
     public function store(StoreHealthGoalRequest $request): JsonResponse
