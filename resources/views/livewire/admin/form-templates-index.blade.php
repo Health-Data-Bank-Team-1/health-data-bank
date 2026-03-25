@@ -6,6 +6,7 @@
 
 <div class="p-6 space-y-4">
 
+
     {{-- Flash messages --}}
     @if (session('success'))
         <div class="p-3 rounded bg-green-100 text-black">
@@ -37,10 +38,10 @@
             class="rounded border-gray-300 focus:ring focus:ring-indigo-200"
         >
             <option value="">All statuses</option>
-            <option value="draft">draft</option>
-            <option value="pending">pending</option>
-            <option value="approved">approved</option>
-            <option value="rejected">rejected</option>
+            <option value="draft">Draft</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
         </select>
     </div>
 
@@ -86,8 +87,8 @@
                         @if ($t->approval_status === 'pending')
                             <button
                                 class="inline-flex items-center px-3 py-1 rounded
-                                           !bg-green-600 !text-white
-                                           hover:!bg-green-700
+                                           bg-emerald-600 text-white
+                                           hover:bg-gray-50
                                            focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
                                 wire:click="approve('{{ $t->id }}')"
                             >

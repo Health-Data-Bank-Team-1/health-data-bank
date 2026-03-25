@@ -26,6 +26,7 @@ use App\Livewire\Researcher\ReportRenderer;
 use App\Livewire\Dashboards\AdminDashboard;
 use App\Livewire\Profiles\AdminProfile;
 use App\Livewire\Admin\AuditLog;
+use App\Http\Controllers\Admin\AdminAuditLogController;
 use App\Livewire\Admin\DatabaseManagement;
 use App\Livewire\Admin\ReportReview;
 use App\Livewire\Dashboards\ProviderDashboard;
@@ -45,7 +46,6 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-
     Route::get('/dashboard', function () {
         if (Auth::user()->hasRole('user')) {
             return redirect('/user/dashboard');
@@ -123,7 +123,13 @@ Route::middleware([
     Route::get('/admin/forms', FormTemplatesIndex::class)
         ->middleware('role:admin')
         ->name('admin.forms.index');
-
+    Route::middleware(['auth', 'verified'])
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            Route::get('/audit-log/export.csv', [AdminAuditLogController::class, 'exportCsv'])
+                ->name('audit-log.export');
+        });
     Route::prefix('form-templates')->group(function () {
         Route::post('/', [FormTemplateController::class, 'store'])->name('form-templates.store');
         Route::put('{template}', [FormTemplateController::class, 'update'])->name('form-templates.update');
