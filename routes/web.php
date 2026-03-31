@@ -23,6 +23,7 @@ use App\Livewire\Researcher\ResearcherReports;
 use App\Livewire\Researcher\ResearcherReportGenerator;
 use App\Livewire\Researcher\ReportIndex;
 use App\Livewire\Researcher\ReportRenderer;
+use App\Livewire\Researcher\CohortBuilder;
 use App\Livewire\Dashboards\AdminDashboard;
 use App\Livewire\Profiles\AdminProfile;
 use App\Livewire\Admin\AuditLog;
@@ -35,7 +36,7 @@ use App\Livewire\Provider\ProviderPatients;
 use App\Livewire\Provider\ProviderReports;
 use App\Livewire\Provider\PatientIndex;
 use App\Livewire\Provider\PatientRenderer;
-
+use App\Http\Controllers\Admin\FormTemplateApprovalController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -103,6 +104,10 @@ Route::middleware([
     Route::get('/researcher/reports/{report}', ResearcherReports::class)
         ->middleware('role:researcher')
         ->name('researcher.reports.show');
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/researcher/cohort', CohortBuilder::class)
+            ->name('researcher.cohort');
+    });
 
     Route::get('/admin/profile', AdminProfile::class)
         ->middleware('role:admin')
@@ -123,6 +128,10 @@ Route::middleware([
     Route::get('/admin/forms', FormTemplatesIndex::class)
         ->middleware('role:admin')
         ->name('admin.forms.index');
+    Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+        Route::get('/forms/{template}', [FormTemplateApprovalController::class, 'show'])
+            ->name('livewire.admin.show');
+    });
     Route::middleware(['auth', 'verified'])
         ->prefix('admin')
         ->name('admin.')
