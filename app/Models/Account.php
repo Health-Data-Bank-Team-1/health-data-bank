@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\HasUuid;
+use App\Models\ReminderSetting;
+use App\Models\Notification;
 
 class Account extends Model
 {
@@ -87,5 +89,14 @@ class Account extends Model
             'patient_id',
             'provider_id'
         );
+    }
+    public function reminderSettings()
+    {
+        return $this->hasMany(ReminderSetting::class);
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
     }
 }

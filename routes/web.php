@@ -34,7 +34,7 @@ use App\Livewire\Provider\ProviderPatients;
 use App\Livewire\Provider\ProviderReports;
 use App\Livewire\Provider\PatientIndex;
 use App\Livewire\Provider\PatientRenderer;
-
+use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -163,4 +163,9 @@ Route::middleware([
         ->name('comparison');
     Route::middleware(['auth'])->get('/comparison/chart', PersonalComparisonChart::class)
         ->name('comparison.chart');
+
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/notifications', [NotificationController::class, 'index'])
+            ->name('notifications.index');
+    });
 });
