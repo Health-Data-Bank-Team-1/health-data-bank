@@ -167,5 +167,7 @@ Route::middleware([
     Route::middleware(['auth'])->group(function () {
         Route::get('/notifications', [NotificationController::class, 'index'])
             ->name('notifications.index');
+        Route::get('/notifications/{notification}/open', [NotificationController::class, 'open'])
+            ->name('notifications.open');
     });
 });

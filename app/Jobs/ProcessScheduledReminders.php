@@ -7,12 +7,11 @@ use App\Models\Notification;
 use App\Models\ReminderSetting;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class ProcessScheduledReminders implements ShouldQueue
+class ProcessScheduledReminders
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -41,6 +40,7 @@ class ProcessScheduledReminders implements ShouldQueue
                     'account_id' => $accountId,
                     'type' => 'reminder',
                     'message' => $this->buildMessage($frequency),
+                    'link' => $this->buildLink($frequency),
                     'status' => 'unread',
                 ]);
 
@@ -50,6 +50,15 @@ class ProcessScheduledReminders implements ShouldQueue
             $reminder->next_run_at = $this->calculateNextRunAt($frequency, $now);
             $reminder->save();
         }
+    }
+    protected function buildLink(string $frequency): string
+    {
+        return match ($frequency) {
+            'daily' => '/user/form-select',
+            'weekly' => '/user/form-select',
+            'todo' => '/user/todo',
+            default => '/user/dashboard',
+        };
     }
 
     protected function hasSubmittedToday(string $accountId): bool
