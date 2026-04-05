@@ -36,6 +36,7 @@ use App\Livewire\Provider\ProviderPatients;
 use App\Livewire\Provider\ProviderReports;
 use App\Livewire\Provider\PatientIndex;
 use App\Livewire\Provider\PatientRenderer;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\FormTemplateApprovalController;
 
 Route::get('/', function () {
@@ -178,4 +179,11 @@ Route::middleware([
         ->name('comparison');
     Route::middleware(['auth'])->get('/comparison/chart', PersonalComparisonChart::class)
         ->name('comparison.chart');
+
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/notifications', [NotificationController::class, 'index'])
+            ->name('notifications.index');
+        Route::get('/notifications/{notification}/open', [NotificationController::class, 'open'])
+            ->name('notifications.open');
+    });
 });
