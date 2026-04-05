@@ -32,9 +32,12 @@ class MeSummaryEndpointTest extends TestCase
         $res->assertJsonStructure([
             'averages',
             'counts',
+            'suggestions',
         ]);
+
         $this->assertIsArray($res->json('averages'));
         $this->assertIsArray($res->json('counts'));
+        $this->assertIsArray($res->json('suggestions'));
     }
 
     public function test_returns_filtered_metrics_when_keys_provided(): void
@@ -59,10 +62,59 @@ class MeSummaryEndpointTest extends TestCase
         );
 
         $res->assertStatus(200);
-        $res->assertJsonStructure(['averages', 'counts']);
+        $res->assertJsonStructure([
+            'averages',
+            'counts',
+            'suggestions',
+        ]);
+
         $averages = $res->json('averages');
         $this->assertIsArray($averages);
         $this->assertArrayHasKey('hr', $averages);
+        $this->assertArrayNotHasKey('weight', $averages);
+    }
+
+    public function test_returns_suggestions_in_summary_response(): void
+    {
+        $account = Account::factory()->create([
+            'account_type' => 'User',
+            'status' => 'ACTIVE',
+        ]);
+
+        $user = User::factory()->create([
+            'account_id' => $account->id,
+        ]);
+
+        HealthEntry::factory()->create([
+            'account_id' => $account->id,
+            'timestamp' => Carbon::parse('2026-02-01 10:00:00'),
+            'encrypted_values' => ['hr' => 90],
+        ]);
+
+        HealthEntry::factory()->create([
+            'account_id' => $account->id,
+            'timestamp' => Carbon::parse('2026-02-02 10:00:00'),
+            'encrypted_values' => ['hr' => 92],
+        ]);
+
+        HealthEntry::factory()->create([
+            'account_id' => $account->id,
+            'timestamp' => Carbon::parse('2026-02-03 10:00:00'),
+            'encrypted_values' => ['hr' => 94],
+        ]);
+
+        $res = $this->actingAs($user, 'sanctum')->getJson(
+            '/api/me/summary?from=2026-02-01&to=2026-02-04&keys=hr'
+        );
+
+        $res->assertStatus(200);
+
+        $suggestions = $res->json('suggestions');
+        $this->assertIsArray($suggestions);
+        $this->assertNotEmpty($suggestions);
+
+        $types = array_column($suggestions, 'type');
+        $this->assertContains('high_value', $types);
     }
 
     public function test_validates_required_params(): void

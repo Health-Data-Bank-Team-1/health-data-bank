@@ -114,13 +114,20 @@ class AuditLogger
 
         foreach ($data as $key => $value) {
             $k = strtolower((string) $key);
+
+            //allow safe boolean change flags like email_changed or name_changed
+            if (is_bool($value) && str_ends_with($k, '_changed')) {
+                continue;
+            }
+
             foreach ($blockedKeys as $blocked) {
                 if (str_contains($k, $blocked)) {
-                    //Fail closed: throw to prevent accidental PHI logging.
+                    //fail closed: throw to prevent accidental PHI logging.
                     throw new \InvalidArgumentException("AuditLogger blocked sensitive key: {$key}");
                 }
             }
-            //Also block large free-text blobs
+
+            //also block large free-text blobs
             if (is_string($value) && strlen($value) > 500) {
                 throw new \InvalidArgumentException("AuditLogger blocked large text value for key: {$key}");
             }

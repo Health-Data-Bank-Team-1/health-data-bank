@@ -53,7 +53,7 @@ class FormSubmissionTest extends TestCase
             ->test(FormRenderer::class, ['form' => $form])
             ->set('entries.' . $field->id, '72')
             ->call('submit')
-            ->assertRedirect('/user-form-select')
+            ->assertRedirect(route('user-form-select', [], false))
             ->assertSessionHas('flash.banner', 'Form submitted successfully!');
     }
 
