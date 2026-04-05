@@ -2,164 +2,119 @@
 
 namespace App\Livewire\Researcher;
 
-use Livewire\Component;
+use App\Services\AggregatedMetricsService;
 use App\Services\AuditLogger;
 use App\Services\CohortFilterBuilder;
-use App\Services\KThresholdService;
-use App\Services\AggregatedMetricsService;
-use Illuminate\Support\Str;
-use App\Exceptions\CohortSuppressedException;
-use App\Models\ResearcherCohort;
-use App\Models\AggregatedData;
-use App\Models\Report;
-use Carbon\CarbonImmutable;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class ResearcherReportGenerator extends Component
 {
-    public $name;
+    public ?int $min_age = null;
+    public ?int $max_age = null;
+    public ?string $gender = null;
 
-    public $purpose;
+    public ?string $from = null;
+    public ?string $to = null;
+    public string $metricsInput = '';
 
-    public $cohorts;
+    public ?int $estimatedSize = null;
+    public array $reportResults = [];
+    public array $summaryStats = [];
+    public ?string $reportMessage = null;
 
-    public $min_age;
-
-    public $max_age;
-
-    public $gender;
-
-    public $from;
-
-    public $to;
-
-    public $selectedCohort;
-
-    public $keys;
-
-    protected $messages = [
-        'min_age.min' => 'The minimum age must be at least 0 and at most 120',
-        'max_age.min' => 'The maximum age must be at least 0 and at most 120',
-        'max_age.gte' => 'The maximum age must be higher than (or equal to) the minimum age.',
-        'from.required' => 'Start Date is required',
-        'to.required' => 'End Date is required',
-        'to.after_or_equal' => 'End date must be greater than or equal to Start Date',
-    ];
-
-    public function mount()
+    public function estimatePopulation(): void
     {
-        $this->name = "";
+        $filters = $this->buildFilters();
 
-        $this->purpose = "";
+        $accountIds = app(CohortFilterBuilder::class)
+            ->build($filters)
+            ->pluck('id')
+            ->all();
 
-        $this->cohorts = ResearcherCohort::all();
+        $this->estimatedSize = count($accountIds);
     }
 
-    public function store(
-        CohortFilterBuilder $cohortBuilder,
-        KThresholdService $threshold
-    ) {
+    public function generateReport(): void
+    {
         $validated = $this->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'purpose' => ['required', 'string', 'max:500'],
             'min_age' => ['nullable', 'integer', 'min:0', 'max:120'],
-            'max_age' => ['nullable', 'integer', 'min:0', 'max:120', 'gte:min_age'],
-            'gender' => ['nullable', 'string', 'max:50'],
-        ]);
-
-        $filters = array_filter([
-            'account_type' => 'User',
-            'name'         => $this->name,
-            'purpose'      => $this->purpose,
-            'min_age'      => $this->min_age,
-            'max_age'      => $this->max_age,
-            'gender'       => $this->gender,
-        ], fn($value) => !is_null($value) && $value !== '');
-
-        try {
-            $cohortQuery = $cohortBuilder->build($filters);
-
-            $accountIds = $cohortQuery->pluck('id')->all();
-            $cohortSize = count($accountIds);
-
-            $threshold->enforce($cohortSize, 10);
-
-            $cohortId = Str::uuid()->toString();
-
-            ResearcherCohort::create([
-                'id'             => $cohortId,
-                'name'           => $this->name,
-                'purpose'        => $this->purpose,
-                'filters_json'   => $filters,
-                'estimated_size' => $cohortSize,
-                'version'        => 1,
-                'created_by'     => auth->user()->account_id,
-            ]);
-
-            AuditLogger::log(
-                'researcher_cohort_created',
-                ['reporting', 'researcher', 'outcome:success'],
-                null,
-                [],
-                [
-                    'cohort_id' => $cohortId,
-                    'cohort_size' => $cohortSize,
-                    'filter_keys' => array_keys($filters),
-                    'version' => 1,
-                ]
-            );
-
-            session()->flash('success', 'Cohort created successfully');
-        } catch (CohortSuppressedException $e) {
-            AuditLogger::log(
-                'researcher_cohort_rejected',
-                ['reporting', 'researcher', 'outcome:blocked', 'reason:k_threshold'],
-                null,
-                [],
-                [
-                    'filter_keys' => array_keys($filters),
-                ]
-            );
-
-            $this->addError('cohort', $e->getMessage());
-        }
-    }
-
-    public function generateReport(AggregatedMetricsService $aggregator)
-    {
-        $validated = $this->validate([
-            'selectedCohort' => ['required'],
+            'max_age' => ['nullable', 'integer', 'min:0', 'max:120'],
+            'gender' => ['nullable', 'string', 'in:male,female,other'],
             'from' => ['required', 'date'],
             'to' => ['required', 'date', 'after_or_equal:from'],
-            'keys' => ['sometimes', 'string'],
+            'metricsInput' => ['required', 'string'],
         ]);
 
-        $keys = [];
-        if (!empty($validated['keys'])) {
-            $keys = array_values(array_filter(array_map('trim', explode(',', $validated['keys']))));
+        if (!is_null($validated['min_age']) && !is_null($validated['max_age']) && $validated['min_age'] > $validated['max_age']) {
+            $this->addError('max_age', 'Max age must be greater than or equal to min age.');
+            return;
         }
 
-        $accountIds = $this->selectedCohort->pluck('id')->all();
-        $from = CarbonImmutable::parse($validated['from'])->startOfDay();
-        $to = CarbonImmutable::parse($validated['to'])->endOfDay();
+        $filters = $this->buildFilters();
 
-        $metrics = $aggregator->aggregateForCohort(
+        $accountIds = app(CohortFilterBuilder::class)
+            ->build($filters)
+            ->pluck('id')
+            ->all();
+
+        $count = count($accountIds);
+        $this->estimatedSize = $count;
+
+
+        $metrics = collect(explode(',', $validated['metricsInput']))
+            ->map(fn ($metric) => trim($metric))
+            ->filter()
+            ->values()
+            ->all();
+
+        if (empty($metrics)) {
+            $this->addError('metricsInput', 'Please enter at least one metric.');
+            return;
+        }
+
+        $results = app(AggregatedMetricsService::class)->aggregateForCohort(
             $accountIds,
-            $from,
-            $to,
-            $keys
+            Carbon::parse($validated['from'])->startOfDay(),
+            Carbon::parse($validated['to'])->endOfDay(),
+            $metrics
         );
 
-        $report = Report::create([
-            'researcher_id' => auth->user()->account_id,
-            'report_type' => 'Aggregated'
-        ]);
+        $this->reportResults = $results;
+        $this->summaryStats = [
+            'population_size' => $count,
+            'from' => $validated['from'],
+            'to' => $validated['to'],
+            'metrics' => $metrics,
+            'filters' => $filters,
+        ];
+        $this->reportMessage = 'Anonymous report generated successfully.';
 
-        AggregatedData::create([
-            'report_id' => $report->id,
-            'metrics' => $metrics
-        ]);
+        AuditLogger::log(
+            'researcher_aggregated_report_generated',
+            ['researcher', 'success'],
+            null,
+            [],
+            [
+                'researcher_account_id' => Auth::user()->account_id,
+                'population_size' => $count,
+                'from' => $validated['from'],
+                'to' => $validated['to'],
+                'metrics' => $metrics,
+                'filters' => $filters,
+            ]
+        );
+    }
 
-        session()->flash('success', 'Report created successfully');
+    protected function buildFilters(): array
+    {
+        return array_filter([
+            'account_type' => 'User',
+            'min_age' => $this->min_age,
+            'max_age' => $this->max_age,
+            'gender' => $this->gender,
+        ], fn ($value) => !is_null($value) && $value !== '');
     }
 
     public function render()

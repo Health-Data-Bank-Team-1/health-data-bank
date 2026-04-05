@@ -13,6 +13,8 @@ use App\Http\Controllers\Provider\PatientRecordController;
 use App\Http\Controllers\Provider\ProviderDashboardController;
 use App\Services\CohortFilterBuilder;
 use App\Services\KThresholdService;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminAuditLogController;
 use App\Http\Controllers\Api\Reports\DashboardReportController;
 use App\Http\Controllers\Researcher\ResearcherCohortController;
 use App\Http\Controllers\Researcher\ResearcherReportController;
@@ -106,3 +108,13 @@ Route::middleware('auth:sanctum')->get(
     '/me/comparison',
     [PersonalComparisonController::class, 'show']
 );
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
+});
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/admin/audit-log', [AdminAuditLogController::class, 'index'])
+        ->name('admin.audit-log.index');
+
+});

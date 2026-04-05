@@ -14,9 +14,9 @@
                             <a href="{{ route('admin.audit-log') }}">Audit Log</a>
                         </h2>
                     </div>
-                    <div>
-                        audit log here
-                    </div>
+                    <x-link-button class="w-full mt-2" href="{{ route('admin.audit-log') }}">
+                        View Audit Log
+                    </x-link-button>
                 </div>
 
                 <div>
@@ -25,9 +25,9 @@
                             <a href="{{ route('admin.report-review') }}">Report Review</a>
                         </h2>
                     </div>
-                    <div>
-                        report review here
-                    </div>
+                    <x-link-button class="w-full mt-2" href="{{ route('admin.report-review') }}">
+                        Manage Report
+                    </x-link-button>
                 </div>
 
                 <div>
@@ -36,9 +36,9 @@
                             <a href="{{ route('admin.forms.index') }}">Form Review</a>
                         </h2>
                     </div>
-                    <div>
-                        form review here
-                    </div>
+                    <x-link-button class="w-full mt-2" href="{{ route('admin.forms.index') }}">
+                        Manage Form
+                    </x-link-button>
                 </div>
 
                 <div>
@@ -47,9 +47,9 @@
                             <a href="{{ route('admin.database-management') }}">Database Management</a>
                         </h2>
                     </div>
-                    <div>
-                        db management here
-                    </div>
+                    <x-link-button class="w-full mt-2" href="{{ route('admin.database-management') }}">
+                        Manage Database
+                    </x-link-button>
                 </div>
             </div>
         </div>

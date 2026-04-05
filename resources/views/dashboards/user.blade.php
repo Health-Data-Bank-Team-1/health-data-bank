@@ -21,14 +21,21 @@
 
                 <div class="grid grid-cols-1 gap-6">
                     <div>
-                        <div class="flex items-center">
+                        <div class="flex items-center justify-between">
                             <h2 class="text-xl font-semibold text-gray-900">
                                 <a href="{{ route('my-progress') }}">My Progress</a>
                             </h2>
+                            <a
+                                href="{{ route('my-progress') }}"
+                                class="text-sm font-medium text-gray-600 hover:text-gray-800"
+                            >
+                                View Progress
+                            </a>
                         </div>
-                        <p class="mt-4 text-gray-500 text-sm leading-relaxed">
-                            my progress here
-                        </p>
+                        @include('livewire.trend-chart', [
+                        'title' => 'Submission Trend',
+                        'metric' => 'submission_count',
+                        'groupBy' => 'day' ])
                     </div>
 
                     <div>
