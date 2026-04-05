@@ -22,6 +22,7 @@ class FormTemplate extends Model
         'approved_at',
         'rejection_reason',
         'description',
+        'purpose',
     ];
 
     protected $attributes = [

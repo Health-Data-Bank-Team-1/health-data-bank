@@ -29,4 +29,15 @@ class FormTemplateApprovalController extends Controller
         $service->reject($template, auth()->user(), $request->reason);
         return response()->json(['message' => 'Template rejected']);
     }
+
+    public function show(FormTemplate $template)
+    {
+        $template->load([
+            'fields' => fn ($query) => $query->orderBy('id'),
+        ]);
+
+        return view('livewire.admin.show', [
+            'template' => $template,
+        ]);
+    }
 }

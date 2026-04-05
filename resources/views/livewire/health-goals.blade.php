@@ -11,7 +11,7 @@
 
                 <a
                     href="{{ route('my-progress') }}"
-                    class="text-sm text-indigo-600 hover:text-indigo-800"
+                    class="text-sm text-gray-600 hover:text-gray-800"
                 >
                     Back to My Progress
                 </a>
@@ -22,15 +22,6 @@
                     {{ session('success') }}
                 </div>
             @endif
-
-            <div class="mb-6">
-                <button
-                    wire:click="createGoal"
-                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                >
-                    Add Goal
-                </button>
-            </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="rounded-lg border border-gray-200 p-4">
@@ -132,8 +123,16 @@
 
                 <div class="rounded-lg border border-gray-200 p-4">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">
-                        {{ $editingGoalId ? 'Update Goal' : 'Add Goal' }}
+                        {{ $editingGoalId ? 'Update Goal' : 'Add Health Goal' }}
                     </h2>
+                    <div class="mb-6">
+                        <button
+                            wire:click="createGoal"
+                            class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                        >
+                            Add Goal
+                        </button>
+                    </div>
 
                     @if($showForm)
                         <div class="space-y-4">
@@ -201,8 +200,6 @@
                                 <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                                 <select id="status" wire:model="status" class="w-full rounded-md border-gray-300">
                                     <option value="ACTIVE">Active</option>
-                                    <option value="MET">Met</option>
-                                    <option value="EXPIRED">Expired</option>
                                 </select>
                                 @error('status')
                                 <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
@@ -212,14 +209,14 @@
                             <div class="flex gap-2">
                                 <button
                                     wire:click="save"
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                                    class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-700"
                                 >
                                     {{ $editingGoalId ? 'Update Goal' : 'Save Goal' }}
                                 </button>
 
                                 <button
                                     wire:click="cancelForm"
-                                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                                    class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-700"
                                 >
                                     Cancel
                                 </button>

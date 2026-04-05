@@ -11,8 +11,10 @@ class FormIndex extends Component
 
     public function mount()
     {
-        $this->forms = FormTemplate::select('title', 'slug')->get();
-    }
+        $this->forms = FormTemplate::where('approval_status', 'approved')
+            ->select('title', 'slug')
+            ->orderBy('title')
+            ->get();    }
     public function render()
     {
         return view('livewire.form-index');
