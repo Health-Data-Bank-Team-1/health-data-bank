@@ -58,9 +58,7 @@ Route::middleware([
         } elseif (Auth::user()->hasRole('provider')) {
             return redirect('/provider/dashboard');
         }
-
-        return view('dashboard');
-    })->name('dashboard');
+    });
 
     Route::get('/user/profile', UserProfile::class)
         ->middleware('role:user')
