@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Account;
 use App\Models\ProviderFeedback;
-use App\Models\AuditLog;
+use App\Services\AuditLogger;
 
 class ProviderFeedbackController extends Controller
 {
@@ -28,7 +28,7 @@ class ProviderFeedbackController extends Controller
         $request->validate([
             'patient_id' => ['required', 'uuid', 'exists:accounts,id'],
             'feedback' => ['required', 'string'],
-            'recommended_actions' => ['nullable', 'string']
+            'recommended_actions' => ['nullable', 'string'],
         ]);
 
         $providerAccountId = Auth::user()->account_id;
@@ -37,14 +37,16 @@ class ProviderFeedbackController extends Controller
             'patient_account_id' => $request->patient_id,
             'provider_account_id' => $providerAccountId,
             'feedback' => $request->feedback,
-            'recommended_actions' => $request->recommended_actions
+            'recommended_actions' => $request->recommended_actions,
         ]);
 
-        AuditLog::create([
-            'actor_id' => $providerAccountId,
-            'action_type' => 'provider_feedback_submitted',
-            'timestamp' => now()
-        ]);
+        AuditLogger::log(
+            'provider_feedback_submitted',
+            ['security', 'auth', 'outcome:success'],
+            null,
+            [],
+            []
+        );
 
         return response()->json($feedback, 201);
     }
