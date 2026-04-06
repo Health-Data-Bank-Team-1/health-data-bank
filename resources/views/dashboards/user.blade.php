@@ -37,48 +37,6 @@
                         'metric' => 'submission_count',
                         'groupBy' => 'day' ])
                     </div>
-                    <div>
-                        <div class="flex items-center">
-                            <h2 class="text-xl font-semibold text-gray-900">
-                                <a href="{{ route('user-todo') }}">TODO</a>
-                            </h2>
-                        </div>
-                        <p class="mt-4 text-gray-500 text-sm leading-relaxed">
-                            todo here
-                        </p>
-                    </div>
-
-                    <div>
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-lg font-semibold text-gray-900">Notifications</h2>
-                            <a href="{{ route('notifications.index') }}" class="text-sm text-indigo-600 hover:underline">
-                                View all
-                            </a>
-                        </div>
-                        <div class="bg-white shadow sm:rounded-lg p-6 mb-6">
-                            @php
-                                $notifications = \App\Models\Notification::where('account_id', auth()->user()->account_id)
-                                    ->where('status', 'unread')
-                                    ->latest()
-                                    ->take(3)
-                                    ->get();
-                            @endphp
-
-                            @forelse ($notifications as $notification)
-                                <div class="border-b last:border-b-0 py-4 rounded px-3"
-                                     style="{{ $notification->status === 'unread' ? 'background-color: #fee2e2; border-left: 4px solid #f87171;' : 'background-color: #dcfce7; border-left: 4px solid #4ade80;' }}">
-                                    <a href="{{ route('notifications.open', $notification->id) }}" class="block hover:bg-gray-50 rounded p-2 -m-2 transition">
-                                        <p class="font-medium text-gray-900">{{ $notification->message }}</p>
-                                        <p class="text-sm text-gray-500">
-                                            {{ ucfirst($notification->status) }} • {{ $notification->created_at->format('M d, Y h:i A') }}
-                                        </p>
-                                    </a>
-                                </div>
-                            @empty
-                                <p class="text-gray-500">No unread notifications.</p>
-                            @endforelse
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

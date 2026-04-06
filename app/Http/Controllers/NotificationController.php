@@ -22,7 +22,7 @@ class NotificationController extends Controller
 
         return view('notifications.index', [
             'notifications' => $notifications,
-        ]);
+        ])->layout('layouts.user');
     }
 
     public function open(Notification $notification)
