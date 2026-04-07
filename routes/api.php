@@ -19,11 +19,13 @@ use App\Http\Controllers\Researcher\ResearcherReportController;
 use App\Http\Controllers\Api\HealthGoalController;
 use App\Http\Controllers\Api\PersonalComparisonController;
 
+// Notifications API controller
+use App\Http\Controllers\Api\NotificationApiController;
+
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends']);
     Route::get('/reports/dashboard/trends/export.csv', [DashboardReportController::class, 'exportTrendsCsv']);
 });
-
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -71,6 +73,7 @@ Route::middleware(['auth:sanctum', 'role:researcher'])->group(function () {
     // Export aggregated report as CSV
     Route::post('/researcher/reports/aggregated/export.csv', [ResearcherReportController::class, 'exportAggregatedCsv']);
 });
+
 Route::middleware(['auth:sanctum', 'role:provider'])->get(
     '/provider/patients/search',
     [PatientSearchController::class, 'index']
@@ -87,8 +90,8 @@ Route::middleware(['auth:sanctum', 'role:provider'])->get(
 );
 
 Route::middleware('auth:sanctum')->get('/me/summary',
-    [\App\Http\Controllers\Api\MeSummaryController::class, 'show']);
-
+    [\App\Http\Controllers\Api\MeSummaryController::class, 'show']
+);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reporting/trends', [TrendController::class, 'index'])
@@ -106,3 +109,21 @@ Route::middleware('auth:sanctum')->get(
     '/me/comparison',
     [PersonalComparisonController::class, 'show']
 );
+
+/*
+     Notification endpoints (in-app notifications retrieval API)
+ */
+Route::middleware('auth:sanctum')->group(function () {
+    // List notifications (supports ?status=unread&type=reminder&per_page=20)
+    Route::get('/notifications', [NotificationApiController::class, 'index']);
+
+    // Get a single notification (must belong to the authenticated user's account)
+    Route::get('/notifications/{notification}', [NotificationApiController::class, 'show']);
+
+    // Update notification (e.g. { "status": "read" })
+    Route::patch('/notifications/{notification}', [NotificationApiController::class, 'update']);
+
+    // Convenience actions
+    Route::post('/notifications/{notification}/read', [NotificationApiController::class, 'markRead']);
+    Route::post('/notifications/read-all', [NotificationApiController::class, 'markAllRead']);
+});
