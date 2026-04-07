@@ -11,7 +11,6 @@
 
         <div>
             <h3 class="text-sm font-semibold text-gray-800">{{ $title }}</h3>
-            <p class="text-xs text-gray-500">Shows submissions over time</p>
         </div>
 
         <div class="flex items-center gap-2 shrink-0">

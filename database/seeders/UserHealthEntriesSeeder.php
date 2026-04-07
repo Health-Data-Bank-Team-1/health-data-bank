@@ -9,12 +9,14 @@ use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Support\Str;
 use App\Models\Role;
+use App\Models\FormTemplate;
+use App\Models\FormField;
+use App\Models\FormSubmission;
 
 class UserHealthEntriesSeeder extends Seeder
 {
     public function run(): void
     {
-
 
         $account = Account::factory()->create([
             'name' => 'Test Summary',
@@ -36,16 +38,130 @@ class UserHealthEntriesSeeder extends Seeder
 
         $user->assignRole('user');
 
-        HealthEntry::factory()->create([
+        $template = FormTemplate::create([
+            'title' => 'Test Template',
+            'version' => 1,
+            'approval_status' => 'approved',
+            'description' => 'for testing',
+        ]);
+
+        FormField::create([
+            'form_template_id' => $template->id,
+            'label' => 'Weight',
+            'field_type' => 'Number',
+            'validation_rules' => ['required', 'integer', 'min:0'],
+        ]);
+
+        FormField::create([
+            'form_template_id' => $template->id,
+            'label' => 'Meals Per Day',
+            'field_type' => 'Number',
+            'validation_rules' => ['required', 'integer', 'min:0'],
+        ]);
+
+        FormField::create([
+            'form_template_id' => $template->id,
+            'label' => 'Heart Rate',
+            'field_type' => 'Number',
+            'validation_rules' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $submission = FormSubmission::create([
             'account_id' => $account->id,
-            'timestamp' => Carbon::parse('2026-02-01 10:00:00'),
-            'encrypted_values' => ['weight' => 170, 'meals_per_day' => 2],
+            'form_template_id' => $template->id,
+            'status' => 'SUBMITTED',
+            'submitted_at' => Carbon::parse('2026-04-01 10:00:00')
         ]);
 
         HealthEntry::factory()->create([
+            'submission_id' => $submission->id,
             'account_id' => $account->id,
-            'timestamp' => Carbon::parse('2026-02-02 10:00:00'),
-            'encrypted_values' => ['weight' => 174, 'meals_per_day' => 3],
+            'timestamp' => Carbon::parse('2026-04-01 10:00:00'),
+            'encrypted_values' => ['weight' => 170, 'meals_per_day' => 2, 'hr' => 80],
+        ]);
+
+        $submission = FormSubmission::create([
+            'account_id' => $account->id,
+            'form_template_id' => $template->id,
+            'status' => 'SUBMITTED',
+            'submitted_at' => Carbon::parse('2026-04-02 10:00:00')
+        ]);
+
+        HealthEntry::factory()->create([
+            'submission_id' => $submission->id,
+            'account_id' => $account->id,
+            'timestamp' => Carbon::parse('2026-04-02 10:00:00'),
+            'encrypted_values' => ['weight' => 174, 'meals_per_day' => 3, 'hr' => 87],
+        ]);
+
+        $submission = FormSubmission::create([
+            'account_id' => $account->id,
+            'form_template_id' => $template->id,
+            'status' => 'SUBMITTED',
+            'submitted_at' => Carbon::parse('2026-04-03 10:00:00')
+        ]);
+
+        HealthEntry::factory()->create([
+            'submission_id' => $submission->id,
+            'account_id' => $account->id,
+            'timestamp' => Carbon::parse('2026-04-03 10:00:00'),
+            'encrypted_values' => ['weight' => 167, 'meals_per_day' => 2, 'hr' => 82],
+        ]);
+
+        $submission = FormSubmission::create([
+            'account_id' => $account->id,
+            'form_template_id' => $template->id,
+            'status' => 'SUBMITTED',
+            'submitted_at' => Carbon::parse('2026-04-04 10:00:00')
+        ]);
+
+        HealthEntry::factory()->create([
+            'submission_id' => $submission->id,
+            'account_id' => $account->id,
+            'timestamp' => Carbon::parse('2026-04-04 10:00:00'),
+            'encrypted_values' => ['weight' => 178, 'meals_per_day' => 4, 'hr' => 67],
+        ]);
+
+        $submission = FormSubmission::create([
+            'account_id' => $account->id,
+            'form_template_id' => $template->id,
+            'status' => 'SUBMITTED',
+            'submitted_at' => Carbon::parse('2026-04-05 10:00:00')
+        ]);
+
+        HealthEntry::factory()->create([
+            'submission_id' => $submission->id,
+            'account_id' => $account->id,
+            'timestamp' => Carbon::parse('2026-04-05 10:00:00'),
+            'encrypted_values' => ['weight' => 182, 'meals_per_day' => 1, 'hr' => 89],
+        ]);
+
+        $submission = FormSubmission::create([
+            'account_id' => $account->id,
+            'form_template_id' => $template->id,
+            'status' => 'SUBMITTED',
+            'submitted_at' => Carbon::parse('2026-04-06 10:00:00')
+        ]);
+
+        HealthEntry::factory()->create([
+            'submission_id' => $submission->id,
+            'account_id' => $account->id,
+            'timestamp' => Carbon::parse('2026-04-06 10:00:00'),
+            'encrypted_values' => ['weight' => 178, 'meals_per_day' => 2, 'hr' => 99],
+        ]);
+
+        $submission = FormSubmission::create([
+            'account_id' => $account->id,
+            'form_template_id' => $template->id,
+            'status' => 'SUBMITTED',
+            'submitted_at' => Carbon::parse('2026-04-07 10:00:00')
+        ]);
+
+        HealthEntry::factory()->create([
+            'submission_id' => $submission->id,
+            'account_id' => $account->id,
+            'timestamp' => Carbon::parse('2026-04-07 10:00:00'),
+            'encrypted_values' => ['weight' => 176, 'meals_per_day' => 2, 'hr' => 92],
         ]);
     }
 }
