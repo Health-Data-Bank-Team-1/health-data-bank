@@ -4,7 +4,6 @@ use App\Http\Controllers\Admin\AdminAuditLogController;
 use App\Http\Controllers\Admin\FormTemplateApprovalController;
 use App\Http\Controllers\Api\Reports\DashboardReportController;
 use App\Http\Controllers\FormTemplateController;
-use App\Http\Controllers\NotificationController;
 use App\Livewire\Admin\AuditLog;
 use App\Livewire\Admin\DatabaseManagement;
 use App\Livewire\Admin\FormTemplatesIndex;
@@ -34,10 +33,11 @@ use App\Livewire\Researcher\ResearcherForms;
 use App\Livewire\Researcher\ResearcherReportGenerator;
 use App\Livewire\Researcher\ResearcherReports;
 use App\Livewire\UserFormSelect;
+use App\Livewire\UserSuggestions;
 use App\Livewire\UserTodo;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Livewire\UserSuggestions;
+use App\Livewire\Notifications;
 
 Route::get('/', function () {
     return view('welcome');
@@ -185,9 +185,7 @@ Route::middleware([
         ->name('comparison.chart');
 
     Route::middleware(['auth'])->group(function () {
-        Route::get('/notifications', [NotificationController::class, 'index'])
+        Route::get('/notifications', Notifications::class)
             ->name('notifications.index');
-        Route::get('/notifications/{notification}/open', [NotificationController::class, 'open'])
-            ->name('notifications.open');
     });
 });

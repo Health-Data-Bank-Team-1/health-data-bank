@@ -12,6 +12,7 @@ use App\Models\Role;
 use App\Models\FormTemplate;
 use App\Models\FormField;
 use App\Models\FormSubmission;
+use App\Models\Notification;
 
 class UserHealthEntriesSeeder extends Seeder
 {
@@ -37,6 +38,41 @@ class UserHealthEntriesSeeder extends Seeder
         );
 
         $user->assignRole('user');
+
+        Notification::create([
+            'account_id' => $account->id,
+            'type' => 'reminder',
+            'message' => 'reminder test',
+            'status' => 'unread'
+        ]);
+
+        Notification::create([
+            'account_id' => $account->id,
+            'type' => 'reminder',
+            'message' => 'reminder test 2',
+            'status' => 'unread'
+        ]);
+
+        Notification::create([
+            'account_id' => $account->id,
+            'type' => 'alert',
+            'message' => 'alert',
+            'status' => 'unread'
+        ]);
+
+        Notification::create([
+            'account_id' => $account->id,
+            'type' => 'alert',
+            'message' => 'alert 2',
+            'status' => 'unread'
+        ]);
+
+        Notification::create([
+            'account_id' => $account->id,
+            'type' => 'alert',
+            'message' => 'alert 3',
+            'status' => 'unread'
+        ]);
 
         $template = FormTemplate::create([
             'title' => 'Test Template',
