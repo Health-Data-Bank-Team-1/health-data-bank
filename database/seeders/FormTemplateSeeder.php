@@ -13,6 +13,7 @@ class FormTemplateSeeder extends Seeder
         $nameform = FormTemplate::create([
             'title' => 'Name Form',
             'version' => 1,
+            'approval_status' => 'approved',
             'description' => 'Name form for names',
         ]);
 
@@ -33,6 +34,7 @@ class FormTemplateSeeder extends Seeder
         $radioform = FormTemplate::create([
             'title' => 'Radio Form',
             'version' => 1,
+            'approval_status' => 'approved',
             'description' => 'for testing radio button',
         ]);
 
@@ -61,6 +63,7 @@ class FormTemplateSeeder extends Seeder
         $checkboxform = FormTemplate::create([
             'title' => 'Checkbox Form',
             'version' => 1,
+            'approval_status' => 'approved',
             'description' => 'for testing checkbox options',
         ]);
 
@@ -89,6 +92,7 @@ class FormTemplateSeeder extends Seeder
         $dateform = FormTemplate::create([
             'title' => 'Date Form',
             'version' => 1,
+            'approval_status' => 'approved',
             'description' => 'for testing date input',
         ]);
 
@@ -102,6 +106,7 @@ class FormTemplateSeeder extends Seeder
         $numberform = FormTemplate::create([
             'title' => 'Number Form',
             'version' => 1,
+            'approval_status' => 'approved',
             'description' => 'for testing number input',
         ]);
 
