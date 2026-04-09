@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\Account;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 class DiffUserWithRolesSeeder extends Seeder
 {
@@ -23,6 +24,7 @@ class DiffUserWithRolesSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
             'account_id' => $user_account->id,
+            'password' => Hash::make('password'),
         ]);
 
         Role::firstOrCreate(
@@ -43,6 +45,7 @@ class DiffUserWithRolesSeeder extends Seeder
             'name' => 'Test Res',
             'email' => 'res@example.com',
             'account_id' => $res_account->id,
+            'password' => Hash::make('password'),
         ]);
 
         Role::firstOrCreate(
@@ -63,6 +66,7 @@ class DiffUserWithRolesSeeder extends Seeder
             'name' => 'Test Admin',
             'email' => 'admin@example.com',
             'account_id' => $admin_account->id,
+            'password' => Hash::make('password'),
         ]);
 
         Role::firstOrCreate(
@@ -83,6 +87,7 @@ class DiffUserWithRolesSeeder extends Seeder
             'name' => 'Test Provider',
             'email' => 'provider@example.com',
             'account_id' => $provider_account->id,
+            'password' => Hash::make('password'),
         ]);
 
         Role::firstOrCreate(

@@ -23,15 +23,35 @@
                 id="group_select"
                 wire:model.live="groupBy"
                 class="text-sm border-gray-300 rounded-md"
-            >
                 <option value="day">Day</option>
                 <option value="week">Week</option>
                 <option value="month">Month</option>
             </select>
+            <a
+                id="{{ $chartId }}_export"
+                href="{{ route('dashboard.trends.export', ['metric' => $metric, 'group_by' => $groupBy]) }}"
+                class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md bg-gray-700 text-white hover:bg-gray-800"
+            >
         </div>
     </div>
 
+<<<<<<< HEAD
     <div class="relative h-64" wire:ignore>
+=======
+    <div class="relative h-64">
+        {{-- Loading overlay --}}
+        <div id="{{ $chartId }}_loading"
+             class="hidden absolute inset-0 bg-white/70 rounded-lg flex items-center justify-center z-10">
+            <div class="text-sm text-gray-700">Loading…</div>
+        </div>
+
+        {{-- Empty state --}}
+        <div id="{{ $chartId }}_empty"
+             class="hidden absolute inset-0 rounded-lg flex items-center justify-center text-sm text-gray-500">
+            No data yet (add some form submissions).
+        </div>
+
+>>>>>>> 3971704 (Final updates)
         <canvas id="{{ $chartId }}"></canvas>
     </div>
 
