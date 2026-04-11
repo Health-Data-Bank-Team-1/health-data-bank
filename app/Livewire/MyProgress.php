@@ -11,14 +11,13 @@ class MyProgress extends Component
 {
     public $goals = [];
     public array $goalProgress = [];
+    public $trend_metric;
 
     public function mount(): void
     {
         $user = Auth::user();
 
-        $accountId = DB::table('accounts')
-            ->where('email', $user->email)
-            ->value('id');
+        $accountId = $user->account_id;
 
         if (!$accountId) {
             return;

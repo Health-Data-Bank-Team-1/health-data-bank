@@ -14,9 +14,9 @@
                             <a href="{{ route('researcher.forms') }}">Forms</a>
                         </h2>
                     </div>
-                    <div>
-                        res forms here
-                    </div>
+                    <x-link-button class="w-full mt-2" href="{{ route('researcher.forms') }}">
+                        Manage Forms
+                    </x-link-button>
                 </div>
 
                 <div>
@@ -28,6 +28,12 @@
                     <div>
                         <livewire:researcher.report-index />
                     </div>
+                    <x-link-button class="w-full mt-2" href="{{ route('researcher.reports') }}">
+                        Manage Reports
+                    </x-link-button>
+                    <x-link-button class="w-full mt-2" href="{{ route('researcher.cohort') }}">
+                        Manage Cohort
+                    </x-link-button>
                     <x-link-button class="w-full mt-2" href="{{ route('researcher.report-generator') }}">
                         New Report
                     </x-link-button>

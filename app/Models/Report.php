@@ -52,6 +52,13 @@ class Report extends Model
         return $this->hasMany(AggregatedData::class);
     }
 
+    public function updates()
+    {
+        return $this->hasMany(ReportUpdate::class)->latest();
+    }
+}
+
+
     public function archivedBy()
     {
         return $this->belongsTo(User::class, 'archived_by');

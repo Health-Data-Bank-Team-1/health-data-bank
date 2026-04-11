@@ -1,9 +1,6 @@
 <div class="pt-4 pb-12">
     <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 mt-4">
         <div class="bg-white shadow-xl sm:rounded-lg p-6">
-            <h1 class="text-2xl font-bold mb-6">
-                Personal Health Comparison
-            </h1>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
@@ -13,43 +10,64 @@
                             <option value="{{ $key }}">{{ $label }}</option>
                         @endforeach
                     </select>
+                    @error('metric_key')
+                        <span class="text-red-600 text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div>
                     <label for="gender" class="text-sm font-medium">Gender</label>
                     <input id="gender" type="text" wire:model="gender" class="w-full border rounded p-2">
+                    @error('gender')
+                        <span class="text-red-600 text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div>
                     <label for="location" class="text-sm font-medium">Location</label>
                     <input id="location" type="text" wire:model="location" class="w-full border rounded p-2">
+                    @error('location')
+                        <span class="text-red-600 text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div>
                     <label for="age_min" class="text-sm font-medium">Age Min</label>
                     <input id="age_min" type="number" wire:model="age_min" class="w-full border rounded p-2">
+                    @error('age_min')
+                        <span class="text-red-600 text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div>
                     <label for="age_max" class="text-sm font-medium">Age Max</label>
                     <input id="age_max" type="number" wire:model="age_max" class="w-full border rounded p-2">
+                    @error('age_max')
+                        <span class="text-red-600 text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div>
                     <label for="from" class="text-sm font-medium">From</label>
                     <input id="from" type="date" wire:model="from" class="w-full border rounded p-2">
+                    @error('from')
+                        <span class="text-red-600 text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div>
                     <label for="to" class="text-sm font-medium">To</label>
                     <input id="to" type="date" wire:model="to" class="w-full border rounded p-2">
+                    @error('to')
+                        <span class="text-red-600 text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
 
             <div class="flex gap-2 mt-2">
                 <button
                     wire:click="compare"
-                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+                    class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700"
                 >
                     Compare
                 </button>
