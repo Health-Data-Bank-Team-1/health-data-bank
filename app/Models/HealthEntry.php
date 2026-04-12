@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Casts\EncryptedArray;
 
 class HealthEntry extends Model
 {
@@ -21,7 +22,7 @@ class HealthEntry extends Model
 
     protected $casts = [
         'timestamp' => 'datetime',
-        'encrypted_values' => 'array',
+        'encrypted_values' => EncryptedArray::class,
     ];
 
     public function submission()

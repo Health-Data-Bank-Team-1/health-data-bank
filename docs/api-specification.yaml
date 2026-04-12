@@ -1,0 +1,838 @@
+openapi: 3.0.0
+info:
+  title: Health Data Bank API
+  description: |
+    Health Data Bank API specification for Provider and Admin endpoints.
+    
+    This API provides authenticated endpoints for healthcare providers to manage patient data
+    and for administrators to manage form templates, approvals, and system configuration.
+    
+    **Authentication:** All endpoints require Bearer token authentication via Laravel Sanctum.
+    Include the token in the Authorization header: `Authorization: Bearer {token}`
+    
+    **Base URL:** `http://localhost/api`
+    
+  version: 1.0.0
+  contact:
+    name: Health Data Bank Team
+    url: https://github.com/Health-Data-Bank-Team-1
+
+servers:
+  - url: http://localhost/api
+    description: Local Development Server
+  - url: https://api.healthdatabank.com/api
+    description: Production Server
+
+tags:
+  - name: Admin - Form Templates
+    description: Administrative endpoints for managing form templates
+  - name: Admin - Form Approvals
+    description: Administrative endpoints for approving/rejecting form templates
+  - name: Admin - Form Versioning
+    description: Administrative endpoints for managing form template versions
+  - name: Provider - Patients
+    description: Provider endpoints for managing patient data and records
+  - name: Provider - Dashboard
+    description: Provider endpoints for accessing dashboard information
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Laravel Sanctum authentication token
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        errors:
+          type: object
+          description: Field-level errors
+      example:
+        message: "Validation failed"
+        errors:
+          title: ["The title field is required"]
+
+    UnauthorizedError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Unauthenticated"
+
+    ForbiddenError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "This action is unauthorized"
+
+    FormTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier (UUID)
+        title:
+          type: string
+          description: Form template title
+          example: "Patient Health Assessment"
+        slug:
+          type: string
+          description: URL-friendly slug generated from title
+          example: "patient-health-assessment"
+        description:
+          type: string
+          description: Detailed description of the form
+          example: "Annual health assessment form for patients"
+        version:
+          type: integer
+          description: Current version number
+          example: 1
+        schema:
+          type: object
+          description: JSON schema defining form fields and validation rules
+          example:
+            fields:
+              - name: "age"
+                type: "number"
+                required: true
+              - name: "blood_pressure"
+                type: "string"
+                required: true
+        approval_status:
+          type: string
+          enum:
+            - pending
+            - approved
+            - rejected
+          description: Current approval status
+          example: "pending"
+        approved_by:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of admin who approved the form
+        approved_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when form was approved
+        rejection_reason:
+          type: string
+          nullable: true
+          description: Reason for rejection if status is rejected
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    FormTemplateVersion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        form_template_id:
+          type: string
+          format: uuid
+        version_number:
+          type: integer
+          example: 1
+        schema:
+          type: object
+          description: Schema for this specific version
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+          format: uuid
+
+    Patient:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        date_of_birth:
+          type: string
+          format: date
+        account_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PatientRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        patient:
+          $ref: '#/components/schemas/Patient'
+        health_entries:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              entry_date:
+                type: string
+                format: date
+              values:
+                type: object
+                description: Encrypted health data values
+        form_submissions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              form_template_id:
+                type: string
+                format: uuid
+              submitted_at:
+                type: string
+                format: date-time
+
+    ProviderDashboard:
+      type: object
+      properties:
+        total_patients:
+          type: integer
+          description: Total number of patients under care
+          example: 42
+        active_forms:
+          type: integer
+          description: Number of active form templates
+          example: 8
+        pending_submissions:
+          type: integer
+          description: Number of pending patient form submissions
+          example: 5
+        recent_activity:
+          type: array
+          items:
+            type: object
+            properties:
+              patient_id:
+                type: string
+                format: uuid
+              patient_name:
+                type: string
+              activity_type:
+                type: string
+                enum:
+                  - form_submitted
+                  - data_updated
+                  - appointment_scheduled
+              timestamp:
+                type: string
+                format: date-time
+
+  responses:
+    UnauthorizedResponse:
+      description: Authentication required or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnauthorizedError'
+
+    ForbiddenResponse:
+      description: User lacks required permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ForbiddenError'
+
+    ValidationErrorResponse:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ============================================================================
+  # ADMIN - FORM TEMPLATES
+  # ============================================================================
+
+  /admin/forms:
+    get:
+      tags:
+        - Admin - Form Templates
+      summary: List all form templates
+      description: |
+        Retrieve a list of all form templates with their current status.
+        Includes pending, approved, and rejected templates.
+        **Requires:** Admin role
+      operationId: listFormTemplates
+      parameters:
+        - name: approval_status
+          in: query
+          description: Filter by approval status
+          schema:
+            type: string
+            enum:
+              - pending
+              - approved
+              - rejected
+        - name: page
+          in: query
+          description: Pagination page number
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Successfully retrieved form templates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FormTemplate'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      per_page:
+                        type: integer
+                      current_page:
+                        type: integer
+                      last_page:
+                        type: integer
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+
+  # ============================================================================
+  # ADMIN - FORM APPROVALS
+  # ============================================================================
+
+  /admin/forms/{template}/approve:
+    post:
+      tags:
+        - Admin - Form Approvals
+      summary: Approve a form template
+      description: |
+        Approve a pending form template. Once approved, the form becomes available
+        for providers and patients to use.
+        **Requires:** Admin role
+      operationId: approveFormTemplate
+      parameters:
+        - name: template
+          in: path
+          required: true
+          description: Form template slug or ID
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notes:
+                  type: string
+                  description: Optional approval notes
+      responses:
+        '200':
+          description: Form template approved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Form template approved successfully"
+                  data:
+                    $ref: '#/components/schemas/FormTemplate'
+        '404':
+          description: Form template not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+
+  /admin/forms/{template}/reject:
+    post:
+      tags:
+        - Admin - Form Approvals
+      summary: Reject a form template
+      description: |
+        Reject a pending form template. The template returns to draft status
+        and providers are notified to make revisions.
+        **Requires:** Admin role
+      operationId: rejectFormTemplate
+      parameters:
+        - name: template
+          in: path
+          required: true
+          description: Form template slug or ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rejection_reason
+              properties:
+                rejection_reason:
+                  type: string
+                  description: Reason for rejection (required)
+                  minLength: 10
+                  example: "Schema validation fields are missing proper error handling"
+      responses:
+        '200':
+          description: Form template rejected successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Form template rejected successfully"
+                  data:
+                    $ref: '#/components/schemas/FormTemplate'
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '404':
+          description: Form template not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+
+  /admin/forms/{template}/submit:
+    post:
+      tags:
+        - Admin - Form Approvals
+      summary: Submit a form template for approval
+      description: |
+        Submit a draft form template for admin review and approval.
+        Template must be in draft status. Once submitted, only admins can modify it.
+        **Requires:** Admin or Provider role with ownership
+      operationId: submitFormTemplate
+      parameters:
+        - name: template
+          in: path
+          required: true
+          description: Form template slug or ID
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                submission_notes:
+                  type: string
+                  description: Optional notes for the admin reviewer
+      responses:
+        '200':
+          description: Form template submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Form template submitted for approval"
+                  data:
+                    $ref: '#/components/schemas/FormTemplate'
+        '400':
+          description: Invalid template state for submission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Form template not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+
+  # ============================================================================
+  # ADMIN - FORM VERSIONING
+  # ============================================================================
+
+  /form-templates/{template}/versions:
+    get:
+      tags:
+        - Admin - Form Versioning
+      summary: Get form template version history
+      description: |
+        Retrieve complete version history for a form template.
+        Shows all previous versions with their schema changes.
+        **Requires:** Admin or Provider role
+      operationId: getFormTemplateVersions
+      parameters:
+        - name: template
+          in: path
+          required: true
+          description: Form template slug or ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Version history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FormTemplateVersion'
+        '404':
+          description: Form template not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+
+  /form-templates/{template}/rollback/{version}:
+    post:
+      tags:
+        - Admin - Form Versioning
+      summary: Rollback to a previous form template version
+      description: |
+        Restore a form template to a previous version.
+        Current version becomes a new archive, and selected version becomes active.
+        **Requires:** Admin role
+      operationId: rollbackFormTemplateVersion
+      parameters:
+        - name: template
+          in: path
+          required: true
+          description: Form template slug or ID
+          schema:
+            type: string
+        - name: version
+          in: path
+          required: true
+          description: Version number to rollback to
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Reason for rollback
+      responses:
+        '200':
+          description: Rollback successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Form template rolled back to version 1"
+                  data:
+                    $ref: '#/components/schemas/FormTemplate'
+        '400':
+          description: Invalid version or rollback not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Form template or version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+
+  # ============================================================================
+  # PROVIDER - PATIENT SEARCH
+  # ============================================================================
+
+  /provider/patients/search:
+    get:
+      tags:
+        - Provider - Patients
+      summary: Search for patients
+      description: |
+        Search for patients under the provider's care by name, email, or ID.
+        Supports pagination and filtering.
+        **Requires:** Provider role
+      operationId: searchPatients
+      parameters:
+        - name: q
+          in: query
+          required: false
+          description: Search query (name, email, or ID)
+          schema:
+            type: string
+            example: "John Doe"
+        - name: page
+          in: query
+          description: Pagination page number
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: Results per page
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Search results retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Patient'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      per_page:
+                        type: integer
+                      current_page:
+                        type: integer
+                      last_page:
+                        type: integer
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+
+  # ============================================================================
+  # PROVIDER - PATIENT RECORDS
+  # ============================================================================
+
+  /provider/patients/{patient}/record:
+    get:
+      tags:
+        - Provider - Patients
+      summary: Get patient medical record
+      description: |
+        Retrieve complete medical record for a patient, including:
+        - Patient demographics
+        - Health entries and vital signs
+        - Form submissions and responses
+        - Historical data
+        
+        **Requires:** Provider role with access to patient
+      operationId: getPatientRecord
+      parameters:
+        - name: patient
+          in: path
+          required: true
+          description: Patient ID or slug
+          schema:
+            type: string
+        - name: include_history
+          in: query
+          description: Include historical data entries
+          schema:
+            type: boolean
+            default: true
+        - name: date_from
+          in: query
+          description: Filter records from this date (ISO 8601)
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          description: Filter records until this date (ISO 8601)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Patient record retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PatientRecord'
+        '404':
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+        '403':
+          description: Access denied to this patient record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  # ============================================================================
+  # PROVIDER - DASHBOARD
+  # ============================================================================
+
+  /provider/dashboard:
+    get:
+      tags:
+        - Provider - Dashboard
+      summary: Get provider dashboard data
+      description: |
+        Retrieve aggregated dashboard information for the authenticated provider, including:
+        - Patient count and statistics
+        - Active forms
+        - Pending submissions
+        - Recent patient activity
+        
+        **Requires:** Provider role
+      operationId: getProviderDashboard
+      responses:
+        '200':
+          description: Dashboard data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ProviderDashboard'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenResponse'
+
+  # ============================================================================
+  # USER - ME ENDPOINTS
+  # ============================================================================
+
+  /me/summary:
+    get:
+      tags:
+        - Provider - Dashboard
+      summary: Get authenticated user summary
+      description: |
+        Get summary information about the currently authenticated user.
+        **Requires:** Authentication
+      operationId: getMeSummary
+      responses:
+        '200':
+          description: User summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      email:
+                        type: string
+                        format: email
+                      role:
+                        type: string
+                        enum:
+                          - patient
+                          - provider
+                          - admin
+                          - researcher
+                      account_id:
+                        type: string
+                        format: uuid
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
