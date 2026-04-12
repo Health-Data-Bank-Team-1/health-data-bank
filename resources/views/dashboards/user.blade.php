@@ -32,10 +32,7 @@
                                 View Progress
                             </a>
                         </div>
-                        @include('livewire.trend-chart', [
-                        'title' => 'Submission Trend',
-                        'metric' => 'submission_count',
-                        'groupBy' => 'day' ])
+                        <livewire:trend-chart :group-by="'day'" />
                     </div>
                 </div>
             </div>

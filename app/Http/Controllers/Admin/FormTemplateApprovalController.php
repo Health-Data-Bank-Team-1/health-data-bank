@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RejectFormTemplateRequest;
 use App\Models\FormTemplate;
 use App\Services\FormTemplateApprovalService;
-use Illuminate\Http\Request;
 
 class FormTemplateApprovalController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['auth:sanctum', 'role:admin']);
+    }
 
     public function submit(FormTemplate $template, FormTemplateApprovalService $service)
     {
@@ -22,11 +26,10 @@ class FormTemplateApprovalController extends Controller
         return response()->json(['message' => 'Template approved']);
     }
 
-    public function reject(Request $request, FormTemplate $template, FormTemplateApprovalService $service)
+    public function reject(RejectFormTemplateRequest $request, FormTemplate $template, FormTemplateApprovalService $service)
     {
-        $request->validate(['reason' => 'required|string|max:255']);
-
-        $service->reject($template, auth()->user(), $request->reason);
+        $validated = $request->validated();
+        $service->reject($template, auth()->user(), $validated['reason']);
         return response()->json(['message' => 'Template rejected']);
     }
 

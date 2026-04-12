@@ -12,6 +12,58 @@ class Handler extends ExceptionHandler
 {
     public function register(): void
     {
+
+            // Validation errors
+        $this->invalidate(function (ValidationException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => 'ValidationError',
+                    'message' => 'The given data was invalid.',
+                    'details' => $e->errors(),
+                ], 422);
+            }
+        });
+
+        // Model not found
+        $this->renderable(function (ModelNotFoundException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => 'NotFound',
+                    'message' => 'Resource not found.',
+                ], 404);
+            }
+        });
+
+        // Authorization
+        $this->renderable(function (AuthorizationException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => 'Forbidden',
+                    'message' => 'You are not authorized to access this resource.',
+                ], 403);
+            }
+        });
+
+        // Unauthenticated
+        $this->renderable(function (AuthenticationException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => 'Unauthorized',
+                    'message' => 'Authentication required.',
+                ], 401);
+            }
+        });
+
+        // Generic fallback
+        $this->renderable(function (Throwable $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => 'ServerError',
+                    'message' => config('app.debug') ? $e->getMessage() : 'An error occurred.',
+                ], 500);
+            }
+        });
+
         $this->renderable(function (Throwable $e, $request) {
             if ($e instanceof AuthorizationException || $e instanceof AccessDeniedHttpException) {
                 AuditLogger::log(
