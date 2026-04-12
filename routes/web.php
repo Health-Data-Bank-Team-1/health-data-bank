@@ -18,6 +18,7 @@ use App\Livewire\FormRenderer;
 use App\Livewire\HealthGoals;
 use App\Livewire\HealthSummary;
 use App\Livewire\MyProgress;
+use App\Livewire\Notifications;
 use App\Livewire\PersonalComparison;
 use App\Livewire\PersonalComparisonChart;
 use App\Livewire\Profiles\AdminProfile;
@@ -36,9 +37,9 @@ use App\Livewire\Researcher\ResearcherReports;
 use App\Livewire\UserFormSelect;
 use App\Livewire\UserSuggestions;
 use App\Livewire\UserTodo;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Livewire\Notifications;
 
 Route::get('/', function () {
     return view('welcome');
@@ -59,32 +60,42 @@ Route::middleware([
         } elseif (Auth::user()->hasRole('provider')) {
             return redirect('/provider/dashboard');
         }
-    });
+
+        abort(403);
+    })->name('dashboard');
 
     Route::get('/user/profile', UserProfile::class)
         ->middleware('role:user')
         ->name('user-profile');
+
     Route::get('/user/dashboard', UserDashboard::class)
         ->middleware('role:user')
         ->name('dashboards.user');
+
     Route::get('/user/my-progress', MyProgress::class)
         ->middleware('role:user')
         ->name('my-progress');
+
     Route::get('/user/form-select', UserFormSelect::class)
         ->middleware('role:user')
         ->name('user-form-select');
+
     Route::get('/user/todo', UserTodo::class)
         ->middleware('role:user')
         ->name('user-todo');
+
     Route::get('/user/forms', FormIndex::class)
         ->middleware('role:user')
         ->name('forms.index');
+
     Route::get('/user/forms/{form}', FormRenderer::class)
         ->middleware('role:user')
         ->name('forms.show');
+
     Route::get('/user/health-summary', HealthSummary::class)
         ->middleware('role:user')
         ->name('health-summary');
+
     Route::get('/user/suggestions', UserSuggestions::class)
         ->middleware('role:user')
         ->name('user-suggestions');
@@ -92,24 +103,31 @@ Route::middleware([
     Route::get('/researcher/profile', ResearcherProfile::class)
         ->middleware('role:researcher')
         ->name('researcher-profile');
+
     Route::get('/researcher/dashboard', ResearcherDashboard::class)
         ->middleware('role:researcher')
         ->name('dashboards.researcher');
+
     Route::get('/researcher/forms', ResearcherForms::class)
         ->middleware('role:researcher')
         ->name('researcher.forms');
+
     Route::get('/researcher/reports', ResearcherReports::class)
         ->middleware('role:researcher')
         ->name('researcher.reports');
+
     Route::get('/researcher/report-generator', ResearcherReportGenerator::class)
         ->middleware('role:researcher')
         ->name('researcher.report-generator');
+
     Route::get('/researcher/report-index', ReportIndex::class)
         ->middleware('role:researcher')
         ->name('researcher.report-index');
+
     Route::get('/researcher/reports/{report}', ResearcherReports::class)
         ->middleware('role:researcher')
         ->name('researcher.reports.show');
+
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/researcher/cohort', CohortBuilder::class)
             ->name('researcher.cohort');
@@ -118,19 +136,23 @@ Route::middleware([
     Route::get('/admin/profile', AdminProfile::class)
         ->middleware('role:admin')
         ->name('admin-profile');
+
     Route::get('/admin/dashboard', AdminDashboard::class)
         ->middleware('role:admin')
         ->name('dashboards.admin');
+
     Route::get('/admin/audit-log', AuditLog::class)
         ->middleware('role:admin')
         ->name('admin.audit-log');
+
     Route::get('/admin/database-management', DatabaseManagement::class)
         ->middleware('role:admin')
         ->name('admin.database-management');
+
     Route::get('/admin/report-review', ReportReview::class)
         ->middleware('role:admin')
         ->name('admin.report-review');
-    // admin UI page (Livewire)
+
     Route::get('/admin/forms', FormTemplatesIndex::class)
         ->middleware('role:admin')
         ->name('admin.forms.index');
@@ -153,25 +175,33 @@ Route::middleware([
         ->name('provider.feedback');
 
     Route::prefix('form-templates')->group(function () {
-        Route::post('/', [FormTemplateController::class, 'store'])->name('form-templates.store');
-        Route::put('{template}', [FormTemplateController::class, 'update'])->name('form-templates.update');
+        Route::post('/', [FormTemplateController::class, 'store'])
+            ->name('form-templates.store');
+
+        Route::put('{template}', [FormTemplateController::class, 'update'])
+            ->name('form-templates.update');
     });
 
     Route::get('/provider/profile', ProviderProfile::class)
         ->middleware('role:provider')
         ->name('provider-profile');
+
     Route::get('/provider/dashboard', ProviderDashboard::class)
         ->middleware('role:provider')
         ->name('dashboards.provider');
+
     Route::get('/provider/patients', ProviderPatients::class)
         ->middleware('role:provider')
         ->name('provider.patients');
+
     Route::get('/provider/reports', ProviderReports::class)
         ->middleware('role:provider')
         ->name('provider.reports');
+
     Route::get('/provider/patient-index', PatientIndex::class)
         ->middleware('role:provider')
         ->name('provider.patient-index');
+
     Route::get('/provider/patients/{patient}', PatientRenderer::class)
         ->middleware('role:provider')
         ->name('provider.patients.show');
@@ -185,16 +215,30 @@ Route::middleware([
     });
 
     Route::middleware(['auth', 'verified'])->group(function () {
-        Route::get('/health-goals', HealthGoals::class)->name('health-goals');
+        Route::get('/health-goals', HealthGoals::class)
+            ->name('health-goals');
     });
 
     Route::middleware(['auth'])->get('/comparison', PersonalComparison::class)
         ->name('comparison');
+
     Route::middleware(['auth'])->get('/comparison/chart', PersonalComparisonChart::class)
         ->name('comparison.chart');
 
     Route::middleware(['auth'])->group(function () {
         Route::get('/notifications', Notifications::class)
             ->name('notifications.index');
+
+        Route::get('/notifications/{notification}', function (Notification $notification) {
+            $user = auth()->user();
+
+            abort_unless($user && $user->account_id === $notification->account_id, 403);
+
+            if ($notification->status !== 'read') {
+                $notification->update(['status' => 'read']);
+            }
+
+            return redirect($notification->link ?? '/notifications');
+        })->name('notifications.open');
     });
 });

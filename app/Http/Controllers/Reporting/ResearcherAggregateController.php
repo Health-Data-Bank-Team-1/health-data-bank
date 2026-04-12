@@ -33,7 +33,7 @@ class ResearcherAggregateController extends Controller
         }
 
         $cohortQuery = $cohortBuilder->build($validated);
-        $accountIds = $cohortQuery->pluck('id')->all();
+        $accountIds = $cohortQuery->pluck('id')->unique()->values()->all();
 
         $threshold->enforce(count($accountIds), 10);
 

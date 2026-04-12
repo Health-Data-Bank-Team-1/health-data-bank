@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Reports;
+namespace Tests\Feature\Reporting;
 
 use App\Models\Account;
 use App\Models\User;
@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use App\Models\FormTemplate;
 
 class DashboardReportAuditLogTest extends TestCase
 {
@@ -24,11 +25,13 @@ class DashboardReportAuditLogTest extends TestCase
             'account_id' => $account->id,
         ]);
 
+        $template = FormTemplate::factory()->create();
+
         DB::table('form_submissions')->insert([
             [
                 'id' => (string) Str::uuid(),
                 'account_id' => $account->id,
-                'form_template_id' => null,
+                'form_template_id' => $template->id,
                 'status' => 'SUBMITTED',
                 'submitted_at' => '2026-03-01 10:00:00',
             ],
@@ -54,11 +57,13 @@ class DashboardReportAuditLogTest extends TestCase
             'account_id' => $account->id,
         ]);
 
+        $template = FormTemplate::factory()->create();
+
         DB::table('form_submissions')->insert([
             [
                 'id' => (string) Str::uuid(),
                 'account_id' => $account->id,
-                'form_template_id' => null,
+                'form_template_id' => $template->id,
                 'status' => 'SUBMITTED',
                 'submitted_at' => '2026-03-01 10:00:00',
             ],

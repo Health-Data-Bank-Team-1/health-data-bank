@@ -22,8 +22,8 @@ class TrendController extends Controller
         }
 
         $metric = $validated['metric'];
-        $from = CarbonImmutable::parse($validated['from']);
-        $to = CarbonImmutable::parse($validated['to']);
+        $from = CarbonImmutable::parse($validated['from'])->startOfDay();
+        $to = CarbonImmutable::parse($validated['to'])->endOfDay();
         $bucket = $validated['bucket'] ?? 'day';
 
         AuditLogger::log(
@@ -39,7 +39,7 @@ class TrendController extends Controller
             ]
         );
 
-        $result = $service->calculate(
+        $result = $service->trendForAccount(
             $user->account_id,
             $metric,
             $from,

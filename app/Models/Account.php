@@ -110,4 +110,9 @@ class Account extends Model
     {
         return $this->hasMany(ProviderFeedback::class, 'provider_account_id');
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
 }

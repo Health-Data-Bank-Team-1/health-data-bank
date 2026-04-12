@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
+use App\Models\FormTemplate;
 
 class ProcessScheduledRemindersTest extends TestCase
 {
@@ -63,9 +64,11 @@ class ProcessScheduledRemindersTest extends TestCase
             'next_run_at' => now()->subMinute(),
         ]);
 
+        $template = FormTemplate::factory()->create();
+
         FormSubmission::create([
             'account_id' => $account->id,
-            'form_template_id' => null,
+            'form_template_id' => $template->id,
             'status' => 'submitted',
             'submitted_at' => now(),
         ]);

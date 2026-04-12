@@ -5,11 +5,13 @@ namespace App\Actions\Fortify;
 use App\Models\Account;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Laravel\Jetstream\Jetstream;
+use Spatie\Permission\Models\Role;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -46,6 +48,20 @@ class CreateNewUser implements CreatesNewUsers
                 'password' => Hash::make($input['password']),
                 'account_id' => $account->id,
             ]);
+
+            //ensure role exists
+            Role::firstOrCreate(
+                [
+                    'name' => 'user',
+                    'guard_name' => 'web',
+                ],
+                [
+                    'id' => (string) Str::uuid(),
+                ]
+            );
+
+            //assign role
+            $user->assignRole('user');
 
             //Jetstream personal team
             $this->createTeam($user);

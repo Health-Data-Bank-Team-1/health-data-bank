@@ -56,8 +56,6 @@ class Report extends Model
     {
         return $this->hasMany(ReportUpdate::class)->latest();
     }
-}
-
 
     public function archivedBy()
     {
