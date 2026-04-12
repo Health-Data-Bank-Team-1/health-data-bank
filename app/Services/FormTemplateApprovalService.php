@@ -112,12 +112,26 @@ class FormTemplateApprovalService
     {
         $nextVersion = FormTemplateVersion::where('form_template_id', $template->id)->max('version') ?? 0;
 
-        FormTemplateVersion::create([
-            'form_template_id' => $template->id,
-            'version' => $nextVersion + 1,
-            'title' => $template->title,
-            'schema' => $template->schema,
-            'created_by' => $adminId,
-        ]);
+        $template->loadMissing('fields');
+
+        $schema = $template->schema;
+
+        if (is_null($schema)) {
+            $schema = $template->fields
+                ->sortBy('id')
+                ->map(function ($field) {
+                    return [
+                        'id' => $field->id,
+                        'label' => $field->label,
+                        'metric_key' => $field->metric_key,
+                        'field_type' => $field->field_type,
+                        'validation_rules' => $field->validation_rules,
+                        'goal_enabled' => $field->goal_enabled,
+                        'options' => $field->options,
+                    ];
+                })
+                ->values()
+                ->toArray();
+        }
     }
 }
