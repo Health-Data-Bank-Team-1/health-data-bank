@@ -314,4 +314,113 @@ class HealthGoalApiTest extends TestCase
             ->assertJsonPath('progress.current_value', 3)
             ->assertJsonPath('progress.entry_count', 2);
     }
+
+    public function test_listing_goals_writes_audit_row(): void
+    {
+        [$user, $account] = $this->createUserWithAccount();
+        $this->createGoalEnabledMetric();
+
+        HealthGoal::create([
+            'account_id' => $account->id,
+            'metric_key' => 'alcohol_consumption',
+            'comparison_operator' => '<=',
+            'target_value' => 2,
+            'timeframe' => 'week',
+            'start_date' => '2026-03-01',
+            'end_date' => '2026-03-31',
+            'status' => 'ACTIVE',
+        ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/goals')
+            ->assertOk();
+
+        $this->assertDatabaseHas('audits', [
+            'event' => 'health_goal_index_viewed',
+        ]);
+    }
+
+    public function test_creating_goal_writes_audit_row(): void
+    {
+        [$user, $account] = $this->createUserWithAccount();
+        $this->createGoalEnabledMetric();
+
+        $payload = [
+            'metric_key' => 'alcohol_consumption',
+            'comparison_operator' => '<=',
+            'target_value' => 2,
+            'timeframe' => 'week',
+            'start_date' => '2026-03-01',
+            'end_date' => '2026-03-31',
+            'status' => 'ACTIVE',
+        ];
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson('/api/goals', $payload)
+            ->assertCreated();
+
+        $this->assertDatabaseHas('audits', [
+            'event' => 'health_goal_created',
+        ]);
+    }
+
+    public function test_viewing_goal_writes_audit_row(): void
+    {
+        [$user, $account] = $this->createUserWithAccount();
+        $this->createGoalEnabledMetric();
+
+        $goal = HealthGoal::create([
+            'account_id' => $account->id,
+            'metric_key' => 'alcohol_consumption',
+            'comparison_operator' => '<=',
+            'target_value' => 2,
+            'timeframe' => 'week',
+            'start_date' => '2026-03-01',
+            'end_date' => null,
+            'status' => 'ACTIVE',
+        ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson("/api/goals/{$goal->id}")
+            ->assertOk();
+
+        $this->assertDatabaseHas('audits', [
+            'event' => 'health_goal_viewed',
+        ]);
+    }
+
+    public function test_updating_goal_writes_audit_row(): void
+    {
+        [$user, $account] = $this->createUserWithAccount();
+        $this->createGoalEnabledMetric();
+
+        $goal = HealthGoal::create([
+            'account_id' => $account->id,
+            'metric_key' => 'alcohol_consumption',
+            'comparison_operator' => '<=',
+            'target_value' => 2,
+            'timeframe' => 'week',
+            'start_date' => '2026-03-01',
+            'end_date' => null,
+            'status' => 'ACTIVE',
+        ]);
+
+        $payload = [
+            'metric_key' => 'alcohol_consumption',
+            'comparison_operator' => '<=',
+            'target_value' => 1,
+            'timeframe' => 'week',
+            'start_date' => '2026-03-01',
+            'end_date' => null,
+            'status' => 'ACTIVE',
+        ];
+
+        $this->actingAs($user, 'sanctum')
+            ->putJson("/api/goals/{$goal->id}", $payload)
+            ->assertOk();
+
+        $this->assertDatabaseHas('audits', [
+            'event' => 'health_goal_updated',
+        ]);
+    }
 }

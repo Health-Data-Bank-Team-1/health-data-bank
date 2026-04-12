@@ -3,19 +3,26 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SummaryQueryRequest;
 use App\Services\AuditLogger;
+use App\Services\HealthMetricRegistry;
 use App\Services\PersonalSummaryService;
+use App\Services\SuggestionService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class MeSummaryController extends Controller
 {
-    public function show(Request $request, PersonalSummaryService $svc)
-    {
+    public function show(
+        Request $request,
+        PersonalSummaryService $svc,
+        SuggestionService $suggestions,
+        HealthMetricRegistry $metrics
+    ) {
         $request->validate([
             'from' => ['required', 'date'],
             'to' => ['required', 'date', 'after:from'],
-            'keys' => ['sometimes', 'string'], //comma-separated: hr,weight,etc
+            'keys' => ['sometimes', 'string'],
         ]);
 
         $user = $request->user();
@@ -23,8 +30,30 @@ class MeSummaryController extends Controller
 
         $keys = [];
         if ($request->filled('keys')) {
-            $keys = array_values(array_filter(array_map('trim', explode(',', $request->keys))));
+            $requestedKeys = array_values(array_filter(array_map('trim', explode(',', $request->keys))));
+
+            $keys = array_values(array_filter(
+                $requestedKeys,
+                fn (string $key) => $metrics->hasMetric($key)
+            ));
         }
+
+        $from = Carbon::parse($request->from);
+        $to = Carbon::parse($request->to);
+
+        $summary = $svc->summaryForAccount(
+            $user->account_id,
+            $from,
+            $to,
+            $keys
+        );
+
+        $suggestionPayload = $suggestions->generateForAccount(
+            $user->account_id,
+            $from,
+            $to,
+            $keys
+        );
 
         AuditLogger::log(
             'reporting_summary_view',
@@ -35,16 +64,21 @@ class MeSummaryController extends Controller
                 'from' => $request->from,
                 'to' => $request->to,
                 'keys' => $keys,
+                'suggestion_count' => count($suggestionPayload['suggestions'] ?? []),
             ]
         );
 
-        return response()->json(
-            $svc->summaryForAccount(
-                $user->account_id,
-                Carbon::parse($request->from),
-                Carbon::parse($request->to),
-                $keys
-            )
+        return response()->json([
+            ...$summary,
+            'suggestions' => $suggestionPayload['suggestions'] ?? [],
+        ]);
+        $result = $svc->summary(
+            $user->account_id,
+            Carbon::parse($validated['from']),
+            Carbon::parse($validated['to']),
+            $keys
         );
+
+        return response()->json($result);
     }
 }

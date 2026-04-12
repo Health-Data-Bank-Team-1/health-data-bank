@@ -2,26 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreFormTemplateRequest;
+use App\Http\Requests\UpdateFormTemplateRequest;
 use App\Models\FormTemplate;
 use Illuminate\Http\Request;
 use App\Services\AuditLogger;
 
 class FormTemplateController extends Controller
 {
-    public function store(Request $request)
+    public function store(StoreFormTemplateRequest $request)
     {
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'schema' => ['required', 'array'],
-            'description' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
         $template = FormTemplate::create([
             'title' => $validated['title'],
             'schema' => $validated['schema'],
             'description' => $validated['description'] ?? null,
-
-
             'version' => 1,
             'approval_status' => 'draft',
             'approved_by' => null,
@@ -43,7 +39,7 @@ class FormTemplateController extends Controller
         return response()->json($template, 201);
     }
 
-    public function update(Request $request, FormTemplate $template)
+    public function update(UpdateFormTemplateRequest $request, FormTemplate $template)
     {
         $approvalReset = false;
         $previousStatus = $template->approval_status;
@@ -58,12 +54,7 @@ class FormTemplateController extends Controller
             $approvalReset = true;
         }
 
-        $validated = $request->validate([
-            'title' => ['sometimes', 'string', 'max:255'],
-            'schema' => ['sometimes', 'array'],
-            'description' => ['sometimes', 'nullable', 'string'],
-        ]);
-
+        $validated = $request->validated();
         $template->update($validated);
 
         AuditLogger::log(
@@ -86,4 +77,3 @@ class FormTemplateController extends Controller
         return response()->json($template);
     }
 }
-
