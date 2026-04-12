@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\AdminFormTemplateController;
 use App\Http\Controllers\Provider\PatientSearchController;
 use App\Http\Controllers\Provider\PatientRecordController;
 use App\Http\Controllers\Provider\ProviderDashboardController;
+use App\Http\Controllers\Provider\ProviderFeedbackController;
 use App\Services\CohortFilterBuilder;
 use App\Services\KThresholdService;
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Researcher\ResearcherCohortController;
 use App\Http\Controllers\Researcher\ResearcherReportController;
 use App\Http\Controllers\Api\HealthGoalController;
 use App\Http\Controllers\Api\PersonalComparisonController;
+use App\Http\Controllers\Api\MeSummaryController;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends']);
@@ -36,23 +38,16 @@ Route::middleware(['auth:sanctum', 'role:admin'])
     ->prefix('admin/forms')
     ->group(function () {
         Route::get('/', [AdminFormTemplateController::class, 'index']);
-
         Route::post('{template:id}/approve', [FormTemplateApprovalController::class, 'approve']);
         Route::post('{template:id}/reject', [FormTemplateApprovalController::class, 'reject']);
         Route::post('{template:id}/submit', [FormTemplateApprovalController::class, 'submit']);
     });
 
-/*
- * Form Template Versioning
- */
-
-// get version history
 Route::middleware('auth:sanctum')->get(
-    'form-templates/{template:id}/versions',
+    'form-templates/{template}/versions',
     [FormTemplateVersionController::class, 'index']
 );
 
-// rollback to a version (admin only)
 Route::middleware(['auth:sanctum', 'role:admin'])->post(
     'form-templates/{template:id}/rollback/{version}',
     [FormTemplateVersionController::class, 'rollback']
@@ -67,6 +62,7 @@ Route::middleware(['auth:sanctum', 'role:researcher'])->group(function () {
     Route::post('/researcher/cohorts', [ResearcherCohortController::class, 'store']);
     Route::post('/researcher/reports/aggregated', [ResearcherReportController::class, 'aggregated']);
     Route::post('/researcher/reports/aggregated/export.csv', [ResearcherReportController::class, 'exportAggregatedCsv']);
+    Route::post('/researcher/reports/{report}/append', [ResearcherReportController::class, 'append']);
 });
 
 Route::middleware(['auth:sanctum', 'role:provider'])->get(
@@ -84,9 +80,14 @@ Route::middleware(['auth:sanctum', 'role:provider'])->get(
     [ProviderDashboardController::class, 'index']
 );
 
+Route::middleware(['auth:sanctum', 'role:provider'])->post(
+    '/provider/feedback',
+    [ProviderFeedbackController::class, 'store']
+);
+
 Route::middleware('auth:sanctum')->get(
     '/me/summary',
-    [\App\Http\Controllers\Api\MeSummaryController::class, 'show']
+    [MeSummaryController::class, 'show']
 );
 
 Route::middleware(['auth:sanctum'])->group(function () {

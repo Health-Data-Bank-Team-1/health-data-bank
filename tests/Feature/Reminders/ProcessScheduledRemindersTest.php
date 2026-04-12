@@ -9,6 +9,7 @@ use App\Models\Notification;
 use App\Models\ReminderSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ProcessScheduledRemindersTest extends TestCase
@@ -116,7 +117,7 @@ class ProcessScheduledRemindersTest extends TestCase
         );
     }
 
-    public function test_opening_notification_marks_it_as_read_and_redirects(): void
+    public function test_opening_notification_marks_it_as_read_and_shows_modal(): void
     {
         $account = Account::factory()->create([
             'account_type' => 'User',
@@ -135,9 +136,12 @@ class ProcessScheduledRemindersTest extends TestCase
             'status' => 'unread',
         ]);
 
-        $this->actingAs($user)
-            ->get(route('notifications.open', $notification))
-            ->assertRedirect('/user/form-select');
+        $this->actingAs($user);
+
+        Livewire::test(\App\Livewire\Notifications::class)
+            ->call('open', $notification)
+            ->assertSet('showModal', true)
+            ->assertSet('selectedNotification.message', 'Test reminder');
 
         $this->assertDatabaseHas('notifications', [
             'id' => $notification->id,
