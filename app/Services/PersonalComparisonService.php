@@ -34,6 +34,9 @@ class PersonalComparisonService
         $userEntries = HealthEntry::query()
             ->where('account_id', $accountId)
             ->whereBetween('timestamp', [$fromDate, $toDate])
+            ->whereHas('submission', function ($query) {
+                $query->whereNull('deleted_at');
+            })
             ->get(['encrypted_values']);
 
         $userValues = [];

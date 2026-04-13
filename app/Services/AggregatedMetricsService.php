@@ -26,6 +26,9 @@ class AggregatedMetricsService
         $entries = HealthEntry::query()
             ->whereIn('account_id', $accountIds)
             ->whereBetween('timestamp', [$from, $to])
+            ->whereHas('submission', function ($query) {
+                $query->whereNull('deleted_at');
+            })
             ->orderBy('timestamp')
             ->get(['encrypted_values']);
 

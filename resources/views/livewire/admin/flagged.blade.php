@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="header">
         <h1 class="font-semibold text-xl text-gray-800 leading-tight">
             Flagged Reports
@@ -23,7 +23,7 @@
                 <div class="mb-6">
                     <h2 class="text-lg font-semibold text-gray-900">Reports marked for review</h2>
                     <p class="mt-1 text-sm text-gray-600">
-                        Review flagged reports and remove problematic ones from active use.
+                        Review flagged user submissions and remove problematic ones from active use.
                     </p>
                 </div>
 
@@ -33,19 +33,19 @@
                             <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-                                    Report Type
+                                    Form
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-                                    Researcher
+                                    Submitted By
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                                     Status
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-                                    Reason
+                                    Flag Reason
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-                                    Flagged / Moderated At
+                                    Flagged At
                                 </th>
                                 <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">
                                     Action
@@ -57,30 +57,30 @@
                             @foreach($reports as $report)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-4 text-sm text-gray-900">
-                                        {{ $report->report_type ?? 'Unnamed Report' }}
+                                        {{ $report->formTemplate?->title ?? 'Unknown Form' }}
                                     </td>
 
-                                    <td class="px-4 py-4 text-sm text-gray-700">
-                                        {{ $report->researcher?->name ?? 'Unknown' }}
+                                    <td class="px-4 py-4 text-sm text-gray-900">
+                                        {{ $report->account?->name ?? 'Unknown User' }}
                                     </td>
 
                                     <td class="px-4 py-4 text-sm">
                                             <span class="inline-flex rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-                                                {{ $report->moderation_status ?? 'FLAGGED' }}
+                                                {{ $report->status ?? 'FLAGGED' }}
                                             </span>
                                     </td>
 
-                                    <td class="px-4 py-4 text-sm text-gray-700">
-                                        {{ $report->moderation_reason ?? 'No reason provided' }}
+                                    <td class="px-4 py-4 text-sm text-gray-900">
+                                        {{ $report->flag_reason ?? 'No reason provided' }}
                                     </td>
 
                                     <td class="px-4 py-4 text-sm text-gray-700">
-                                        {{ optional($report->moderated_at)->format('Y-m-d H:i') ?? 'N/A' }}
+                                        {{ optional($report->flagged_at)->format('Y-m-d H:i') ?? 'N/A' }}
                                     </td>
 
                                     <td class="px-4 py-4 text-right">
                                         <a href="{{ route('admin.reports.review', $report->id) }}"
-                                           class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                                           class="inline-flex items-center rounded-md bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700">
                                             Review
                                         </a>
                                     </td>
@@ -103,4 +103,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-admin-layout>

@@ -155,6 +155,9 @@ class TrendChart extends Component
 
         $usedKeys = HealthEntry::query()
             ->where('account_id', $accountId)
+            ->whereHas('submission', function ($query) {
+                $query->whereNull('deleted_at');
+            })
             ->limit(200)
             ->pluck('encrypted_values')
             ->filter()

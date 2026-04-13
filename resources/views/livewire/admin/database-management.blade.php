@@ -138,7 +138,7 @@
                 <p class="text-sm text-gray-600">Review admin activity before adding DB actions.</p>
                 <a
                     href="{{ route('admin.audit-log') }}"
-                    class="inline-flex justify-center w-full px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700"
+                    class="inline-flex justify-center w-full px-3 py-2 rounded-lg bg-gray-800 text-white text-sm hover:bg-gray-700"
                 >
                     View Audit Log
                 </a>
@@ -148,8 +148,8 @@
                 <h3 class="text-sm font-semibold text-gray-900">Report review</h3>
                 <p class="text-sm text-gray-600">Related admin workflow area.</p>
                 <a
-                    href="{{ route('admin.report-review') }}"
-                    class="inline-flex justify-center w-full px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700"
+                    href="{{ route('admin.reports.flagged') }}"
+                    class="inline-flex justify-center w-full px-3 py-2 rounded-lg bg-gray-800 text-white text-sm hover:bg-gray-700"
                 >
                     Go to Report Review
                 </a>
@@ -160,7 +160,7 @@
                 <p class="text-sm text-gray-600">Manage form templates and approvals.</p>
                 <a
                     href="{{ route('admin.forms.index') }}"
-                    class="inline-flex justify-center w-full px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700"
+                    class="inline-flex justify-center w-full px-3 py-2 rounded-lg bg-gray-800 text-white text-sm hover:bg-gray-700"
                 >
                     Go to Form Review
                 </a>

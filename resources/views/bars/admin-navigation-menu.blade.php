@@ -24,7 +24,7 @@
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('admin.report-review') }}" :active="request()->routeIs('admin.report-review')">
+                    <x-nav-link href="{{ route('admin.reports.flagged') }}" :active="request()->routeIs('admin.reports.flagged')">
                         {{ __('Report Review') }}
                     </x-nav-link>
                 </div>
