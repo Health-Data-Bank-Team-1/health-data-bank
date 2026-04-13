@@ -119,12 +119,59 @@
                         </table>
 
                         @if($result && !$result['group']['is_suppressed'])
-                            <div class="mt-8 border rounded-lg p-6">
+
+                            <div class="mt-8 border rounded-lg p-6" wire:ignore>
                                 <h2 class="text-lg font-semibold mb-4">
                                     Comparison Chart
                                 </h2>
 
-                                <canvas id="comparisonChart" height="120"></canvas>
+                                <div
+                                    x-data
+                                    x-init="
+                const drawChart = () => {
+                    const ctx = $refs.chart;
+
+                    if (!ctx) return;
+
+                    if (typeof window.Chart === 'undefined') {
+                        setTimeout(drawChart, 200);
+                        return;
+                    }
+
+                    if (window.comparisonChart) {
+                        window.comparisonChart.destroy();
+                    }
+
+                    window.comparisonChart = new window.Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Your Value', 'Group Average'],
+                            datasets: [{
+                                label: @js($metricOptions[$result['metric_key']] ?? $result['metric_key']),
+                                data: [
+                                    {{ is_numeric($result['user_value'] ?? null) ? (float) $result['user_value'] : 0 }},
+                                    {{ is_numeric($result['group']['avg'] ?? null) ? (float) $result['group']['avg'] : 0 }}
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                };
+
+                $nextTick(() => drawChart());
+            "
+                                    style="height: 320px;"
+                                >
+                                    <canvas x-ref="chart"></canvas>
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -134,45 +181,3 @@
     </div>
 </div>
 
-@if($result && !$result['group']['is_suppressed'])
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener('livewire:navigated', loadChart);
-        document.addEventListener('livewire:update', loadChart);
-
-        function loadChart() {
-            const canvas = document.getElementById('comparisonChart');
-            if (!canvas) return;
-
-            const ctx = canvas.getContext('2d');
-
-            if (window.comparisonChart) {
-                window.comparisonChart.destroy();
-            }
-
-            window.comparisonChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Your Value', 'Group Average'],
-                    datasets: [{
-                        label: @json($metricOptions[$result['metric_key']] ?? $result['metric_key']),
-                        data: [
-                            {{ $result['user_value'] ?? 0 }},
-                            {{ $result['group']['avg'] ?? 0 }}
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        loadChart();
-    </script>
-@endif

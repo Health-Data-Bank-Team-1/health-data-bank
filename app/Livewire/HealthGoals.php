@@ -2,12 +2,12 @@
 
 namespace App\Livewire;
 
-use App\Models\FormField;
 use App\Models\HealthGoal;
 use App\Services\GoalProgressService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use App\Services\HealthMetricRegistry;
 
 class HealthGoals extends Component
 {
@@ -46,21 +46,17 @@ class HealthGoals extends Component
 
     private function loadMetricOptions(): void
     {
-        $this->metricOptions = FormField::query()
-            ->where('goal_enabled', true)
-            ->whereIn('field_type', ['number', 'decimal'])
-            ->orderBy('label')
-            ->pluck('label', 'metric_key')
+        $registry = app(HealthMetricRegistry::class);
+
+        $this->metricOptions = collect($registry->all())
+            ->filter(fn (array $meta) => ($meta['type'] ?? null) === 'number')
+            ->mapWithKeys(fn (array $meta, string $key) => [$key => $meta['label']])
             ->toArray();
     }
 
     private function accountId(): ?string
     {
-        $user = Auth::user();
-
-        return DB::table('accounts')
-            ->where('email', $user->email)
-            ->value('id');
+        return Auth::user()?->account_id;
     }
 
     public function loadGoals(): void
