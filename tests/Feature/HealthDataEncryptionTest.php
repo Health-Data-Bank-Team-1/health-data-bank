@@ -36,11 +36,11 @@ class HealthDataEncryptionTest extends TestCase
         $this->assertIsArray($encrypted);
         $this->assertArrayHasKey('data', $encrypted);
         $this->assertIsString($encrypted['data']);
-        
+
         // Should not contain plaintext
         $this->assertStringNotContainsString('120', $encrypted['data']);
         $this->assertStringNotContainsString('75', $encrypted['data']);
-        
+
         // Should be decryptable
         $decrypted = $this->encryptionService->decrypt($encrypted);
         $this->assertEquals($healthData, $decrypted);
@@ -70,12 +70,12 @@ class HealthDataEncryptionTest extends TestCase
 
         // Should be stored as JSON string
         $this->assertIsString($stored);
-        
+
         // Parse the JSON to check structure
         $parsed = json_decode($stored, true);
         $this->assertIsArray($parsed);
         $this->assertArrayHasKey('data', $parsed);
-        
+
         // Should not contain plaintext values
         $this->assertStringNotContainsString('140', $parsed['data']);
         $this->assertStringNotContainsString('85', $parsed['data']);
@@ -101,7 +101,7 @@ class HealthDataEncryptionTest extends TestCase
 
         // Retrieve and check automatic decryption
         $retrieved = HealthEntry::find($entry->id);
-        
+
         // Cast should decrypt automatically
         $this->assertIsArray($retrieved->encrypted_values);
         $this->assertEquals($healthData, $retrieved->encrypted_values);
@@ -128,7 +128,7 @@ class HealthDataEncryptionTest extends TestCase
         }
 
         $decrypted = $this->encryptionService->batchDecrypt($entries);
-        
+
         // All entries should be decrypted
         for ($i = 0; $i < 3; $i++) {
             $this->assertIsArray($decrypted[$i]['encrypted_values']);
@@ -154,7 +154,9 @@ class HealthDataEncryptionTest extends TestCase
     public function test_form_submission_encrypts_health_entries()
     {
         $account = Account::factory()->create();
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'account_id' => $account->id,
+        ]);
         $this->actingAs($user, 'sanctum');
 
         $template = FormTemplate::factory()->create();
@@ -180,12 +182,12 @@ class HealthDataEncryptionTest extends TestCase
         // Check that health entry was created with encrypted data
         $entry = HealthEntry::where('submission_id', $submissionId)->first();
         $this->assertNotNull($entry);
-        
+
         // The encrypted_values should be a string in the database
         $rawEntry = HealthEntry::selectRaw('encrypted_values')->find($entry->id);
         $stored = $rawEntry->getAttributes()['encrypted_values'];
         $this->assertIsString($stored);
-        
+
         // But should decrypt through the cast when accessing the property
         $this->assertIsArray($entry->encrypted_values);
         $this->assertArrayHasKey('field_id', $entry->encrypted_values);

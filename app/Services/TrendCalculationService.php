@@ -47,17 +47,12 @@ class TrendCalculationService
             ->orderBy('timestamp')
             ->get(['timestamp', 'encrypted_values']);
 
-        // bucketStartIso => array of points [ts => CarbonImmutable, value => mixed]
         $buckets = [];
 
         foreach ($entries as $entry) {
             $values = $entry->encrypted_values;
 
-            if (!is_array($values)) {
-                continue;
-            }
-
-            if (!array_key_exists($metricKey, $values)) {
+            if (!is_array($values) || !array_key_exists($metricKey, $values)) {
                 continue;
             }
 

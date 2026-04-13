@@ -15,6 +15,7 @@ class FormTemplateSeeder extends Seeder
             'version' => 1,
             'approval_status' => 'approved',
             'description' => 'Name form for names',
+            'schema' => '{}',
         ]);
 
         FormField::create([
@@ -36,6 +37,7 @@ class FormTemplateSeeder extends Seeder
             'version' => 1,
             'approval_status' => 'approved',
             'description' => 'for testing radio button',
+            'schema' => '{}',
         ]);
 
         FormField::create([
@@ -65,6 +67,7 @@ class FormTemplateSeeder extends Seeder
             'version' => 1,
             'approval_status' => 'approved',
             'description' => 'for testing checkbox options',
+            'schema' => '{}',
         ]);
 
         FormField::create([
@@ -94,6 +97,7 @@ class FormTemplateSeeder extends Seeder
             'version' => 1,
             'approval_status' => 'approved',
             'description' => 'for testing date input',
+            'schema' => '{}',
         ]);
 
         FormField::create([
@@ -108,6 +112,7 @@ class FormTemplateSeeder extends Seeder
             'version' => 1,
             'approval_status' => 'approved',
             'description' => 'for testing number input',
+            'schema' => '{}',
         ]);
 
         FormField::create([

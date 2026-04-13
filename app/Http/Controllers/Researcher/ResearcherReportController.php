@@ -47,7 +47,7 @@ class ResearcherReportController extends Controller
             }
 
             $cohortQuery = $cohortBuilder->build($filters);
-            $accountIds = $cohortQuery->pluck('id')->all();
+            $accountIds = $cohortQuery->pluck('id')->unique()->values()->all();
 
             $threshold->enforce(count($accountIds), 10);
 
@@ -133,7 +133,7 @@ class ResearcherReportController extends Controller
             }
 
             $cohortQuery = $cohortBuilder->build($filters);
-            $accountIds = $cohortQuery->pluck('id')->all();
+            $accountIds = $cohortQuery->pluck('id')->unique()->values()->all();
 
             $threshold->enforce(count($accountIds), 10);
 

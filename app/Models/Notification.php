@@ -13,6 +13,7 @@ class Notification extends Model
         'account_id',
         'type',
         'message',
+        'link',
         'status',
     ];
 }
