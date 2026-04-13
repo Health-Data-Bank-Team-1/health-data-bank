@@ -101,6 +101,7 @@ class AuditLog extends Component
                 $auditTable . '.ip_address',
                 $auditTable . '.tags',
                 $auditTable . '.created_at',
+
                 'accounts.name',
                 'accounts.email',
             ]);
@@ -168,7 +169,6 @@ class AuditLog extends Component
                 'header' => 'Audit Log',
             ]);
     }
-
     public function exportCsv()
     {
         return redirect()->route('admin.audit-log.export', [

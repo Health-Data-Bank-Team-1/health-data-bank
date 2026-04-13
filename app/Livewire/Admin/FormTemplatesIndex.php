@@ -16,6 +16,7 @@ class FormTemplatesIndex extends Component
     public string $approvalStatus = '';
     public int $perPage = 15;
 
+    // reject modal state
     public bool $showRejectModal = false;
     public ?string $rejectTemplateId = null;
     public string $rejectReason = '';
@@ -98,9 +99,6 @@ class FormTemplatesIndex extends Component
 
         return view('livewire.admin.form-templates-index', [
             'templates' => $templates,
-        ])->layout('layouts.admin')
-            ->layoutData([
-                'header' => 'Form Review',
-            ]);
+        ])->layout('layouts.admin');
     }
 }
