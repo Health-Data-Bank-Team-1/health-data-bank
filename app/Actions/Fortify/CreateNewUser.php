@@ -32,8 +32,7 @@ class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         return DB::transaction(function () use ($input) {
-
-            //Create the domain Account record
+            // Create the domain Account record
             $account = Account::create([
                 'account_type' => 'User',
                 'name' => $input['name'],
@@ -41,7 +40,7 @@ class CreateNewUser implements CreatesNewUsers
                 'status' => 'ACTIVE',
             ]);
 
-            //Create the auth User linked to that account
+            // Create the auth User linked to that account
             $user = User::create([
                 'name' => $input['name'],
                 'email' => $input['email'],
@@ -49,21 +48,21 @@ class CreateNewUser implements CreatesNewUsers
                 'account_id' => $account->id,
             ]);
 
-            //ensure role exists
-            Role::firstOrCreate(
-                [
-                    'name' => 'user',
-                    'guard_name' => 'web',
-                ],
-                [
-                    'id' => (string) Str::uuid(),
-                ]
-            );
+            // Ensure role exists (roles.id has no default in this project; set it explicitly)
+            $role = Role::where('name', 'user')->where('guard_name', 'web')->first();
 
-            //assign role
+            if (! $role) {
+                $role = new Role();
+                $role->id = (string) Str::uuid();
+                $role->name = 'user';
+                $role->guard_name = 'web';
+                $role->save();
+            }
+
+            // Assign role
             $user->assignRole('user');
 
-            //Jetstream personal team
+            // Jetstream personal team
             $this->createTeam($user);
 
             return $user;

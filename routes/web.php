@@ -49,285 +49,93 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    /**
-     * /dashboard
-     * Tests expect route('dashboard') to exist and return 200 for a basic authenticated user.
-     * We keep your role-based redirect behavior, but fall back to the default Jetstream dashboard view
-     * if the user has no recognized role.
-     */
-    /**
-     * /dashboard
-     * Tests expect route('dashboard') to exist and return 200 for a basic authenticated user.
-     * We keep your role-based redirect behavior, but fall back to the default Jetstream dashboard view
-     * if the user has no recognized role.
-     */
     Route::get('/dashboard', function () {
-        $user = Auth::user();
-
-        if ($user->hasRole('user')) {
         $user = Auth::user();
 
         if ($user->hasRole('user')) {
             return redirect('/user/dashboard');
         } elseif ($user->hasRole('researcher')) {
-        } elseif ($user->hasRole('researcher')) {
             return redirect('/researcher/dashboard');
         } elseif ($user->hasRole('admin')) {
-        } elseif ($user->hasRole('admin')) {
             return redirect('/admin/dashboard');
-        } elseif ($user->hasRole('provider')) {
         } elseif ($user->hasRole('provider')) {
             return redirect('/provider/dashboard');
         }
 
-        // Fallback for roleless authenticated users (makes DashboardTest pass).
-        return view('dashboard');
+        abort(403, 'Unauthorized');
+    })->name('dashboard');
 
-        // Fallback for roleless authenticated users (makes DashboardTest pass).
-        return view('dashboard');
-    })->name('dashboard')->name('dashboard');
-
-    // --------------------
     // User routes
-    // --------------------
-    // --------------------
-    // User routes
-    // --------------------
-    Route::get('/user/profile', UserProfile::class)
-        ->middleware('role:user')
-        ->name('user-profile');
+    Route::get('/user/profile', UserProfile::class)->middleware('role:user')->name('user-profile');
+    Route::get('/user/dashboard', UserDashboard::class)->middleware('role:user')->name('dashboards.user');
+    Route::get('/user/my-progress', MyProgress::class)->middleware('role:user')->name('my-progress');
+    Route::get('/user/form-select', UserFormSelect::class)->middleware('role:user')->name('user-form-select');
+    Route::get('/user/todo', UserTodo::class)->middleware('role:user')->name('user-todo');
+    Route::get('/user/forms', FormIndex::class)->middleware('role:user')->name('forms.index');
+    Route::get('/user/forms/{form}', FormRenderer::class)->middleware('role:user')->name('forms.show');
+    Route::get('/user/health-summary', HealthSummary::class)->middleware('role:user')->name('health-summary');
+    Route::get('/user/suggestions', UserSuggestions::class)->middleware('role:user')->name('user-suggestions');
 
-
-    Route::get('/user/dashboard', UserDashboard::class)
-        ->middleware('role:user')
-        ->name('dashboards.user');
-
-
-    Route::get('/user/my-progress', MyProgress::class)
-        ->middleware('role:user')
-        ->name('my-progress');
-
-
-    Route::get('/user/form-select', UserFormSelect::class)
-        ->middleware('role:user')
-        ->name('user-form-select');
-
-
-    Route::get('/user/todo', UserTodo::class)
-        ->middleware('role:user')
-        ->name('user-todo');
-
-
-    Route::get('/user/forms', FormIndex::class)
-        ->middleware('role:user')
-        ->name('forms.index');
-
-
-    Route::get('/user/forms/{form}', FormRenderer::class)
-        ->middleware('role:user')
-        ->name('forms.show');
-
-
-    Route::get('/user/health-summary', HealthSummary::class)
-        ->middleware('role:user')
-        ->name('health-summary');
-
-
-    Route::get('/user/suggestions', UserSuggestions::class)
-        ->middleware('role:user')
-        ->name('user-suggestions');
-
-    // --------------------
     // Researcher routes
-    // --------------------
-    // --------------------
-    // Researcher routes
-    // --------------------
-    Route::get('/researcher/profile', ResearcherProfile::class)
-        ->middleware('role:researcher')
-        ->name('researcher-profile');
+    Route::get('/researcher/profile', ResearcherProfile::class)->middleware('role:researcher')->name('researcher-profile');
+    Route::get('/researcher/dashboard', ResearcherDashboard::class)->middleware('role:researcher')->name('dashboards.researcher');
+    Route::get('/researcher/forms', ResearcherForms::class)->middleware('role:researcher')->name('researcher.forms');
+    Route::get('/researcher/reports', ResearcherReports::class)->middleware('role:researcher')->name('researcher.reports');
+    Route::get('/researcher/report-generator', ResearcherReportGenerator::class)->middleware('role:researcher')->name('researcher.report-generator');
+    Route::get('/researcher/report-index', ReportIndex::class)->middleware('role:researcher')->name('researcher.report-index');
+    Route::get('/researcher/reports/{report}', ResearcherReports::class)->middleware('role:researcher')->name('researcher.reports.show');
+    Route::get('/researcher/cohort', CohortBuilder::class)->middleware('role:researcher')->name('researcher.cohort');
 
-
-    Route::get('/researcher/dashboard', ResearcherDashboard::class)
-        ->middleware('role:researcher')
-        ->name('dashboards.researcher');
-
-
-    Route::get('/researcher/forms', ResearcherForms::class)
-        ->middleware('role:researcher')
-        ->name('researcher.forms');
-
-
-    Route::get('/researcher/reports', ResearcherReports::class)
-        ->middleware('role:researcher')
-        ->name('researcher.reports');
-
-
-    Route::get('/researcher/report-generator', ResearcherReportGenerator::class)
-        ->middleware('role:researcher')
-        ->name('researcher.report-generator');
-
-
-    Route::get('/researcher/report-index', ReportIndex::class)
-        ->middleware('role:researcher')
-        ->name('researcher.report-index');
-
-
-    Route::get('/researcher/reports/{report}', ResearcherReports::class)
-        ->middleware('role:researcher')
-        ->name('researcher.reports.show');
-
-    Route::get('/researcher/cohort', CohortBuilder::class)
-        ->middleware('role:researcher')
-        ->name('researcher.cohort');
-
-    Route::get('/researcher/cohort', CohortBuilder::class)
-        ->middleware('role:researcher')
-        ->name('researcher.cohort');
-
-    // --------------------
     // Admin routes
-    // --------------------
-    // --------------------
-    // Admin routes
-    // --------------------
-    Route::get('/admin/profile', AdminProfile::class)
-        ->middleware('role:admin')
-        ->name('admin-profile');
-
-
-    Route::get('/admin/dashboard', AdminDashboard::class)
-        ->middleware('role:admin')
-        ->name('dashboards.admin');
-
-
-    Route::get('/admin/audit-log', AuditLog::class)
-        ->middleware('role:admin')
-        ->name('admin.audit-log');
-
-
-    Route::get('/admin/database-management', DatabaseManagement::class)
-        ->middleware('role:admin')
-        ->name('admin.database-management');
-
-
-    Route::get('/admin/report-review', ReportReview::class)
-        ->middleware('role:admin')
-        ->name('admin.report-review');
-
-
-    Route::get('/admin/forms', FormTemplatesIndex::class)
-        ->middleware('role:admin')
-        ->name('admin.forms.index');
+    Route::get('/admin/profile', AdminProfile::class)->middleware('role:admin')->name('admin-profile');
+    Route::get('/admin/dashboard', AdminDashboard::class)->middleware('role:admin')->name('dashboards.admin');
+    Route::get('/admin/audit-log', AuditLog::class)->middleware('role:admin')->name('admin.audit-log');
+    Route::get('/admin/database-management', DatabaseManagement::class)->middleware('role:admin')->name('admin.database-management');
+    Route::get('/admin/report-review', ReportReview::class)->middleware('role:admin')->name('admin.report-review');
+    Route::get('/admin/forms', FormTemplatesIndex::class)->middleware('role:admin')->name('admin.forms.index');
 
     Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
         Route::get('/forms/{template}', [FormTemplateApprovalController::class, 'show'])
             ->name('livewire.admin.show');
     });
 
-    Route::middleware(['auth', 'verified'])
-        ->prefix('admin')
-        ->name('admin.')
-        ->group(function () {
-            Route::get('/audit-log/export.csv', [AdminAuditLogController::class, 'exportCsv'])
-                ->name('audit-log.export');
-        });
+    Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/audit-log/export.csv', [AdminAuditLogController::class, 'exportCsv'])
+            ->name('audit-log.export');
+    });
 
-    // --------------------
     // Provider routes
-    // --------------------
-    // --------------------
-    // Provider routes
-    // --------------------
     Route::get('/provider/patients/{patient}/feedback', [ProviderFeedbackController::class, 'create'])
         ->middleware('role:provider')
         ->name('provider.feedback');
 
-    Route::get('/provider/profile', ProviderProfile::class)
-        ->middleware('role:provider')
-        ->name('provider-profile');
+    Route::get('/provider/profile', ProviderProfile::class)->middleware('role:provider')->name('provider-profile');
+    Route::get('/provider/dashboard', ProviderDashboard::class)->middleware('role:provider')->name('dashboards.provider');
+    Route::get('/provider/patients', ProviderPatients::class)->middleware('role:provider')->name('provider.patients');
+    Route::get('/provider/reports', ProviderReports::class)->middleware('role:provider')->name('provider.reports');
+    Route::get('/provider/patient-index', PatientIndex::class)->middleware('role:provider')->name('provider.patient-index');
+    Route::get('/provider/patients/{patient}', PatientRenderer::class)->middleware('role:provider')->name('provider.patients.show');
 
-
-    Route::get('/provider/dashboard', ProviderDashboard::class)
-        ->middleware('role:provider')
-        ->name('dashboards.provider');
-
-
-    Route::get('/provider/patients', ProviderPatients::class)
-        ->middleware('role:provider')
-        ->name('provider.patients');
-
-
-    Route::get('/provider/reports', ProviderReports::class)
-        ->middleware('role:provider')
-        ->name('provider.reports');
-
-
-    Route::get('/provider/patient-index', PatientIndex::class)
-        ->middleware('role:provider')
-        ->name('provider.patient-index');
-
-
-    Route::get('/provider/patients/{patient}', PatientRenderer::class)
-        ->middleware('role:provider')
-        ->name('provider.patients.show');
-
-    // --------------------
     // Form templates create/update
-    // --------------------
     Route::prefix('form-templates')->group(function () {
-        Route::post('/', [FormTemplateController::class, 'store'])
-            ->name('form-templates.store');
-
-        Route::put('{template}', [FormTemplateController::class, 'update'])
-            ->name('form-templates.update');
+        Route::post('/', [FormTemplateController::class, 'store'])->name('form-templates.store');
+        Route::put('{template}', [FormTemplateController::class, 'update'])->name('form-templates.update');
     });
 
-    // --------------------
     // Reports
-    // --------------------
-    Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends'])
-        ->name('dashboard.trends');
+    Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends'])->name('dashboard.trends');
+    Route::get('/reports/dashboard/trends/export.csv', [DashboardReportController::class, 'exportTrendsCsv'])->name('dashboard.trends.export');
 
-    Route::get('/reports/dashboard/trends/export.csv', [DashboardReportController::class, 'exportTrendsCsv'])
-        ->name('dashboard.trends.export');
-
-    // --------------------
     // Health goals
-    // --------------------
-    Route::get('/health-goals', HealthGoals::class)
-        ->name('health-goals');
+    Route::get('/health-goals', HealthGoals::class)->name('health-goals');
 
-    // --------------------
     // Comparison
-    // --------------------
-    Route::get('/comparison', PersonalComparison::class)
-        ->middleware(['auth'])
-        ->name('comparison');
+    Route::get('/comparison', PersonalComparison::class)->middleware(['auth'])->name('comparison');
+    Route::get('/comparison/chart', PersonalComparisonChart::class)->middleware(['auth'])->name('comparison.chart');
 
-    Route::get('/comparison/chart', PersonalComparisonChart::class)
-        ->middleware(['auth'])
-
-    Route::get('/comparison/chart', PersonalComparisonChart::class)
-        ->middleware(['auth'])
-        ->name('comparison.chart');
-
-    // --------------------
     // Notifications
-    // --------------------
-    Route::get('/notifications', Notifications::class)
-        ->middleware(['auth'])
-        ->name('notifications.index');
+    Route::get('/notifications', Notifications::class)->middleware(['auth'])->name('notifications.index');
 
-    /**
-     * notifications.open
-     * Tests call GET route('notifications.open', $notification) and expect:
-     * - guest: redirect
-     * - other user: 403
-     * - owner: redirect to link + mark read
-     *
-     * This route implements those expectations using your App\Models\Notification table.
-     */
     Route::get('/notifications/{notification}/open', function (\App\Models\Notification $notification) {
         if (!Auth::check()) {
             return redirect()->route('login');
@@ -335,17 +143,13 @@ Route::middleware([
 
         $user = Auth::user();
 
-        // Your Notification model stores account_id; enforce ownership via user's account_id
-        // (Most of your app appears to use account mappings.)
         if (!isset($user->account_id) || $notification->account_id !== $user->account_id) {
             abort(403);
         }
 
-        // Mark read (best effort)
         $notification->status = 'read';
         $notification->save();
 
-        // Redirect to notification link if set, else back to notifications index
         $link = $notification->link ?? null;
         if (is_string($link) && $link !== '') {
             return redirect($link);
