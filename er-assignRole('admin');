@@ -1,0 +1,19 @@
+[90m= [39m[34;4mApp\Models\User[39;24m {#6747
+    [34mid[39m: "[32m019d82f4-1806-737a-8d93-b59e070fc5fb[39m",
+    [34maccount_id[39m: "[32mb15f2776-04dc-43af-9c2e-fac774c7d8d1[39m",
+    [34mname[39m: "[32mAlex O'Brien[39m",
+    [34memail[39m: "[32malexobrien47@gmail.com[39m",
+    [34memail_verified_at[39m: [36mnull[39m,
+    #[33mpassword[39m: "[32m$2y$12$GIKswpwyeU5i.Axgrtxbh.uzjvHTM83VilMipf8j54VAPzC9BupjG[39m",
+    #[33mtwo_factor_secret[39m: [36mnull[39m,
+    #[33mtwo_factor_recovery_codes[39m: [36mnull[39m,
+    [34mtwo_factor_confirmed_at[39m: [36mnull[39m,
+    #[33mremember_token[39m: [36mnull[39m,
+    [34mcurrent_team_id[39m: [36mnull[39m,
+    [34mprofile_photo_path[39m: [36mnull[39m,
+    [34mcreated_at[39m: "[32m2026-04-12 18:28:48[39m",
+    [34mupdated_at[39m: "[32m2026-04-12 18:28:48[39m",
+    [34mis_admin[39m: [35m0[39m,
+    +[1mprofile_photo_url[22m: "[32mhttps://ui-avatars.com/api/?name=A+O&color=7F9CF5&background=EBF4FF[39m",
+  }
+
