@@ -9,6 +9,9 @@ class UserFormSelect extends Component
     public function render()
     {
         return view('livewire.user-form-select')
-            ->layout('layouts.user');
+            ->layout('layouts.user')
+            ->layoutData([
+                'header' => 'Forms',
+            ]);
     }
 }

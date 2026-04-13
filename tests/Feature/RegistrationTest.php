@@ -35,6 +35,8 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
+        $this->withoutExceptionHandling();
+
         if (! Features::enabled(Features::registration())) {
             $this->markTestSkipped('Registration support is not enabled.');
         }
@@ -47,6 +49,8 @@ class RegistrationTest extends TestCase
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
         ]);
 
+        $response->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('users', ['email' => 'test@example.com']);
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
     }
