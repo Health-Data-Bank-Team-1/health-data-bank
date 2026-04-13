@@ -84,8 +84,8 @@
                                 @endforeach
                             </div>
                         @else
-                            <div>
-                                No health goals have been set yet.
+                            <div class="rounded-lg border border-gray-200 p-4 bg-white shadow-sm">
+                                No health goals have been set yet. Click Manage Goals to add one.
                             </div>
                         @endif
                     </div>

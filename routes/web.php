@@ -9,6 +9,7 @@ use App\Livewire\Admin\AuditLog;
 use App\Livewire\Admin\DatabaseManagement;
 use App\Livewire\Admin\FormTemplatesIndex;
 use App\Livewire\Admin\ReportReview;
+use App\Http\Controllers\Admin\ReportModerationController;
 use App\Livewire\Dashboards\AdminDashboard;
 use App\Livewire\Dashboards\ProviderDashboard;
 use App\Livewire\Dashboards\ResearcherDashboard;
@@ -168,6 +169,9 @@ Route::middleware([
         ->group(function () {
             Route::get('/audit-log/export.csv', [AdminAuditLogController::class, 'exportCsv'])
                 ->name('audit-log.export');
+            Route::get('/reports/flagged', [ReportModerationController::class, 'index'])->name('reports.flagged');
+            Route::get('/reports/{report}/review', [ReportModerationController::class, 'show'])->name('reports.review');
+            Route::delete('/reports/{report}', [ReportModerationController::class, 'delete'])->name('reports.delete');
         });
 
     Route::get('/provider/patients/{patient}/feedback', [ProviderFeedbackController::class, 'create'])

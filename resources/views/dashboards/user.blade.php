@@ -27,7 +27,7 @@
                             </h2>
                             <a
                                 href="{{ route('my-progress') }}"
-                                class="text-sm font-medium text-gray-600 hover:text-gray-800"
+                                class="text-sm font-medium text-indigo-600 hover:text-indigo-800"
                             >
                                 View Progress
                             </a>

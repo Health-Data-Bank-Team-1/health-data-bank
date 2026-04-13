@@ -54,6 +54,28 @@ class ReportModerationController extends Controller
     }
 
     /**
+     * Show all flagged reports
+     */
+    public function index()
+    {
+        $reports = Report::where('moderation_status', 'FLAGGED')
+            ->latest('moderated_at')
+            ->paginate(10);
+
+        return view('livewire.admin.flagged', compact('reports'));
+    }
+
+    /**
+     * Show a single report for review
+     */
+    public function show(Report $report)
+    {
+        $report->load(['researcher', 'updates']);
+
+        return view('livewire.admin.report-review', compact('report'));
+    }
+
+    /**
      * Delete a report (soft delete)
      */
     public function delete(Request $request, string $report)
