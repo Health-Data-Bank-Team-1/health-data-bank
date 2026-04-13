@@ -55,23 +55,41 @@ Route::middleware([
      * We keep your role-based redirect behavior, but fall back to the default Jetstream dashboard view
      * if the user has no recognized role.
      */
+    /**
+     * /dashboard
+     * Tests expect route('dashboard') to exist and return 200 for a basic authenticated user.
+     * We keep your role-based redirect behavior, but fall back to the default Jetstream dashboard view
+     * if the user has no recognized role.
+     */
     Route::get('/dashboard', function () {
+        $user = Auth::user();
+
+        if ($user->hasRole('user')) {
         $user = Auth::user();
 
         if ($user->hasRole('user')) {
             return redirect('/user/dashboard');
         } elseif ($user->hasRole('researcher')) {
+        } elseif ($user->hasRole('researcher')) {
             return redirect('/researcher/dashboard');
         } elseif ($user->hasRole('admin')) {
+        } elseif ($user->hasRole('admin')) {
             return redirect('/admin/dashboard');
+        } elseif ($user->hasRole('provider')) {
         } elseif ($user->hasRole('provider')) {
             return redirect('/provider/dashboard');
         }
 
         // Fallback for roleless authenticated users (makes DashboardTest pass).
         return view('dashboard');
-    })->name('dashboard');
 
+        // Fallback for roleless authenticated users (makes DashboardTest pass).
+        return view('dashboard');
+    })->name('dashboard')->name('dashboard');
+
+    // --------------------
+    // User routes
+    // --------------------
     // --------------------
     // User routes
     // --------------------
@@ -79,33 +97,41 @@ Route::middleware([
         ->middleware('role:user')
         ->name('user-profile');
 
+
     Route::get('/user/dashboard', UserDashboard::class)
         ->middleware('role:user')
         ->name('dashboards.user');
+
 
     Route::get('/user/my-progress', MyProgress::class)
         ->middleware('role:user')
         ->name('my-progress');
 
+
     Route::get('/user/form-select', UserFormSelect::class)
         ->middleware('role:user')
         ->name('user-form-select');
+
 
     Route::get('/user/todo', UserTodo::class)
         ->middleware('role:user')
         ->name('user-todo');
 
+
     Route::get('/user/forms', FormIndex::class)
         ->middleware('role:user')
         ->name('forms.index');
+
 
     Route::get('/user/forms/{form}', FormRenderer::class)
         ->middleware('role:user')
         ->name('forms.show');
 
+
     Route::get('/user/health-summary', HealthSummary::class)
         ->middleware('role:user')
         ->name('health-summary');
+
 
     Route::get('/user/suggestions', UserSuggestions::class)
         ->middleware('role:user')
@@ -114,29 +140,38 @@ Route::middleware([
     // --------------------
     // Researcher routes
     // --------------------
+    // --------------------
+    // Researcher routes
+    // --------------------
     Route::get('/researcher/profile', ResearcherProfile::class)
         ->middleware('role:researcher')
         ->name('researcher-profile');
+
 
     Route::get('/researcher/dashboard', ResearcherDashboard::class)
         ->middleware('role:researcher')
         ->name('dashboards.researcher');
 
+
     Route::get('/researcher/forms', ResearcherForms::class)
         ->middleware('role:researcher')
         ->name('researcher.forms');
+
 
     Route::get('/researcher/reports', ResearcherReports::class)
         ->middleware('role:researcher')
         ->name('researcher.reports');
 
+
     Route::get('/researcher/report-generator', ResearcherReportGenerator::class)
         ->middleware('role:researcher')
         ->name('researcher.report-generator');
 
+
     Route::get('/researcher/report-index', ReportIndex::class)
         ->middleware('role:researcher')
         ->name('researcher.report-index');
+
 
     Route::get('/researcher/reports/{report}', ResearcherReports::class)
         ->middleware('role:researcher')
@@ -146,6 +181,13 @@ Route::middleware([
         ->middleware('role:researcher')
         ->name('researcher.cohort');
 
+    Route::get('/researcher/cohort', CohortBuilder::class)
+        ->middleware('role:researcher')
+        ->name('researcher.cohort');
+
+    // --------------------
+    // Admin routes
+    // --------------------
     // --------------------
     // Admin routes
     // --------------------
@@ -153,21 +195,26 @@ Route::middleware([
         ->middleware('role:admin')
         ->name('admin-profile');
 
+
     Route::get('/admin/dashboard', AdminDashboard::class)
         ->middleware('role:admin')
         ->name('dashboards.admin');
+
 
     Route::get('/admin/audit-log', AuditLog::class)
         ->middleware('role:admin')
         ->name('admin.audit-log');
 
+
     Route::get('/admin/database-management', DatabaseManagement::class)
         ->middleware('role:admin')
         ->name('admin.database-management');
 
+
     Route::get('/admin/report-review', ReportReview::class)
         ->middleware('role:admin')
         ->name('admin.report-review');
+
 
     Route::get('/admin/forms', FormTemplatesIndex::class)
         ->middleware('role:admin')
@@ -189,6 +236,9 @@ Route::middleware([
     // --------------------
     // Provider routes
     // --------------------
+    // --------------------
+    // Provider routes
+    // --------------------
     Route::get('/provider/patients/{patient}/feedback', [ProviderFeedbackController::class, 'create'])
         ->middleware('role:provider')
         ->name('provider.feedback');
@@ -197,21 +247,26 @@ Route::middleware([
         ->middleware('role:provider')
         ->name('provider-profile');
 
+
     Route::get('/provider/dashboard', ProviderDashboard::class)
         ->middleware('role:provider')
         ->name('dashboards.provider');
+
 
     Route::get('/provider/patients', ProviderPatients::class)
         ->middleware('role:provider')
         ->name('provider.patients');
 
+
     Route::get('/provider/reports', ProviderReports::class)
         ->middleware('role:provider')
         ->name('provider.reports');
 
+
     Route::get('/provider/patient-index', PatientIndex::class)
         ->middleware('role:provider')
         ->name('provider.patient-index');
+
 
     Route::get('/provider/patients/{patient}', PatientRenderer::class)
         ->middleware('role:provider')
@@ -252,6 +307,9 @@ Route::middleware([
 
     Route::get('/comparison/chart', PersonalComparisonChart::class)
         ->middleware(['auth'])
+
+    Route::get('/comparison/chart', PersonalComparisonChart::class)
+        ->middleware(['auth'])
         ->name('comparison.chart');
 
     // --------------------
@@ -277,7 +335,8 @@ Route::middleware([
 
         $user = Auth::user();
 
-        // Enforce ownership via user's account_id
+        // Your Notification model stores account_id; enforce ownership via user's account_id
+        // (Most of your app appears to use account mappings.)
         if (!isset($user->account_id) || $notification->account_id !== $user->account_id) {
             abort(403);
         }
