@@ -2,12 +2,17 @@
 
 namespace App\Livewire;
 
+use App\Models\FormField;
+use App\Models\FormSubmission;
 use App\Models\FormTemplate;
+use App\Models\HealthEntry;
+use App\Services\SubmissionFlaggingService;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 class FormRenderer extends Component
 {
-    public $showDescription = false;
 
     public FormTemplate $form;
 
@@ -23,11 +28,7 @@ class FormRenderer extends Component
         $this->formId = $form->id;
 
         foreach ($this->form->fields as $field) {
-            if ($field->field_type === 'Checkbox') {
-                $this->entries[$field->id] = [];
-            } else {
-                $this->entries[$field->id] = null;
-            }
+            $this->entries[$field->id] = $field->field_type === 'Checkbox' ? [] : null;
         }
     }
 
@@ -44,8 +45,18 @@ class FormRenderer extends Component
 
     protected function normalizeRules($rawRules): array
     {
+        if (empty($rawRules)) {
+            return [];
+        }
+
         if (is_string($rawRules)) {
-            return array_filter(array_map('trim', explode('|', $rawRules)));
+            $decoded = json_decode($rawRules, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $rawRules = $decoded;
+            } else {
+                return array_filter(array_map('trim', explode('|', $rawRules)));
+            }
         }
 
         if (!is_array($rawRules)) {
@@ -56,19 +67,27 @@ class FormRenderer extends Component
 
         foreach ($rawRules as $key => $value) {
             if (is_int($key)) {
-                $normalized[] = $value;
+                if (is_string($value)) {
+                    $normalized[] = trim($value);
+                }
                 continue;
             }
 
             if ($value === true) {
                 $normalized[] = $key;
-            } elseif ($value !== false && $value !== null && $value !== '') {
-                $normalized[] = "{$key}:{$value}";
+                continue;
             }
+
+            if ($value === false || $value === null || $value === '') {
+                continue;
+            }
+
+            $normalized[] = "{$key}:{$value}";
         }
 
         return $normalized;
     }
+
     protected function validationAttributes()
     {
         $attributes = [];
@@ -82,7 +101,43 @@ class FormRenderer extends Component
 
     public function submit()
     {
+        logger()->info($this->rules());
         $this->validate();
+
+        $user = Auth::user();
+
+        if (! $user || ! $user->account_id) {
+            session()->flash('error', 'User is not linked to an account.');
+            return;
+        }
+
+        $submission = FormSubmission::create([
+            'id' => Str::uuid(),
+            'account_id' => $user->account_id,
+            'form_template_id' => $this->form->id,
+            'status' => 'SUBMITTED',
+            'submitted_at' => now(),
+        ]);
+
+        foreach ($this->form->fields as $field) {
+            $value = $this->entries[$field->id] ?? null;
+
+            HealthEntry::create([
+                'id' => Str::uuid(),
+                'submission_id' => $submission->id,
+                'account_id' => $user->account_id,
+                'timestamp' => now(),
+                'encrypted_values' => [
+                    'field_id' => $field->id,
+                    'metric_key' => $field->metric_key,
+                    'field_label' => $field->label,
+                    'field_type' => $field->field_type,
+                    'value' => $value,
+                ],
+            ]);
+        }
+
+        app(SubmissionFlaggingService::class)->evaluate($submission);
 
         return redirect()
             ->to('/user/form-select')

@@ -163,7 +163,7 @@ Route::middleware([
             ->name('livewire.admin.show');
     });
 
-    Route::middleware(['auth', 'verified'])
+    Route::middleware(['auth', 'role:admin'])
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {

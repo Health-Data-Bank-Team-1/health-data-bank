@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UserHealthEntriesSeeder::class);
         $this->call(ReportSeeder::class);
         $this->call(ProviderWithPatients::class);
+        $this->call(FlaggedSubmissionSeeder::class,);
 
     }
 }
