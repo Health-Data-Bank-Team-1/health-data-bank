@@ -1,14 +1,15 @@
-@php
-    // Safe, non-sensitive values to display (do NOT show DB password)
-    $connection = config('database.default');
-    $driver = config("database.connections.$connection.driver");
-    $database = config("database.connections.$connection.database");
-    $host = config("database.connections.$connection.host");
-    $port = config("database.connections.$connection.port");
+{{-- resources/views/livewire/admin/database-management.blade.php --}}
 
-    // Environment / app metadata
-    $appEnv = config('app.env');
-    $debug = (bool) config('app.debug');
+@php
+    $connection = $dbInfo['connection'] ?? null;
+    $driver = $dbInfo['driver'] ?? null;
+    $database = $dbInfo['database'] ?? null;
+    $host = $dbInfo['host'] ?? null;
+    $port = $dbInfo['port'] ?? null;
+    $appEnv = $dbInfo['appEnv'] ?? null;
+    $debug = (bool) ($dbInfo['debug'] ?? false);
+
+    $pagination = $preview['pagination'] ?? null;
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -34,7 +35,7 @@
 
             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
                 {{ $appEnv === 'production' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700' }}">
-                Env: {{ strtoupper($appEnv) }}
+                Env: {{ strtoupper((string) $appEnv) }}
             </span>
         </div>
 
@@ -84,51 +85,187 @@
         </div>
     </div>
 
-    {{-- Table browser (informational for now) --}}
+    {{-- Table browser (functional) --}}
     <div class="bg-white shadow rounded-lg p-6 space-y-4">
         <div>
             <h2 class="text-lg font-medium text-gray-900">Table Browser</h2>
             <p class="text-sm text-gray-500">
-                Not implemented yet. Recommended next step: load table names from the schema and show counts for a small allowlist.
+                Read-only: lists MySQL tables and provides a preview. Sensitive-ish columns are masked.
             </p>
+
+            @if(!empty($tableListError))
+                <div class="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                    Failed to load tables: {{ $tableListError }}
+                </div>
+            @endif
         </div>
 
-        <div class="overflow-x-auto border border-gray-200 rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <thead class="bg-gray-50">
-                    <tr class="text-left">
-                        <th class="px-6 py-3 font-semibold text-gray-700">Planned feature</th>
-                        <th class="px-6 py-3 font-semibold text-gray-700">Status</th>
-                        <th class="px-6 py-3 font-semibold text-gray-700">Notes</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    <tr>
-                        <td class="px-6 py-4 font-medium text-gray-900">List tables</td>
-                        <td class="px-6 py-4 text-gray-700">Pending</td>
-                        <td class="px-6 py-4 text-gray-500">Use schema manager; avoid exposing sensitive tables.</td>
-                    </tr>
-                    <tr>
-                        <td class="px-6 py-4 font-medium text-gray-900">Row counts</td>
-                        <td class="px-6 py-4 text-gray-700">Pending</td>
-                        <td class="px-6 py-4 text-gray-500">Counts can be expensive; consider caching.</td>
-                    </tr>
-                    <tr>
-                        <td class="px-6 py-4 font-medium text-gray-900">Export to CSV</td>
-                        <td class="px-6 py-4 text-gray-700">Pending</td>
-                        <td class="px-6 py-4 text-gray-500">Should run as a queued job + audit log entry.</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {{-- Table list --}}
+            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50">
+                        <tr class="text-left">
+                            <th class="px-6 py-3 font-semibold text-gray-700">Table</th>
+                            <th class="px-6 py-3 font-semibold text-gray-700">Rows</th>
+                            <th class="px-6 py-3 font-semibold text-gray-700">Preview</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @forelse($tables as $t)
+                            <tr class="{{ $selectedTable === $t['name'] ? 'bg-indigo-50' : '' }}">
+                                <td class="px-6 py-4 font-medium text-gray-900">
+                                    {{ $t['name'] }}
+                                </td>
+                                <td class="px-6 py-4 text-gray-700">
+                                    @if(is_int($t['count']))
+                                        {{ number_format($t['count']) }}
+                                    @else
+                                        <span class="text-gray-400">N/A</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a
+                                        href="{{ route('admin.database-management', ['table' => $t['name'], 'per_page' => $perPage]) }}"
+                                        class="inline-flex justify-center w-full px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700"
+                                    >
+                                        Preview
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td class="px-6 py-4 text-gray-500" colspan="3">
+                                    No tables found.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Preview panel --}}
+            <div class="rounded-lg border border-gray-200 p-4 bg-gray-50">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-900">Preview</h3>
+                        <p class="text-xs text-gray-500">
+                            Uses query params (<code class="text-gray-700">table</code>, <code class="text-gray-700">page</code>, <code class="text-gray-700">per_page</code>).
+                        </p>
+                    </div>
+
+                    <form method="GET" action="{{ route('admin.database-management') }}" class="flex items-center gap-2">
+                        @if($selectedTable)
+                            <input type="hidden" name="table" value="{{ $selectedTable }}">
+                        @endif
+
+                        <label class="text-xs text-gray-600">
+                            Per page
+                            <select name="per_page" class="ml-1 rounded border-gray-300 text-xs">
+                                @foreach([10,25,50,100] as $n)
+                                    <option value="{{ $n }}" @selected($perPage === $n)>{{ $n }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+
+                        <button class="px-2 py-1 rounded bg-white border border-gray-300 text-xs hover:bg-gray-100">
+                            Apply
+                        </button>
+                    </form>
+                </div>
+
+                @if(!$selectedTable)
+                    <div class="mt-4 text-sm text-gray-600">
+                        Select a table from the left to preview its rows.
+                    </div>
+                @else
+                    @if(($preview['error'] ?? null))
+                        <div class="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                            Preview error: {{ $preview['error'] }}
+                        </div>
+                    @else
+                        <div class="mt-4 overflow-x-auto rounded-lg border border-gray-200 bg-white">
+                            <table class="min-w-full divide-y divide-gray-200 text-xs">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        @foreach(($preview['columns'] ?? []) as $col)
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                                                {{ $col }}
+                                            </th>
+                                        @endforeach
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @forelse(($preview['rows'] ?? []) as $row)
+                                        <tr>
+                                            @foreach(($preview['columns'] ?? []) as $col)
+                                                <td class="px-3 py-2 text-gray-700 whitespace-nowrap">
+                                                    {{ $row[$col] ?? '' }}
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td class="px-3 py-4 text-gray-500" colspan="{{ max(1, count($preview['columns'] ?? [])) }}">
+                                                No rows found.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if($pagination)
+                            @php
+                                $base = ['table' => $selectedTable, 'per_page' => $perPage];
+                                $page = (int) ($pagination['page'] ?? 1);
+                            @endphp
+
+                            <div class="mt-3 flex items-center justify-between">
+                                <div class="text-xs text-gray-600">
+                                    Page {{ $page }}
+                                    @if(isset($pagination['total']) && is_int($pagination['total']))
+                                        <span class="ml-2 text-gray-500">({{ number_format($pagination['total']) }} rows)</span>
+                                    @endif
+                                </div>
+
+                                <div class="flex items-center gap-2">
+                                    @if(($pagination['has_prev'] ?? false))
+                                        <a class="px-2 py-1 rounded bg-white border border-gray-300 text-xs hover:bg-gray-100"
+                                           href="{{ route('admin.database-management', array_merge($base, ['page' => $page - 1])) }}">
+                                            Prev
+                                        </a>
+                                    @else
+                                        <span class="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-xs text-gray-400">Prev</span>
+                                    @endif
+
+                                    @if(($pagination['has_next'] ?? false))
+                                        <a class="px-2 py-1 rounded bg-white border border-gray-300 text-xs hover:bg-gray-100"
+                                           href="{{ route('admin.database-management', array_merge($base, ['page' => $page + 1])) }}">
+                                            Next
+                                        </a>
+                                    @else
+                                        <span class="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-xs text-gray-400">Next</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
+                        <p class="mt-3 text-xs text-gray-500">
+                            Note: Avoid adding “run SQL” features. If you need exports/backups, prefer queued jobs + strict authorization + audit logging.
+                        </p>
+                    @endif
+                @endif
+            </div>
         </div>
     </div>
 
-    {{-- Maintenance actions (safe links/placeholders) --}}
+    {{-- Maintenance actions --}}
     <div class="bg-white shadow rounded-lg p-6 space-y-4">
         <div>
             <h2 class="text-lg font-medium text-gray-900">Maintenance</h2>
             <p class="text-sm text-gray-500">
-                This project currently does not expose maintenance actions from the UI.
+                This project currently does not expose destructive maintenance actions from the UI.
             </p>
         </div>
 
@@ -166,10 +303,6 @@
                 </a>
             </div>
         </div>
-
-        <p class="text-xs text-gray-500">
-            Note: Avoid adding “run SQL” features. If you need operational tools (backup/export), prefer jobs + strict authorization + audit logging.
-        </p>
     </div>
 
 </div>
