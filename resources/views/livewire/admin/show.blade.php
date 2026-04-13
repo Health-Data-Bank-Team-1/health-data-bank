@@ -30,20 +30,48 @@
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Fields</h2>
 
                     @if($template->fields->count())
-                        <div class="space-y-4">
+                        <div class="col-span-6 sm:col-span-4">
                             @foreach($template->fields as $field)
                                 @php
-                                    $rules = json_decode($field->validation_rules ?? '{}', true) ?: [];
+                                    $rules = is_string($field->validation_rules)
+                                        ? json_decode($field->validation_rules, true) ?: []
+                                        : (array) ($field->validation_rules ?? []);
                                 @endphp
 
-                                <div class="rounded-lg border border-gray-200 p-4">
-                                    <p><strong>Label:</strong> {{ $field->label }}</p>
-                                    <p><strong>Help Text:</strong> {{ $field->help_text ?: 'N/A' }}</p>
-                                    <p><strong>Type:</strong> {{ $field->field_type }}</p>
-                                    <p><strong>Required:</strong> {{ $field->is_required ? 'Yes' : 'No' }}</p>
-                                    <p><strong>Min:</strong> {{ $rules['min'] ?? 'N/A' }}</p>
-                                    <p><strong>Max:</strong> {{ $rules['max'] ?? 'N/A' }}</p>
-                                    <p><strong>Order:</strong> {{ $field->display_order }}</p>
+                                <div class="py-2">
+                                    <x-label for="{{ $field->id }}" value="{{ $field->label }}" />
+
+                                    @if ($field->field_type === 'Text')
+                                        <x-input id="{{ $field->id }}" class="mt-1 block w-full" type="text" disabled />
+                                    @elseif ($field->field_type === 'RadioButton')
+                                        <div class="mt-2 space-y-2">
+                                            @foreach ($field->options as $option)
+                                                <label class="flex items-center space-x-4 mt-1">
+                                                    <input type="radio" value="{{ $option }}" disabled
+                                                        class="h-4 w-4 mr-2 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded">
+                                                    <span>{{ $option }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    @elseif ($field->field_type === 'Checkbox')
+                                        <div class="mt-2 space-y-2">
+                                            @foreach ($field->options as $option)
+                                                <label class="flex items-center space-x-4 mt-1">
+                                                    <input type="checkbox" value="{{ $option }}" disabled
+                                                        class="h-4 w-4 mr-2 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded">
+                                                    <span>{{ $option }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    @elseif ($field->field_type === 'Date')
+                                        <x-input id="{{ $field->id }}" class="mt-1 block w-full" type="date" disabled />
+                                    @elseif ($field->field_type === 'Number')
+                                        <x-input id="{{ $field->id }}" class="mt-1 block w-full" type="number" disabled />
+                                    @endif
+
+                                    @if($field->help_text)
+                                        <p class="text-sm text-gray-500 mt-1">{{ $field->help_text }}</p>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
