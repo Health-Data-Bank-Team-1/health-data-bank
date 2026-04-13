@@ -9,39 +9,51 @@ use App\Models\Account;
 use Illuminate\Support\Str;
 use App\Models\HealthEntry;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class ProviderWithPatients extends Seeder
 {
     public function run(): void
     {
-        $provider_account = Account::factory()->create([
-            'name' => 'Test Patients',
-            'email' => 'patients@example.com',
-            'account_type' => 'HealthcareProvider',
-            'status' => 'ACTIVE',
-        ]);
+        $providerEmail = 'patients@example.com';
 
-        $provider = User::factory()->withPersonalTeam()->create([
-            'name' => 'Test Patients',
-            'email' => 'patients@example.com',
-            'account_id' => $provider_account->id,
-        ]);
+        $provider_account = Account::updateOrCreate(
+            ['email' => $providerEmail],
+            [
+                'name' => 'Test Patients',
+                'email' => $providerEmail,
+                'account_type' => 'HealthcareProvider',
+                'status' => 'ACTIVE',
+            ]
+        );
+
+        $provider = User::updateOrCreate(
+            ['email' => $providerEmail],
+            [
+                'name' => 'Test Patients',
+                'email' => $providerEmail,
+                'account_id' => $provider_account->id,
+                // optional, only if you need to log in as this provider:
+                // 'password' => Hash::make(env('DEMO_SEED_PASSWORD', 'password')),
+            ]
+        );
 
         Role::firstOrCreate(
             ['name' => 'provider', 'guard_name' => 'web'],
             ['id' => (string) Str::uuid()]
         );
 
-        $provider->assignRole('provider');
+        if (! $provider->hasRole('provider')) {
+            $provider->assignRole('provider');
+        }
 
         for ($i = 0; $i < 10; ++$i) {
-
             $account = Account::factory()->create([
                 'account_type' => 'User',
                 'status' => 'ACTIVE',
             ]);
 
-            $user = User::factory()->create([
+            User::factory()->create([
                 'account_id' => $account->id,
             ]);
 
@@ -57,7 +69,8 @@ class ProviderWithPatients extends Seeder
                 'encrypted_values' => ['weight' => 174, 'meals_per_day' => 3],
             ]);
 
-            $provider_account->patients()->attach($account->id);
+            // prevents duplicate pivot rows if this seeder re-runs
+            $provider_account->patients()->syncWithoutDetaching([$account->id]);
         }
     }
 }
