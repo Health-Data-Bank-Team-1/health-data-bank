@@ -79,6 +79,7 @@ class UserHealthEntriesSeeder extends Seeder
             'version' => 1,
             'approval_status' => 'approved',
             'description' => 'for testing',
+            'schema' => '{}',
         ]);
 
         FormField::create([

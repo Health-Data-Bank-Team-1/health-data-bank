@@ -12,6 +12,7 @@ class CohortFilterBuilder
         return Account::query()
             ->leftJoin('participant_profiles', 'participant_profiles.account_id', '=', 'accounts.id')
             ->select('accounts.*')
+            ->distinct()
             ->when(
                 !empty($filters['account_type']),
                 fn (Builder $query) => $query->where('accounts.account_type', $filters['account_type'])

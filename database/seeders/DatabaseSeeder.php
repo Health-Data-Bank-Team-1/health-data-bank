@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->withPersonalTeam()->create();
 
+        $this->call(RoleSeeder::class);
         $this->call(DiffUserWithRolesSeeder::class);
         $this->call(FormTemplateSeeder::class);
         $this->call(UserHealthEntriesSeeder::class);

@@ -56,21 +56,29 @@ class ReportModerationController extends Controller
     /**
      * Delete a report (soft delete)
      */
-    public function delete(Request $request, Report $report)
+    public function delete(Request $request, string $report)
     {
         $validated = $request->validate([
             'reason' => ['required', 'string', 'min:10'],
         ]);
 
-        // Check if already deleted
-        if ($report->trashed()) {
+        $reportModel = Report::withTrashed()->find($report);
+
+        if (!$reportModel) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Report not found',
+            ], 404);
+        }
+
+        if ($reportModel->trashed()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Report is already deleted',
             ], 400);
         }
 
-        $report->update([
+        $reportModel->update([
             'deletion_reason' => $validated['reason'],
             'deleted_by' => auth()->user()->id,
             'moderation_status' => 'deleted',
@@ -79,12 +87,12 @@ class ReportModerationController extends Controller
             'moderated_at' => now(),
         ]);
 
-        $report->delete();
+        $reportModel->delete();
 
         AuditLogger::log(
             'report_deleted',
             ['reporting', 'admin', 'moderation', 'outcome:success'],
-            $report,
+            $reportModel,
             [],
             ['reason' => $validated['reason']]
         );
@@ -92,42 +100,52 @@ class ReportModerationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Report deleted successfully',
-            'data' => $report->fresh(),
+            'data' => $reportModel->fresh(),
         ], 200);
     }
 
     /**
      * Restore a soft-deleted report
      */
-    public function restore(Request $request, Report $report)
+    public function restore(Request $request, string $report)
     {
         $validated = $request->validate([
             'reason' => ['sometimes', 'string', 'max:500'],
         ]);
 
-        // Check if not deleted
-        if (!$report->trashed()) {
+        $reportModel = Report::withTrashed()->find($report);
+
+        if (!$reportModel) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Report not found',
+            ], 404);
+        }
+
+        if (!$reportModel->trashed()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Report is not deleted',
             ], 400);
         }
 
-        $report->restore();
+        $reportModel->restore();
 
-        $report->update([
+        $reportModel->update([
             'restoration_reason' => $validated['reason'] ?? null,
             'restored_by' => auth()->user()->id,
             'restored_at' => now(),
             'moderation_status' => 'active',
             'moderated_by' => auth()->user()->id,
-            'moderated_at' => now(),
+            'moderated_at' => $reportModel->moderated_at
+                ? $reportModel->moderated_at->copy()->addSecond()
+                : now(),
         ]);
 
         AuditLogger::log(
             'report_restored',
             ['reporting', 'admin', 'moderation', 'outcome:success'],
-            $report,
+            $reportModel,
             [],
             ['reason' => $validated['reason'] ?? null]
         );
@@ -135,17 +153,16 @@ class ReportModerationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Report restored successfully',
-            'data' => $report->fresh(),
+            'data' => $reportModel->fresh(),
         ], 200);
     }
 
     /**
      * Get moderation status for a report
      */
-    public function status(Report $report)
+    public function status(string $report)
     {
-        // Include soft-deleted reports
-        $reportData = Report::withTrashed()->find($report->id);
+        $reportData = Report::withTrashed()->find($report);
 
         if (!$reportData) {
             return response()->json([

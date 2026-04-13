@@ -2,12 +2,14 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\FormSubmissionController;
 use App\Http\Controllers\Api\PatientController;
 use App\Http\Controllers\Reporting\TrendController;
 use App\Http\Controllers\Reporting\ResearcherAggregateController;
 use App\Http\Controllers\Admin\FormTemplateApprovalController;
 use App\Http\Controllers\Admin\FormTemplateVersionController;
 use App\Http\Controllers\Admin\AdminFormTemplateController;
+use App\Http\Controllers\Admin\ReportModerationController;
 use App\Http\Controllers\Provider\PatientSearchController;
 use App\Http\Controllers\Provider\PatientRecordController;
 use App\Http\Controllers\Provider\ProviderDashboardController;
@@ -55,6 +57,16 @@ Route::middleware(['auth:sanctum', 'role:admin'])->post(
     [FormTemplateVersionController::class, 'rollback']
 );
 
+Route::middleware(['auth:sanctum', 'role:admin'])
+    ->prefix('admin/reports')
+    ->group(function () {
+        Route::post('{report}/archive', [ReportModerationController::class, 'archive']);
+        Route::post('{report}/delete', [ReportModerationController::class, 'delete']);
+        Route::post('{report}/restore', [ReportModerationController::class, 'restore']);
+        Route::get('{report}/moderation-status', [ReportModerationController::class, 'status']);
+        Route::post('{report}/permanent-delete', [ReportModerationController::class, 'permanentDelete']);
+    });
+
 Route::middleware(['auth:sanctum', 'role:researcher'])->get(
     '/research/reporting/aggregate',
     [ResearcherAggregateController::class, 'index']
@@ -92,6 +104,11 @@ Route::middleware(['auth:sanctum', 'role:provider'])->post(
 Route::middleware('auth:sanctum')->get(
     '/me/summary',
     [\App\Http\Controllers\Api\MeSummaryController::class, 'show']
+);
+
+Route::middleware('auth:sanctum')->post(
+    '/form-submissions',
+    [FormSubmissionController::class, 'store']
 );
 
 Route::middleware(['auth:sanctum'])->group(function () {
