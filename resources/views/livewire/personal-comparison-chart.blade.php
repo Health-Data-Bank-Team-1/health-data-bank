@@ -49,26 +49,31 @@
                     </div>
                 </div>
 
-                <div class="rounded-lg border border-gray-200 p-4">
-                    <canvas id="comparisonChart" height="120"></canvas>
+                <div class="rounded-lg border border-gray-200 p-4" wire:ignore>
+                    <canvas id="comparisonChart-{{ md5(($result['metric_key'] ?? 'metric').'-'.($from ?? '').'-'.($to ?? '')) }}" height="120"></canvas>
                 </div>
 
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        const ctx = document.getElementById('comparisonChart');
+                    (() => {
+                        const chartId = 'comparisonChart-{{ md5(($result['metric_key'] ?? 'metric').'-'.($from ?? '').'-'.($to ?? '')) }}';
+                        const ctx = document.getElementById(chartId);
 
                         if (!ctx) return;
 
-                        new Chart(ctx, {
+                        if (window.currentComparisonChart) {
+                            window.currentComparisonChart.destroy();
+                        }
+
+                        window.currentComparisonChart = new Chart(ctx, {
                             type: 'bar',
                             data: {
                                 labels: ['Your Value', 'Group Average'],
                                 datasets: [{
-                                    label: '{{ $metricOptions[$result['metric_key']] ?? $result['metric_key'] }}',
+                                    label: @json($metricOptions[$result['metric_key']] ?? $result['metric_key']),
                                     data: [
-                                        {{ $result['user_value'] ?? 0 }},
-                                        {{ $result['group']['avg'] ?? 0 }}
+                                        {{ is_numeric($result['user_value'] ?? null) ? $result['user_value'] : 0 }},
+                                        {{ is_numeric($result['group']['avg'] ?? null) ? $result['group']['avg'] : 0 }}
                                     ]
                                 }]
                             },
@@ -81,7 +86,7 @@
                                 }
                             }
                         });
-                    });
+                    })();
                 </script>
             @else
                 <div class="rounded-md bg-gray-50 border border-dashed border-gray-300 p-4">

@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Exceptions\CohortSuppressedException;
-use App\Models\FormField;
+use App\Services\HealthMetricRegistry;
 use App\Services\PersonalComparisonService;
 use Livewire\Component;
 
@@ -36,11 +36,11 @@ class PersonalComparison extends Component
 
     public function mount()
     {
-        $this->metricOptions = FormField::query()
-            ->where('goal_enabled', true)
-            ->whereIn('field_type', ['number', 'decimal'])
-            ->orderBy('label')
-            ->pluck('label', 'metric_key')
+        $registry = app(HealthMetricRegistry::class);
+
+        $this->metricOptions = collect($registry->all())
+            ->filter(fn (array $meta) => ($meta['type'] ?? null) === 'number')
+            ->mapWithKeys(fn (array $meta, string $key) => [$key => $meta['label']])
             ->toArray();
 
         $this->metric_key = array_key_first($this->metricOptions);
@@ -89,7 +89,7 @@ class PersonalComparison extends Component
                     'age_min' => $this->age_min,
                     'age_max' => $this->age_max,
                 ]
-            )->toArray();
+            );
         } catch (CohortSuppressedException $e) {
             $this->result = [
                 'metric_key' => $this->metric_key,

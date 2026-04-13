@@ -2,11 +2,11 @@
 
 namespace App\Livewire\Researcher;
 
+use App\Exceptions\CohortSuppressedException;
 use App\Models\ResearcherCohort;
 use App\Services\AuditLogger;
 use App\Services\CohortFilterBuilder;
 use App\Services\KThresholdService;
-use App\Exceptions\CohortSuppressedException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -20,6 +20,13 @@ class CohortBuilder extends Component
     public ?string $gender = null;
 
     public ?int $estimatedSize = null;
+
+    public array $savedCohorts = [];
+
+    public function mount(): void
+    {
+        $this->loadSavedCohorts();
+    }
 
     public function estimateSize(): void
     {
@@ -60,7 +67,7 @@ class CohortBuilder extends Component
             return;
         }
 
-        $cohort= ResearcherCohort::create([
+        ResearcherCohort::create([
             'id' => $cohortId,
             'name' => $validated['name'],
             'purpose' => $validated['purpose'],
@@ -87,6 +94,8 @@ class CohortBuilder extends Component
 
         $this->reset(['name', 'purpose', 'min_age', 'max_age', 'gender']);
         $this->estimatedSize = null;
+
+        $this->loadSavedCohorts();
     }
 
     protected function buildFilters(): array
@@ -97,6 +106,40 @@ class CohortBuilder extends Component
             'max_age' => $this->max_age,
             'gender' => $this->gender,
         ], fn ($value) => !is_null($value) && $value !== '');
+    }
+
+    protected function loadSavedCohorts(): void
+    {
+        $accountId = Auth::user()?->account_id;
+
+        $this->savedCohorts = ResearcherCohort::query()
+            ->where('created_by', $accountId)
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (ResearcherCohort $cohort) => [
+                'id' => $cohort->id,
+                'name' => $cohort->name,
+                'purpose' => $cohort->purpose,
+                'estimated_size' => $cohort->estimated_size,
+                'version' => $cohort->version,
+                'created_at' => optional($cohort->created_at)?->toDateTimeString(),
+            ])
+            ->toArray();
+    }
+
+    public function deleteCohort(string $cohortId): void
+    {
+        $accountId = Auth::user()?->account_id;
+
+        $cohort = ResearcherCohort::query()
+            ->where('created_by', $accountId)
+            ->findOrFail($cohortId);
+
+        $cohort->delete();
+
+        session()->flash('message', 'Cohort deleted successfully.');
+
+        $this->loadSavedCohorts();
     }
 
     public function render()

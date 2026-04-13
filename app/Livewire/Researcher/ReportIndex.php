@@ -10,7 +10,7 @@ class ReportIndex extends Component
     public function render()
     {
         return view('livewire.researcher.report-index', [
-            'reports' => Report::all()
+            'reports' => Report::query()->latest()->get(),
         ]);
     }
 }
