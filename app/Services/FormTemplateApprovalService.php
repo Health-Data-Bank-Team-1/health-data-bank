@@ -27,7 +27,7 @@ class FormTemplateApprovalService
         ]);
 
         AuditLogger::log(
-            'form_template_submitted_for_approval',
+            'form_template_submitted',
             ['forms', 'resource:template', 'workflow:approval', 'outcome:success'],
             null,
             $old,

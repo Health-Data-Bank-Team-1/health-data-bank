@@ -54,7 +54,7 @@ class ReportModerationController extends Controller
             $report->delete();
 
             AuditLogger::log(
-                'submission_deleted',
+                'delete_problematic_report',
                 ['forms', 'admin', 'moderation', 'outcome:success'],
                 $report,
                 [],

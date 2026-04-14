@@ -9,32 +9,38 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Services\AuditLogger;
+use OwenIt\Auditing\Models\Audit;
 
 class AdminAuditLogController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
-        abort_if(Gate::denies('admin-access'), 403);
+        $events = Audit::query()
+            ->whereNotNull('event')
+            ->distinct()
+            ->orderBy('event')
+            ->pluck('event');
 
-        $validated = $request->validate([
-            'event' => ['nullable', 'string', 'max:255'],
-            'user_id' => ['nullable', 'string', 'max:255'],
-            'target_type' => ['nullable', 'string', 'max:255'],
-            'target_id' => ['nullable', 'string', 'max:255'],
-            'tag' => ['nullable', 'string', 'max:255'],
-            'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date'],
-            'sort' => ['nullable', 'in:asc,desc'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
-        ]);
+        $audits = Audit::query()
+            ->when($request->filled('event'), function ($query) use ($request) {
+                $query->where('event', $request->event);
+            })
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
 
-        $query = $this->buildAuditQuery($validated);
-
-        $perPage = $validated['per_page'] ?? 15;
-
-        return response()->json(
-            $query->paginate($perPage)
+        AuditLogger::log(
+            'audit_log_viewed',
+            ['audit', 'outcome:success'],
+            auth()->user(),
+            [],
+            []
         );
+
+        return view('livewire.admin.audit-log', [
+            'audits' => $audits,
+            'events' => $events,
+        ]);
     }
 
     public function exportCsv(Request $request): StreamedResponse

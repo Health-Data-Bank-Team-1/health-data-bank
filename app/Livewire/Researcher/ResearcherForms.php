@@ -130,8 +130,7 @@ class ResearcherForms extends Component
             'fields' => 'required|array|min:1',
             'fields.*.label' => 'required|string|max:255',
             'fields.*.help_text' => 'nullable|string|max:255',
-            'fields.*.type' => 'required|in:text,textarea,number,date,dropdown,checkbox',
-            'fields.*.required' => 'required|boolean',
+            'fields.*.type' => 'required|in:text,textarea,number,date,dropdown,checkbox,radiobutton',            'fields.*.required' => 'required|boolean',
             'fields.*.min' => 'nullable|numeric',
             'fields.*.max' => 'nullable|numeric',
         ];
@@ -236,20 +235,6 @@ class ResearcherForms extends Component
                 'display_order' => $index + 1,
             ]);
         }
-
-        AuditLogger::log(
-            'form_template_submitted',
-            ['form', 'outcome:success'],
-            Auth::user(),
-            [
-                'target_type' => 'form_template',
-                'target_id' => $template->id,
-            ],
-            [
-                'field_count' => count($this->fields),
-                'status' => 'pending',
-            ]
-        );
 
         $this->loadForms();
         $this->resetForm();
