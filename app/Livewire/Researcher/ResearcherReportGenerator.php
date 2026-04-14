@@ -5,6 +5,7 @@ namespace App\Livewire\Researcher;
 use App\Services\AggregatedMetricsService;
 use App\Services\AuditLogger;
 use App\Services\CohortFilterBuilder;
+use App\Services\TrendCalculationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -12,16 +13,25 @@ use Livewire\Component;
 class ResearcherReportGenerator extends Component
 {
     public ?int $min_age = null;
+
     public ?int $max_age = null;
+
     public ?string $gender = null;
 
     public ?string $from = null;
+
     public ?string $to = null;
+
     public string $metricsInput = '';
 
     public ?int $estimatedSize = null;
+
     public array $reportResults = [];
+
     public array $summaryStats = [];
+
+    public array $timeseriesResults = [];
+
     public ?string $reportMessage = null;
 
     public function estimatePopulation(): void
@@ -47,8 +57,9 @@ class ResearcherReportGenerator extends Component
             'metricsInput' => ['required', 'string'],
         ]);
 
-        if (!is_null($validated['min_age']) && !is_null($validated['max_age']) && $validated['min_age'] > $validated['max_age']) {
+        if (! is_null($validated['min_age']) && ! is_null($validated['max_age']) && $validated['min_age'] > $validated['max_age']) {
             $this->addError('max_age', 'Max age must be greater than or equal to min age.');
+
             return;
         }
 
@@ -62,7 +73,6 @@ class ResearcherReportGenerator extends Component
         $count = count($accountIds);
         $this->estimatedSize = $count;
 
-
         $metrics = collect(explode(',', $validated['metricsInput']))
             ->map(fn ($metric) => trim($metric))
             ->filter()
@@ -71,17 +81,33 @@ class ResearcherReportGenerator extends Component
 
         if (empty($metrics)) {
             $this->addError('metricsInput', 'Please enter at least one metric.');
+
             return;
         }
 
+        $fromDate = Carbon::parse($validated['from'])->startOfDay();
+        $toDate = Carbon::parse($validated['to'])->endOfDay();
+
         $results = app(AggregatedMetricsService::class)->aggregateForCohort(
             $accountIds,
-            Carbon::parse($validated['from'])->startOfDay(),
-            Carbon::parse($validated['to'])->endOfDay(),
+            $fromDate,
+            $toDate,
             $metrics
         );
 
+        $timeseries = [];
+        foreach ($metrics as $metric) {
+            $timeseries[$metric] = app(TrendCalculationService::class)->timeSeriesForCohort(
+                $accountIds,
+                $metric,
+                $fromDate,
+                $toDate,
+                'day'
+            );
+        }
+
         $this->reportResults = $results;
+        $this->timeseriesResults = $timeseries;
         $this->summaryStats = [
             'population_size' => $count,
             'from' => $validated['from'],
@@ -114,7 +140,7 @@ class ResearcherReportGenerator extends Component
             'min_age' => $this->min_age,
             'max_age' => $this->max_age,
             'gender' => $this->gender,
-        ], fn ($value) => !is_null($value) && $value !== '');
+        ], fn ($value) => ! is_null($value) && $value !== '');
     }
 
     public function render()
@@ -122,7 +148,7 @@ class ResearcherReportGenerator extends Component
         return view('livewire.researcher.report-generator')
             ->layout('layouts.researcher')
             ->layoutData([
-                'header' => 'Report Generator'
+                'header' => 'Report Generator',
             ]);
     }
 }

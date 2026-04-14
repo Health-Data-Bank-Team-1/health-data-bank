@@ -20,9 +20,17 @@
             <div :class="showReports ? 'block' : 'hidden md:block'" class="w-full md:w-1/3 bg-gray-100 p-4 border-b md:border-b-0 md:border-r border-gray-200">
                 <h2 class="text-xl font-semibold mb-4 hidden md:block">Reports</h2>
                 <livewire:researcher.report-index />
-                <div class="flex flex-col items-center mt-2 space-y-1">
-                    <x-button class="w-full">{{ 'Search' }}</x-button>
-                    <x-button class="w-full">{{ 'Sort' }}</x-button>
+                <div class="mt-2">
+                    <form wire:submit="searchById" class="flex gap-2">
+                        <input
+                            type="text"
+                            wire:model="searchId"
+                            placeholder="Search by Report ID"
+                            class="flex-1 border rounded-lg px-3 py-2 text-sm"
+                        >
+                        <x-button type="submit" class="shrink-0">Go</x-button>
+                    </form>
+                    @error('searchId') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
 
@@ -35,12 +43,7 @@
                             <x-button>{{ 'Export as CSV' }}</x-button>
                         </div>
                     </div>
-                    <div class="mb-4">
-                        {{ 'graphical report here' }}
-                    </div>
-                    <div>
-                        <livewire:researcher.report-renderer :report="$currReport" />
-                    </div>
+                    <livewire:researcher.report-renderer :report="$currReport" :key="$currReport->id" />
                 @else
                     <div class="flex h-full items-center justify-center text-gray-500">
                         Please select a report from the menu.

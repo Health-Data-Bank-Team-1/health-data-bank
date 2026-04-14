@@ -8,8 +8,12 @@ use Livewire\Component;
 class ReportRenderer extends Component
 {
     public Report $report;
+
     public array $aggregateData = [];
+
     public array $metrics = [];
+
+    public array $timeseriesRows = [];
 
     public function mount(Report $report): void
     {
@@ -34,6 +38,14 @@ class ReportRenderer extends Component
                 break;
             }
         }
+
+        $tsData = $report->timeseriesData ?? [];
+
+        if ($tsData instanceof \Illuminate\Support\Collection) {
+            $tsData = $tsData->toArray();
+        }
+
+        $this->timeseriesRows = is_array($tsData) ? $tsData : [];
     }
 
     public function render()

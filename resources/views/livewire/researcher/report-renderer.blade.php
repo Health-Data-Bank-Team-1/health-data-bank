@@ -1,4 +1,4 @@
-<div class="h-full w-full flex flex-col bg-white shadow rounded-lg overflow-hidden">
+<div class="w-full flex flex-col bg-white shadow rounded-lg">
     <div class="px-6 py-4 border-b bg-gray-50">
         <h2 class="text-lg font-semibold text-gray-900">
             {{ $report->title ?? $report->name ?? 'Research Report' }}
@@ -17,7 +17,29 @@
         </div>
     </div>
 
+    @php
+        $tsMap = [];
+        foreach ($timeseriesRows as $row) {
+            $metric = is_array($row) ? ($row['metric'] ?? null) : ($row->metric ?? null);
+            $points = is_array($row) ? ($row['points'] ?? []) : ($row->points ?? []);
+            if ($metric) {
+                $tsMap[$metric] = [
+                    'metric' => $metric,
+                    'points' => is_string($points) ? json_decode($points, true) ?? [] : $points,
+                ];
+            }
+        }
+    @endphp
+
     <div class="p-6">
+        <livewire:researcher.report-chart
+            :aggregate-data="$metrics"
+            :timeseries-data="$tsMap"
+            :key="$report->id"
+        />
+    </div>
+
+    <div class="p-6 pt-0">
         @if (!empty($metrics))
             <div class="overflow-x-auto">
                 <table class="min-w-full border border-gray-200">
