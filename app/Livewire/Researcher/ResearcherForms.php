@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Livewire\Researcher;
 
 use App\Models\FormTemplate;
@@ -165,7 +166,7 @@ class ResearcherForms extends Component
             'purpose' => 'nullable|string',
         ]);
 
-        $isNew = !$this->editingTemplateId;
+        $isNew = ! $this->editingTemplateId;
 
         $template = FormTemplate::updateOrCreate(
             ['id' => $this->editingTemplateId],
@@ -175,6 +176,9 @@ class ResearcherForms extends Component
                 'purpose' => $this->purpose,
                 'version' => $this->version,
                 'approval_status' => 'draft',
+
+                // Ensure schema is always set (DB requires it)
+                'schema' => json_encode(['fields' => []]),
             ]
         );
 
@@ -211,6 +215,9 @@ class ResearcherForms extends Component
                 'purpose' => $this->purpose,
                 'version' => $this->version,
                 'approval_status' => 'pending',
+
+                // Ensure schema is always set (DB requires it)
+                'schema' => json_encode(['fields' => []]),
             ]
         );
 
@@ -250,6 +257,7 @@ class ResearcherForms extends Component
 
         session()->flash('success', 'Form submitted for approval successfully.');
     }
+
     public function deleteForm(string $id): void
     {
         $form = FormTemplate::findOrFail($id);
@@ -265,12 +273,13 @@ class ResearcherForms extends Component
 
         session()->flash('message', 'Form deleted successfully.');
     }
+
     public function render()
     {
         return view('livewire.researcher.forms')
             ->layout('layouts.researcher')
             ->layoutData([
-                'header' => 'Forms'
+                'header' => 'Forms',
             ]);
     }
 }

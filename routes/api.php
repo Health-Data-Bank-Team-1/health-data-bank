@@ -14,7 +14,6 @@ use App\Http\Controllers\Provider\PatientSearchController;
 use App\Http\Controllers\Provider\PatientRecordController;
 use App\Http\Controllers\Provider\ProviderDashboardController;
 use App\Http\Controllers\Provider\ProviderFeedbackController;
-
 use App\Services\CohortFilterBuilder;
 use App\Services\KThresholdService;
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -24,6 +23,7 @@ use App\Http\Controllers\Researcher\ResearcherCohortController;
 use App\Http\Controllers\Researcher\ResearcherReportController;
 use App\Http\Controllers\Api\HealthGoalController;
 use App\Http\Controllers\Api\PersonalComparisonController;
+use App\Http\Controllers\Api\MeSummaryController;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reports/dashboard/trends', [DashboardReportController::class, 'trends']);
@@ -71,12 +71,10 @@ Route::middleware(['auth:sanctum', 'role:researcher'])->get(
 );
 
 Route::middleware(['auth:sanctum', 'role:researcher'])->group(function () {
-    // Create a cohort
     Route::post('/researcher/cohorts', [ResearcherCohortController::class, 'store']);
-    // Generate aggregated report
     Route::post('/researcher/reports/aggregated', [ResearcherReportController::class, 'aggregated']);
-    // Export aggregated report as CSV
     Route::post('/researcher/reports/aggregated/export.csv', [ResearcherReportController::class, 'exportAggregatedCsv']);
+    Route::post('/researcher/reports/{report}/append', [ResearcherReportController::class, 'append']);
 });
 
 Route::middleware(['auth:sanctum', 'role:provider'])->get(
@@ -101,7 +99,7 @@ Route::middleware(['auth:sanctum', 'role:provider'])->post(
 
 Route::middleware('auth:sanctum')->get(
     '/me/summary',
-    [\App\Http\Controllers\Api\MeSummaryController::class, 'show']
+    [MeSummaryController::class, 'show']
 );
 
 Route::middleware('auth:sanctum')->post(

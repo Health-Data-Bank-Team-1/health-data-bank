@@ -278,9 +278,9 @@
                         </td>
 
                         <td class="px-4 py-3 text-gray-700">
-                                <span class="break-all">
-                                    {{ $audit->auditable_id ?: '—' }}
-                                </span>
+                            <span class="break-all">
+                                {{ $audit->auditable_id ?: '—' }}
+                            </span>
                         </td>
 
                         <td class="px-4 py-3 text-gray-700 max-w-xs">
@@ -298,8 +298,8 @@
                                 <div class="flex flex-wrap gap-1">
                                     @foreach ($tags as $tagItem)
                                         <span class="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded">
-                                                {{ trim($tagItem) }}
-                                            </span>
+                                            {{ trim($tagItem) }}
+                                        </span>
                                     @endforeach
                                 </div>
                             @else

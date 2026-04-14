@@ -2,94 +2,97 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Role;
-use App\Models\User;
 use App\Models\Account;
+use App\Models\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class DiffUserWithRolesSeeder extends Seeder
 {
     public function run(): void
     {
-        $user_account = Account::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'account_type' => 'User',
-            'status' => 'ACTIVE',
-        ]);
+        // Team-friendly:
+        // - Devs can set DEMO_SEED_PASSWORD in .env to whatever they want (e.g. Password4)
+        // - Only falls back to a default in local environment
+        $demoPassword = env('DEMO_SEED_PASSWORD');
 
-        $user = User::factory()->withPersonalTeam()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'account_id' => $user_account->id,
-        ]);
+        if (! $demoPassword && app()->environment('local')) {
+            $demoPassword = 'Password4';
+        }
 
-        Role::firstOrCreate(
-            ['name' => 'user', 'guard_name' => 'web'],
-            ['id' => (string) Str::uuid()]
-        );
+        // If still not set (e.g., CI), we still set something deterministic
+        // so seeded logins are usable if needed.
+        if (! $demoPassword) {
+            $demoPassword = 'password';
+        }
 
-        $user->assignRole('user');
+        // ----
+        // Helper: ensure role exists with UUID id
+        // ----
+        $ensureRole = function (string $name, string $guard = 'web'): Role {
+            $role = Role::where('name', $name)->where('guard_name', $guard)->first();
 
-        $res_account = Account::factory()->create([
-            'name' => 'Test Res',
-            'email' => 'res@example.com',
-            'account_type' => 'Researcher',
-            'status' => 'ACTIVE',
-        ]);
+            if (! $role) {
+                $role = new Role();
+                $role->id = (string) Str::uuid();
+                $role->name = $name;
+                $role->guard_name = $guard;
+                $role->save();
+            }
 
-        $res = User::factory()->withPersonalTeam()->create([
-            'name' => 'Test Res',
-            'email' => 'res@example.com',
-            'account_id' => $res_account->id,
-        ]);
+            return $role;
+        };
 
-        Role::firstOrCreate(
-            ['name' => 'researcher', 'guard_name' => 'web'],
-            ['id' => (string) Str::uuid()]
-        );
+        $ensureRole('user');
+        $ensureRole('researcher');
+        $ensureRole('admin');
+        $ensureRole('provider');
 
-        $res->assignRole('researcher');
+        $upsertDemoUser = function (
+            string $name,
+            string $email,
+            string $accountType,
+            string $roleName
+        ) use ($demoPassword): User {
+            $account = Account::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $name,
+                    'email' => $email,
+                    'account_type' => $accountType,
+                    'status' => 'ACTIVE',
+                ]
+            );
 
-        $admin_account = Account::factory()->create([
-            'name' => 'Test Admin',
-            'email' => 'admin@example.com',
-            'account_type' => 'Admin',
-            'status' => 'ACTIVE',
-        ]);
+            $user = User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $name,
+                    'email' => $email,
+                    'account_id' => $account->id,
+                    'password' => Hash::make($demoPassword),
+                ]
+            );
 
-        $admin = User::factory()->withPersonalTeam()->create([
-            'name' => 'Test Admin',
-            'email' => 'admin@example.com',
-            'account_id' => $admin_account->id,
-        ]);
+            // Safer than syncRoles(): doesn’t remove other roles a teammate/seeder may add
+            if (! $user->hasRole($roleName)) {
+                $user->assignRole($roleName);
+            }
 
-        Role::firstOrCreate(
-            ['name' => 'admin', 'guard_name' => 'web'],
-            ['id' => (string) Str::uuid()]
-        );
+            return $user;
+        };
 
-        $admin->assignRole('admin');
+        $upsertDemoUser('User Demo', 'user@demo.com', 'User', 'user');
+        $upsertDemoUser('Researcher Demo', 'researcher@demo.com', 'Researcher', 'researcher');
+        $upsertDemoUser('Admin Demo', 'admin@demo.com', 'Admin', 'admin');
+        $upsertDemoUser('Provider Demo', 'provider@demo.com', 'HealthcareProvider', 'provider');
 
-        $provider_account = Account::factory()->create([
-            'name' => 'Test Provider',
-            'email' => 'provider@example.com',
-            'account_type' => 'HealthcareProvider',
-            'status' => 'ACTIVE',
-        ]);
-
-        $provider = User::factory()->withPersonalTeam()->create([
-            'name' => 'Test Provider',
-            'email' => 'provider@example.com',
-            'account_id' => $provider_account->id,
-        ]);
-
-        Role::firstOrCreate(
-            ['name' => 'provider', 'guard_name' => 'web'],
-            ['id' => (string) Str::uuid()]
-        );
-
-        $provider->assignRole('provider');
+        // Optional: print the credentials during CLI seeding (helps teammates)
+        if ($this->command) {
+            $this->command->info('Demo accounts seeded/updated: user@demo.com, researcher@demo.com, admin@demo.com, provider@demo.com');
+            $this->command->info('Demo password set from DEMO_SEED_PASSWORD (or local default).');
+        }
     }
 }

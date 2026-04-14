@@ -95,8 +95,6 @@ Route::middleware([
     Route::get('/admin/database-management', DatabaseManagement::class)->middleware('role:admin')->name('admin.database-management');
     Route::get('/admin/report-review', ReportReview::class)->middleware('role:admin')->name('admin.report-review');
     Route::get('/admin/forms', FormTemplatesIndex::class)->middleware('role:admin')->name('admin.forms.index');
-    Route::get('/admin/user-roles', UserRoleManagement::class)->middleware('role:admin')->name('admin.user-roles');
-    Route::get('/admin/schema-management', SchemaManagement::class)->middleware('role:admin')->name('admin.schema-management');
 
     Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
         Route::get('/forms/{template}', [FormTemplateApprovalController::class, 'show'])
