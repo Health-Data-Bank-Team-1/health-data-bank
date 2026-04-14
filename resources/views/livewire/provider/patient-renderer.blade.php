@@ -1,131 +1,120 @@
-<div>
-    <x-slot name="header">
-        <h1 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Patients') }}
-        </h1>
-    </x-slot>
+<div class="py-12">
+    <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="bg-white shadow rounded-lg p-6 border border-gray-100">
+            <h2 class="text-xl font-semibold text-gray-900">Patient Record</h2>
 
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-6">
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-            <div class="p-4 bg-white rounded shadow">
-                <div class="mt-4 flex flex-col justify-center items-center">
-                    <h3 class="text-2xl font-medium text-gray-900 mb-2">
-                        {{ $patientAccount->name }}
-                    </h3>
+            <div class="mt-4 text-sm text-gray-700 space-y-1">
+                <p><strong>Name:</strong> {{ $patientAccount->name }}</p>
+                <p><strong>Email:</strong> {{ $patientAccount->email }}</p>
+                <p><strong>Account ID:</strong> {{ $patientAccount->id }}</p>
+            </div>
+        </div>
 
-                    <div class="w-full md:w-1/2 mx-auto flex items-center gap-3 mb-4">
-                        <div class="flex items-center gap-2">
-                            <label class="text-sm text-gray-600" for="start_date">From:</label>
-                            <input
-                                type="date"
-                                id="start_date"
-                                wire:model.live="startDate"
-                                class="text-sm border-gray-300 rounded-md"
-                            />
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <label class="text-sm text-gray-600" for="end_date">To:</label>
-                            <input
-                                type="date"
-                                id="end_date"
-                                wire:model.live="endDate"
-                                class="text-sm border-gray-300 rounded-md"
-                            />
-                        </div>
-                    </div>
+        <div class="bg-white shadow rounded-lg p-6 border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Health Entries</h3>
 
-                    @if(!empty($metrics))
-                        <div class="w-full md:w-3/4 mx-auto mb-4">
-                            <div class="bg-white rounded-xl shadow p-4">
-                                <h3 class="text-sm font-semibold text-gray-800 mb-3">Health Metrics Over Time</h3>
+            @if($healthEntries && count($healthEntries))
+                <div class="space-y-4">
+                    @foreach($healthEntries as $entry)
+                        <div class="border rounded-lg p-4">
+                            <p class="text-sm text-gray-500">
+                                {{ \Carbon\Carbon::parse($entry->timestamp)->format('Y-m-d H:i') }}
+                            </p>
 
-                                <div
-                                    class="relative h-72"
-                                    wire:key="chart-{{ $startDate }}-{{ $endDate }}"
-                                    x-data='{
-                                        labels: @json($chartLabels),
-                                        datasets: @json($chartDatasets)
-                                    }'
-                                    x-init="
-                                        const canvas = $el.querySelector('canvas');
-                                        if (!canvas) return;
-
-                                        const draw = () => {
-                                            if (!window.Chart) return false;
-                                            if (!datasets || datasets.length === 0) return true;
-
-                                            new Chart(canvas, {
-                                                type: 'line',
-                                                data: {
-                                                    labels: labels,
-                                                    datasets: datasets.map(ds => ({
-                                                        ...ds,
-                                                        tension: 0.3,
-                                                        fill: false,
-                                                        pointRadius: 3,
-                                                        borderWidth: 2,
-                                                    }))
-                                                },
-                                                options: {
-                                                    responsive: true,
-                                                    maintainAspectRatio: false,
-                                                    spanGaps: true,
-                                                    scales: { y: { beginAtZero: false } },
-                                                    plugins: {
-                                                        legend: { position: 'bottom' }
-                                                    }
-                                                }
-                                            });
-                                            return true;
-                                        };
-
-                                        if (!draw()) {
-                                            let tries = 0;
-                                            const iv = setInterval(() => {
-                                                tries++;
-                                                if (draw() || tries > 25) clearInterval(iv);
-                                            }, 200);
-                                        }
-                                    "
-                                >
-                                    <canvas id="patientChart"></canvas>
-                                </div>
+                            <div class="mt-2 text-sm text-gray-700">
+                                @foreach($entry->encrypted_values as $key => $value)
+                                    <p><strong>{{ $key }}:</strong> {{ is_array($value) ? json_encode($value) : $value }}</p>
+                                @endforeach
                             </div>
                         </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="rounded-md bg-gray-50 border border-dashed border-gray-300 p-4 text-sm text-gray-600">
+                    No health entries available for this patient.
+                </div>
+            @endif
+        </div>
 
-                        <div class="w-full md:w-1/2 mx-auto overflow-x-auto mb-4">
-                            <table class="min-w-full border border-gray-200">
-                                <thead>
-                                    <tr class="bg-gray-100">
-                                        <th class="px-4 py-2 border text-left">Metric</th>
-                                        <th class="px-4 py-2 border text-left">Avg</th>
-                                        <th class="px-4 py-2 border text-left">Min</th>
-                                        <th class="px-4 py-2 border text-left">Max</th>
-                                        <th class="px-4 py-2 border text-left">Latest</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($metrics as $key => $stats)
-                                        <tr>
-                                            <td class="px-4 py-2 border font-medium text-gray-800">
-                                                {{ $availableMetrics[$key] ?? $key }}
-                                            </td>
-                                            <td class="px-4 py-2 border text-gray-700">{{ $stats['avg'] }}</td>
-                                            <td class="px-4 py-2 border text-gray-700">{{ $stats['min'] }}</td>
-                                            <td class="px-4 py-2 border text-gray-700">{{ $stats['max'] }}</td>
-                                            <td class="px-4 py-2 border text-gray-700">{{ $stats['latest'] }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <div class="w-full md:w-1/2 mx-auto rounded-md bg-gray-50 border border-dashed border-gray-300 p-4 text-sm text-gray-600 mb-4">
-                            No data available for the selected date range.
-                        </div>
-                    @endif
+        <div class="bg-white shadow rounded-lg p-6 border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Add Personalized Feedback</h3>
+
+            @if (session()->has('message'))
+                <div class="mb-4 bg-green-100 text-green-800 p-3 rounded text-sm">
+                    {{ session('message') }}
+                </div>
+            @endif
+
+            <div class="space-y-4">
+                <div>
+                    <label for="feedback" class="block text-sm font-medium text-gray-700 mb-1">Feedback Notes</label>
+                    <textarea
+                        id="feedback"
+                        wire:model="feedback"
+                        rows="4"
+                        class="w-full border border-gray-300 rounded px-3 py-2"
+                        placeholder="Enter personalized provider feedback..."
+                    ></textarea>
+                    @error('feedback')
+                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="recommended_actions" class="block text-sm font-medium text-gray-700 mb-1">Recommended Actions</label>
+                    <textarea
+                        id="recommended_actions"
+                        wire:model="recommended_actions"
+                        rows="3"
+                        class="w-full border border-gray-300 rounded px-3 py-2"
+                        placeholder="Enter recommended next steps or actions..."
+                    ></textarea>
+                    @error('recommended_actions')
+                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div>
+                    <button
+                        wire:click="submitFeedback"
+                        type="button"
+                        class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700"
+                    >
+                        Submit Feedback
+                    </button>
                 </div>
             </div>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6 border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Previous Feedback</h3>
+
+            @if(count($feedbackEntries))
+                <div class="space-y-4">
+                    @foreach($feedbackEntries as $entry)
+                        <div class="border rounded-lg p-4">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ $entry['provider_name'] }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ $entry['created_at'] }}</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 text-sm text-gray-700">
+                                <p><strong>Feedback:</strong> {{ $entry['feedback'] }}</p>
+
+                                @if(!empty($entry['recommended_actions']))
+                                    <p class="mt-2"><strong>Recommended Actions:</strong> {{ $entry['recommended_actions'] }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="rounded-md bg-gray-50 border border-dashed border-gray-300 p-4 text-sm text-gray-600">
+                    No provider feedback has been submitted for this patient yet.
+                </div>
+            @endif
         </div>
     </div>
 

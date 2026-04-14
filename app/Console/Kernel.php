@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -18,47 +19,39 @@ class Kernel extends ConsoleKernel
 
     /**
      * Define the application's command schedule.
-     *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
-     * @return void
      */
-    protected function schedule(Schedule $schedule)
+    protected function schedule(Schedule $schedule): void
     {
-        // Daily database backup at 2 AM
-        $schedule->command('backup:database')
-                 ->daily()
-                 ->at('02:00')
-                 ->withoutOverlapping()
-                 ->onSuccess(function () {
-                     // Optional: Send success notification
-                     \Illuminate\Support\Facades\Log::info('Database backup completed successfully');
-                 })
-                 ->onFailure(function () {
-                     // Optional: Send failure alert
-                     \Illuminate\Support\Facades\Log::error('Database backup failed');
-                 });
-
-        // Optional: Weekly backup with compression
+        // Daily compressed database backup at 2 AM
         $schedule->command('backup:database --compress')
-                 ->weekly()
-                 ->sundays()
-                 ->at('03:00')
-                 ->withoutOverlapping();
+            ->dailyAt('02:00')
+            ->withoutOverlapping()
+            ->onSuccess(function () {
+                Log::info('Daily database backup completed successfully');
+            })
+            ->onFailure(function () {
+                Log::error('Daily database backup failed');
+            });
 
-        // Optional: Clean up old backups monthly
-        $schedule->command('backup:database --cleanup --retention=30')
-                 ->monthlyOn(1, '04:00')
-                 ->withoutOverlapping();
+        // Weekly compressed backup every Sunday at 3 AM
+        $schedule->command('backup:database --compress')
+            ->weekly()
+            ->sundays()
+            ->at('03:00')
+            ->withoutOverlapping();
+
+        // Monthly compressed backup plus cleanup of old backups on the 1st at 4 AM
+        $schedule->command('backup:database --compress --cleanup --retention=30')
+            ->monthlyOn(1, '04:00')
+            ->withoutOverlapping();
     }
 
     /**
      * Register the commands for the application.
-     *
-     * @return void
      */
-    protected function commands()
+    protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }
