@@ -85,35 +85,6 @@ class DatabaseManagement extends Component
         $this->loadBackups($backupService);
     }
 
-    protected function loadBackups(DatabaseBackupService $backupService): void
-    {
-        $this->backups = collect($backupService->listBackups())
-            ->sortByDesc('modified')
-            ->values()
-            ->map(function (array $backup) {
-                return [
-                    'filename' => $backup['filename'],
-                    'size_kb' => round(($backup['size'] ?? 0) / 1024, 1),
-                    'modified' => !empty($backup['modified'])
-                        ? date('Y-m-d H:i:s', $backup['modified'])
-                        : null,
-                    'path' => $backup['path'] ?? null,
-                ];
-            })
-            ->toArray();
-    }
-
-    public function render()
-    {
-        return view('livewire.admin.database-management', [
-            'backups' => $this->backups,
-        ])
-            ->layout('layouts.admin')
-            ->layoutData([
-                'header' => 'Database Management',
-            ]);
-    }
-
     public function restoreBackup(string $filename, DatabaseBackupService $backupService): void
     {
         $result = $backupService->restoreBackup($filename);
@@ -148,5 +119,34 @@ class DatabaseManagement extends Component
         }
 
         $this->loadBackups($backupService);
+    }
+
+    protected function loadBackups(DatabaseBackupService $backupService): void
+    {
+        $this->backups = collect($backupService->listBackups())
+            ->sortByDesc('modified')
+            ->values()
+            ->map(function (array $backup) {
+                return [
+                    'filename' => $backup['filename'],
+                    'size_kb' => round(($backup['size'] ?? 0) / 1024, 1),
+                    'modified' => !empty($backup['modified'])
+                        ? date('Y-m-d H:i:s', $backup['modified'])
+                        : null,
+                    'path' => $backup['path'] ?? null,
+                ];
+            })
+            ->toArray();
+    }
+
+    public function render()
+    {
+        return view('livewire.admin.database-management', [
+            'backups' => $this->backups,
+        ])
+            ->layout('layouts.admin')
+            ->layoutData([
+                'header' => 'Database Management',
+            ]);
     }
 }

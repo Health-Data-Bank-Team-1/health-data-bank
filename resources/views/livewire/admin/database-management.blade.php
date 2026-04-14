@@ -126,10 +126,10 @@
             </div>
         </div>
 
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-900">
-                <strong>Warning:</strong>
-                Restoring a backup will replace the current database contents with the selected backup file.
-                Only perform a restore when you intentionally want to roll the system back to a previous state.
-            </div>
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-900">
+            <strong>Warning:</strong>
+            Restoring a backup will replace the current database contents with the selected backup file.
+            Only perform a restore when you intentionally want to roll the system back to a previous state.
+        </div>
     </div>
 </div>
