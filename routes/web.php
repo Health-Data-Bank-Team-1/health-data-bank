@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\FormTemplateApprovalController;
 use App\Http\Controllers\Api\Reports\DashboardReportController;
 use App\Http\Controllers\FormTemplateController;
 use App\Http\Controllers\Provider\ProviderFeedbackController;
+use App\Http\Controllers\Researcher\ResearcherReportController;
 use App\Livewire\Admin\AuditLog;
 use App\Livewire\Admin\DatabaseManagement;
 use App\Livewire\Admin\FormTemplatesIndex;
@@ -86,6 +87,11 @@ Route::middleware([
     Route::get('/researcher/reports/{report}', ResearcherReports::class)->middleware('role:researcher')->name('researcher.reports.show');
     Route::get('/researcher/cohort', CohortBuilder::class)->middleware('role:researcher')->name('researcher.cohort');
 
+    Route::middleware(['auth', 'verified'])->prefix('researcher')->name('researcher.')->group(function () {
+        Route::get('/reports/{report}/export.csv', [ResearcherReportController::class, 'exportReportCsv'])
+            ->name('reports.export');
+    });
+
     // Admin routes
     Route::get('/admin/profile', AdminProfile::class)->middleware('role:admin')->name('admin-profile');
     Route::get('/admin/dashboard', AdminDashboard::class)->middleware('role:admin')->name('dashboards.admin');
@@ -137,13 +143,13 @@ Route::middleware([
     Route::get('/notifications', Notifications::class)->middleware(['auth'])->name('notifications.index');
 
     Route::get('/notifications/{notification}/open', function (\App\Models\Notification $notification) {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
         $user = Auth::user();
 
-        if (!isset($user->account_id) || $notification->account_id !== $user->account_id) {
+        if (! isset($user->account_id) || $notification->account_id !== $user->account_id) {
             abort(403);
         }
 

@@ -15,6 +15,8 @@ class ReportRenderer extends Component
 
     public array $timeseriesRows = [];
 
+    public array $notes = [];
+
     public function mount(Report $report): void
     {
         $this->report = $report;
@@ -46,6 +48,8 @@ class ReportRenderer extends Component
         }
 
         $this->timeseriesRows = is_array($tsData) ? $tsData : [];
+
+        $this->notes = $report->updates()->latest()->get()->toArray();
     }
 
     public function render()

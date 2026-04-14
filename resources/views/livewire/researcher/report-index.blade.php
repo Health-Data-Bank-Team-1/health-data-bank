@@ -7,7 +7,8 @@
     <ul class="divide-y divide-gray-200 flex-1 overflow-y-auto">
         @forelse ($reports as $report)
             <li>
-                <button
+                <a
+                    href="{{ route('researcher.reports.show', $report->id) }}"
                     wire:click="$dispatchTo('researcher.researcher-reports', 'reportSelected', '{{ $report->id }}')"
                     class="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition text-left"
                 >
@@ -30,7 +31,7 @@
                     <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
-                </button>
+                </a>
             </li>
         @empty
             <li class="px-6 py-4 text-sm text-gray-500">

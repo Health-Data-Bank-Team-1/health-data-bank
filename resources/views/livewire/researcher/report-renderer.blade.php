@@ -67,4 +67,20 @@
             </div>
         @endif
     </div>
+
+    @if (!empty($notes))
+        <div class="px-6 pb-6 mb-6 pt-0">
+            <h3 class="text-md font-semibold text-gray-900 mb-2">Notes</h3>
+            <ul class="space-y-2">
+                @foreach ($notes as $note)
+                    <li class="bg-gray-50 rounded-lg p-3 text-sm">
+                        <p class="text-gray-700">{{ $note['content'] }}</p>
+                        @if(!empty($note['created_at']))
+                            <p class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::parse($note['created_at'])->format('Y-m-d H:i') }}</p>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 </div>
