@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Researcher;
 
+use App\Exceptions\CohortSuppressedException;
 use App\Http\Controllers\Controller;
+use App\Models\AggregatedData;
+use App\Models\Report;
 use App\Services\AggregatedMetricsService;
 use App\Services\AuditLogger;
 use App\Services\CohortFilterBuilder;
@@ -11,9 +14,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use App\Exceptions\CohortSuppressedException;
-use App\Models\Report;
-use App\Models\AggregatedData;
 
 class ResearcherReportController extends Controller
 {
@@ -35,7 +35,7 @@ class ResearcherReportController extends Controller
                 ->where('id', $validated['cohort_id'])
                 ->first();
 
-            if (!$cohort) {
+            if (! $cohort) {
                 return response()->json([
                     'message' => 'Cohort not found.',
                 ], 404);
@@ -44,7 +44,7 @@ class ResearcherReportController extends Controller
             $filters = json_decode($cohort->filters_json, true) ?? [];
 
             $keys = [];
-            if (!empty($validated['keys'])) {
+            if (! empty($validated['keys'])) {
                 $keys = array_values(array_filter(array_map('trim', explode(',', $validated['keys']))));
             }
 
@@ -121,7 +121,7 @@ class ResearcherReportController extends Controller
                 ->where('id', $validated['cohort_id'])
                 ->first();
 
-            if (!$cohort) {
+            if (! $cohort) {
                 return response()->json([
                     'message' => 'Cohort not found.',
                 ], 404);
@@ -130,7 +130,7 @@ class ResearcherReportController extends Controller
             $filters = json_decode($cohort->filters_json, true) ?? [];
 
             $keys = [];
-            if (!empty($validated['keys'])) {
+            if (! empty($validated['keys'])) {
                 $keys = array_values(array_filter(array_map('trim', explode(',', $validated['keys']))));
             }
 
@@ -198,6 +198,71 @@ class ResearcherReportController extends Controller
         }
     }
 
+    public function exportReportCsv(Request $request, string $reportId): StreamedResponse|\Illuminate\Http\JsonResponse
+    {
+        try {
+            $report = Report::find($reportId);
+
+            if (! $report) {
+                return response()->json([
+                    'message' => 'Report not found.',
+                ], 404);
+            }
+
+            $metrics = [];
+            $data = $report->aggregatedData;
+            if ($data instanceof \Illuminate\Support\Collection) {
+                $data = $data->toArray();
+            }
+
+            foreach (is_array($data) ? $data : [] as $row) {
+                if (is_array($row) && isset($row['metrics']) && is_array($row['metrics'])) {
+                    $metrics = $row['metrics'];
+                    break;
+                }
+                if (is_object($row) && isset($row->metrics) && is_array($row->metrics)) {
+                    $metrics = $row->metrics;
+                    break;
+                }
+            }
+
+            AuditLogger::log(
+                'researcher_report_exported',
+                ['reporting', 'researcher', 'outcome:success', 'format:csv'],
+                null,
+                [],
+                [
+                    'report_id' => $report->id,
+                    'format' => 'csv',
+                ]
+            );
+
+            $filename = "report_{$report->id}.csv";
+
+            return response()->streamDownload(function () use ($metrics) {
+                $handle = fopen('php://output', 'w');
+
+                fputcsv($handle, ['Metric', 'Value']);
+
+                foreach ($metrics as $key => $value) {
+                    fputcsv($handle, [
+                        $key,
+                        is_array($value) ? json_encode($value) : $value,
+                    ]);
+                }
+
+                fclose($handle);
+            }, $filename, [
+                'Content-Type' => 'text/csv',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Failed to export report.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function append(Request $request, string $reportId)
     {
         $validated = $request->validate([
@@ -212,9 +277,9 @@ class ResearcherReportController extends Controller
                 ->where('researcher_id', $user->account_id)
                 ->first();
 
-            if (!$report) {
+            if (! $report) {
                 return response()->json([
-                    'message' => 'Report not found or not owned by researcher'
+                    'message' => 'Report not found or not owned by researcher',
                 ], 404);
             }
 
@@ -238,7 +303,7 @@ class ResearcherReportController extends Controller
             return response()->json([
                 'message' => 'Report appended successfully',
                 'report_id' => $report->id,
-                'data' => $data
+                'data' => $data,
             ]);
         } catch (\Throwable $e) {
             return response()->json([

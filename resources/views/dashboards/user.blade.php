@@ -5,7 +5,7 @@
 </x-slot>
 
 <div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
             <div class="bg-gray-200 bg-opacity-25 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 p-6 lg:p-8">
                 <div>
@@ -14,7 +14,8 @@
                             <a href="{{ route('user-form-select') }}">Forms</a>
                         </h2>
                     </div>
-                    <div>
+
+                    <div class="mt-4">
                         <livewire:form-index />
                     </div>
                 </div>
@@ -25,6 +26,7 @@
                             <h2 class="text-xl font-semibold text-gray-900">
                                 <a href="{{ route('my-progress') }}">My Progress</a>
                             </h2>
+
                             <a
                                 href="{{ route('my-progress') }}"
                                 class="text-sm font-medium text-indigo-600 hover:text-indigo-800"
@@ -32,10 +34,15 @@
                                 View Progress
                             </a>
                         </div>
-                        <livewire:trend-chart :group-by="'day'" />
+
+                        <div class="mt-4">
+                            <livewire:trend-chart :group-by="'day'" />
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <livewire:provider-feedback-list />
     </div>
 </div>

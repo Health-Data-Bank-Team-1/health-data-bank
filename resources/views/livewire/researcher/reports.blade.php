@@ -20,9 +20,17 @@
             <div :class="showReports ? 'block' : 'hidden md:block'" class="w-full md:w-1/3 bg-gray-100 p-4 border-b md:border-b-0 md:border-r border-gray-200">
                 <h2 class="text-xl font-semibold mb-4 hidden md:block">Reports</h2>
                 <livewire:researcher.report-index />
-                <div class="flex flex-col items-center mt-2 space-y-1">
-                    <x-button class="w-full">{{ 'Search' }}</x-button>
-                    <x-button class="w-full">{{ 'Sort' }}</x-button>
+                <div class="mt-2">
+                    <form wire:submit="searchById" class="flex gap-2">
+                        <input
+                            type="text"
+                            wire:model="searchId"
+                            placeholder="Search by Report ID"
+                            class="flex-1 border rounded-lg px-3 py-2 text-sm"
+                        >
+                        <x-button type="submit" class="shrink-0">Go</x-button>
+                    </form>
+                    @error('searchId') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
 
@@ -31,16 +39,32 @@
                     <div class="flex flex-col sm:flex-row justify-center sm:justify-between items-center space-y-3 sm:space-y-0 mb-4">
                         <h2 class="text-xl font-semibold">ID: {{ $currReport->id }}</h2>
                         <div class="flex space-x-2">
-                            <x-button>{{ 'Edit' }}</x-button>
-                            <x-button>{{ 'Export as CSV' }}</x-button>
+                            <x-button wire:click="$toggle('showNoteForm')">{{ 'Add Note' }}</x-button>
+                            <x-button wire:click="exportCsv">{{ 'Export as CSV' }}</x-button>
                         </div>
                     </div>
-                    <div class="mb-4">
-                        {{ 'graphical report here' }}
-                    </div>
-                    <div>
-                        <livewire:researcher.report-renderer :report="$currReport" />
-                    </div>
+
+                    @if ($showNoteForm)
+                        <div class="bg-white shadow rounded-lg p-4 mb-4">
+                            <form wire:submit="addNote">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                                <textarea
+                                    wire:model="noteContent"
+                                    rows="3"
+                                    class="w-full border rounded-lg px-3 py-2 text-sm"
+                                    placeholder="Enter a note for this report..."
+                                    maxlength="5000"
+                                ></textarea>
+                                @error('noteContent') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                                <div class="flex justify-end space-x-2 mt-2">
+                                    <x-button type="button" wire:click="$set('showNoteForm', false)" class="bg-gray-300 hover:bg-gray-400 text-gray-800">Cancel</x-button>
+                                    <x-button type="submit">Save Note</x-button>
+                                </div>
+                            </form>
+                        </div>
+                    @endif
+
+                    <livewire:researcher.report-renderer :report="$currReport" :key="$currReport->id . '-' . $noteCount" />
                 @else
                     <div class="flex h-full items-center justify-center text-gray-500">
                         Please select a report from the menu.

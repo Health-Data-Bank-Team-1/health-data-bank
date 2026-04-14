@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Report extends Model
 {
-    use HasUuid, HasFactory, SoftDeletes;
+    use HasFactory, HasUuid, SoftDeletes;
 
     public $timestamps = false;
 
@@ -49,6 +50,11 @@ class Report extends Model
     public function aggregatedData()
     {
         return $this->hasMany(AggregatedData::class);
+    }
+
+    public function timeseriesData()
+    {
+        return $this->hasMany(TimeseriesData::class);
     }
 
     public function updates()
