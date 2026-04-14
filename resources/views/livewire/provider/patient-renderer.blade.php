@@ -1,7 +1,15 @@
 <div class="py-12">
     <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-6">
         <div class="bg-white shadow rounded-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between">
             <h2 class="text-xl font-semibold text-gray-900">Patient Record</h2>
+            <a
+                href="{{ route('provider.patients') }}"
+                class="text-sm text-indigo-600 hover:text-indigo-800"
+            >
+                ← Back to Patients Page
+            </a>
+            </div>
 
             <div class="mt-4 text-sm text-gray-700 space-y-1">
                 <p><strong>Name:</strong> {{ $patientAccount->name }}</p>

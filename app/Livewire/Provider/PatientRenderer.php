@@ -9,6 +9,8 @@ use App\Models\ProviderFeedback;
 use App\Services\AuditLogger;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Carbon\CarbonImmutable;
+use App\Services\HealthMetricRegistry;
 
 class PatientRenderer extends Component
 {
@@ -30,12 +32,9 @@ class PatientRenderer extends Component
             ->whereHas('providers', fn ($q) => $q->where('provider_id', $providerAccountId))
             ->firstOrFail();
 
-        abort_unless($patientAccount, 404, 'Patient not found.');
-
-        $this->patientAccount = $patientAccount;
 
         $this->healthEntries = HealthEntry::query()
-            ->where('account_id', $patientAccount->id)
+            ->where('account_id', $this ->patientAccount->id)
             ->whereHas('submission', function ($query) {
                 $query->whereNull('deleted_at');
             })
