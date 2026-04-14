@@ -148,11 +148,6 @@ class TrendChart extends Component
             return [];
         }
 
-        $numericKeys = collect($this->registry->all())
-            ->filter(fn ($cfg) => ($cfg['type'] ?? '') === 'number')
-            ->keys()
-            ->toArray();
-
         $usedKeys = HealthEntry::query()
             ->where('account_id', $accountId)
             ->whereHas('submission', function ($query) {
@@ -163,7 +158,10 @@ class TrendChart extends Component
             ->filter()
             ->flatMap(fn ($vals) => is_array($vals) ? array_keys($vals) : [])
             ->unique()
-            ->filter(fn ($key) => in_array($key, $numericKeys, true))
+            ->map(fn ($key) => $this->registry->resolveKey($key))
+            ->filter()
+            ->filter(fn ($key) => $this->registry->isNumeric($key))
+            ->unique()
             ->values()
             ->toArray();
 

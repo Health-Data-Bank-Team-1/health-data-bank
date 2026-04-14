@@ -13,6 +13,7 @@ use Livewire\Component;
 
 class FormRenderer extends Component
 {
+    public $showDescription = false;
 
     public FormTemplate $form;
 
@@ -59,7 +60,7 @@ class FormRenderer extends Component
             }
         }
 
-        if (!is_array($rawRules)) {
+        if (! is_array($rawRules)) {
             return [];
         }
 
@@ -70,11 +71,13 @@ class FormRenderer extends Component
                 if (is_string($value)) {
                     $normalized[] = trim($value);
                 }
+
                 continue;
             }
 
             if ($value === true) {
                 $normalized[] = $key;
+
                 continue;
             }
 
@@ -101,13 +104,13 @@ class FormRenderer extends Component
 
     public function submit()
     {
-        logger()->info($this->rules());
         $this->validate();
 
         $user = Auth::user();
 
         if (! $user || ! $user->account_id) {
             session()->flash('error', 'User is not linked to an account.');
+
             return;
         }
 
@@ -119,23 +122,21 @@ class FormRenderer extends Component
             'submitted_at' => now(),
         ]);
 
-        foreach ($this->form->fields as $field) {
-            $value = $this->entries[$field->id] ?? null;
+        $encryptedData = [];
 
-            HealthEntry::create([
-                'id' => Str::uuid(),
-                'submission_id' => $submission->id,
-                'account_id' => $user->account_id,
-                'timestamp' => now(),
-                'encrypted_values' => [
-                    'field_id' => $field->id,
-                    'metric_key' => $field->metric_key,
-                    'field_label' => $field->label,
-                    'field_type' => $field->field_type,
-                    'value' => $value,
-                ],
-            ]);
+        foreach ($this->entries as $fieldId => $value) {
+            $field = FormField::findOrFail($fieldId);
+            $key = $field->metric_key ?? $field->label;
+            $encryptedData[$key] = $value ?? null;
         }
+
+        HealthEntry::create([
+            'id' => Str::uuid(),
+            'submission_id' => $submission->id,
+            'account_id' => $user->account_id,
+            'timestamp' => now(),
+            'encrypted_values' => $encryptedData,
+        ]);
 
         app(SubmissionFlaggingService::class)->evaluate($submission);
 

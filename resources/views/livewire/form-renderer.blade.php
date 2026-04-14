@@ -10,13 +10,11 @@
             <x-hdb-form-section submit="submit">
                 <x-slot name="title">
                     {{ $form->title }}
-                    @if($form->description)
-                        <p class="mt-2 text-sm text-gray-600">
-                            {{ $form->description }}
-                        </p>
-                    @endif
                 </x-slot>
 
+                <x-slot name="description">
+                    <div class="pt-2 pr-4">{{ $form->description }}</div>
+                </x-slot>
 
                 <x-slot name="form">
                     <div class="col-span-6 sm:col-span-4">
@@ -66,7 +64,7 @@
 
                 <x-slot name="actions">
                     <div>
-                        <div wire:loading="submit" class="mt-2 flex items-center justify-start space-x-3">
+                        <div wire:loading="submit" class="mt-2 flex items-center space-x-3">
                             <span class="ml-4 text-sm text-gray-600">Submitting…</span>
                         </div>
                         <x-button wire:loading.attr="disabled">

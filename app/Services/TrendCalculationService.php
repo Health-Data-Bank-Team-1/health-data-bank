@@ -9,9 +9,9 @@ use Carbon\CarbonInterface;
 class TrendCalculationService
 {
     public function __construct(
-        private readonly ReportingAggregationService $aggregation
-    ) {
-    }
+        private readonly ReportingAggregationService $aggregation,
+        private readonly HealthMetricRegistry $registry
+    ) {}
 
     /**
      * Build a bucketed time-series for one metric key.
@@ -55,7 +55,19 @@ class TrendCalculationService
         foreach ($entries as $entry) {
             $values = $entry->encrypted_values;
 
-            if (!is_array($values) || !array_key_exists($metricKey, $values)) {
+            if (! is_array($values)) {
+                continue;
+            }
+
+            $matchedValue = null;
+            foreach ($values as $key => $val) {
+                if ($this->registry->resolveKey($key) === $metricKey) {
+                    $matchedValue = $val;
+                    break;
+                }
+            }
+
+            if ($matchedValue === null) {
                 continue;
             }
 
@@ -68,7 +80,7 @@ class TrendCalculationService
 
             $buckets[$bucketKey][] = [
                 'ts' => $ts,
-                'value' => $values[$metricKey],
+                'value' => $matchedValue,
             ];
         }
 
