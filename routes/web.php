@@ -30,10 +30,9 @@ use App\Livewire\Provider\PatientIndex;
 use App\Livewire\Provider\PatientRenderer;
 use App\Livewire\Provider\ProviderPatients;
 use App\Livewire\Provider\ProviderReports;
-use App\Livewire\Researcher\CohortBuilder;
+use App\Livewire\Researcher\CohortReportGenerator;
 use App\Livewire\Researcher\ReportIndex;
 use App\Livewire\Researcher\ResearcherForms;
-use App\Livewire\Researcher\ResearcherReportGenerator;
 use App\Livewire\Researcher\ResearcherReports;
 use App\Livewire\UserFormSelect;
 use App\Livewire\UserSuggestions;
@@ -82,10 +81,10 @@ Route::middleware([
     Route::get('/researcher/dashboard', ResearcherDashboard::class)->middleware('role:researcher')->name('dashboards.researcher');
     Route::get('/researcher/forms', ResearcherForms::class)->middleware('role:researcher')->name('researcher.forms');
     Route::get('/researcher/reports', ResearcherReports::class)->middleware('role:researcher')->name('researcher.reports');
-    Route::get('/researcher/report-generator', ResearcherReportGenerator::class)->middleware('role:researcher')->name('researcher.report-generator');
+    Route::get('/researcher/report-generator', CohortReportGenerator::class)->middleware('role:researcher')->name('researcher.report-generator');
     Route::get('/researcher/report-index', ReportIndex::class)->middleware('role:researcher')->name('researcher.report-index');
     Route::get('/researcher/reports/{report}', ResearcherReports::class)->middleware('role:researcher')->name('researcher.reports.show');
-    Route::get('/researcher/cohort', CohortBuilder::class)->middleware('role:researcher')->name('researcher.cohort');
+    Route::get('/researcher/cohort', CohortReportGenerator::class)->middleware('role:researcher')->name('researcher.cohort');
 
     Route::middleware(['auth', 'verified'])->prefix('researcher')->name('researcher.')->group(function () {
         Route::get('/reports/{report}/export.csv', [ResearcherReportController::class, 'exportReportCsv'])
