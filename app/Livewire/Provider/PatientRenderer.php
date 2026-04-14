@@ -164,6 +164,7 @@ class PatientRenderer extends Component
                 'borderColor' => $color['border'],
                 'backgroundColor' => $color['bg'],
             ];
+        }
 
         $this->loadFeedback();
     }
