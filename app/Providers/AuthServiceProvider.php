@@ -10,7 +10,7 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::define('admin-access', function ($user) {
-            return optional($user->account)->account_type === 'Admin';
+            return $user->hasRole('admin');
         });
     }
 }

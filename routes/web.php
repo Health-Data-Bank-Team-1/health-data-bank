@@ -9,6 +9,8 @@ use App\Livewire\Admin\AuditLog;
 use App\Livewire\Admin\DatabaseManagement;
 use App\Livewire\Admin\FormTemplatesIndex;
 use App\Livewire\Admin\ReportReview;
+use App\Livewire\Admin\SchemaManagement;
+use App\Livewire\Admin\UserRoleManagement;
 use App\Livewire\Dashboards\AdminDashboard;
 use App\Livewire\Dashboards\ProviderDashboard;
 use App\Livewire\Dashboards\ResearcherDashboard;
