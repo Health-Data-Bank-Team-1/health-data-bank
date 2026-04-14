@@ -52,17 +52,17 @@ Route::middleware([
     Route::get('/dashboard', function () {
         $user = Auth::user();
 
-        if ($user->hasRole('user')) {
-            return redirect('/user/dashboard');
+        if ($user->hasRole('admin')) {
+            return redirect('/admin/dashboard');
         } elseif ($user->hasRole('researcher')) {
             return redirect('/researcher/dashboard');
-        } elseif ($user->hasRole('admin')) {
-            return redirect('/admin/dashboard');
         } elseif ($user->hasRole('provider')) {
             return redirect('/provider/dashboard');
+        } elseif ($user->hasRole('user')) {
+            return redirect('/user/dashboard');
         }
 
-        abort(403, 'Unauthorized');
+        abort(403);
     })->name('dashboard');
 
     // User routes
