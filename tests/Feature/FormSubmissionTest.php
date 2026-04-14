@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\FormRenderer;
-use App\Models\Account;
+use App\Models\FormField;
 use App\Models\FormTemplate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,21 +38,20 @@ class FormSubmissionTest extends TestCase
 
         Livewire::actingAs($user)
             ->test(FormRenderer::class, ['form' => $form])
-            ->set('entries.'.$field->id, null)
+            ->set('entries.' . $field->id, null)
             ->call('submit')
-            ->assertHasErrors('entries.'.$field->id);
+            ->assertHasErrors('entries.' . $field->id);
     }
 
     public function test_valid_submission_redirects_with_success(): void
     {
-        $account = Account::factory()->create();
-        $user = User::factory()->create(['account_id' => $account->id]);
+        $user = User::factory()->create();
         $form = $this->formWithRequiredField();
         $field = $form->fields->first();
 
         Livewire::actingAs($user)
             ->test(FormRenderer::class, ['form' => $form])
-            ->set('entries.'.$field->id, '72')
+            ->set('entries.' . $field->id, '72')
             ->call('submit')
             ->assertRedirect(route('user-form-select', [], false))
             ->assertSessionHas('flash.banner', 'Form submitted successfully!');

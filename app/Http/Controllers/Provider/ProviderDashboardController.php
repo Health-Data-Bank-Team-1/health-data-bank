@@ -28,9 +28,6 @@ class ProviderDashboardController extends Controller
             ->count();
 
         $patientsWithHealthEntries = HealthEntry::query()
-            ->whereHas('submission', function ($query) {
-                $query->whereNull('deleted_at');
-            })
             ->join('accounts', 'health_entries.account_id', '=', 'accounts.id')
             ->leftJoin('users', 'users.account_id', '=', 'accounts.id')
             ->leftJoin('model_has_roles', function ($join) {

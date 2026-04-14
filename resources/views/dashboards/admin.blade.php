@@ -22,10 +22,10 @@
                 <div>
                     <div class="flex items-center">
                         <h2 class="text-xl font-semibold text-gray-900">
-                            <a href="{{ route('admin.reports.flagged') }}">Report Review</a>
+                            <a href="{{ route('admin.report-review') }}">Report Review</a>
                         </h2>
                     </div>
-                    <x-link-button class="w-full mt-2" href="{{ route('admin.reports.flagged') }}">
+                    <x-link-button class="w-full mt-2" href="{{ route('admin.report-review') }}">
                         Manage Report
                     </x-link-button>
                 </div>

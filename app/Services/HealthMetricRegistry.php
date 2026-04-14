@@ -72,23 +72,6 @@ class HealthMetricRegistry
         return array_keys($this->all());
     }
 
-    public function resolveKey(string $keyOrLabel): ?string
-    {
-        if (array_key_exists($keyOrLabel, $this->all())) {
-            return $keyOrLabel;
-        }
-
-        $lower = strtolower($keyOrLabel);
-
-        foreach ($this->all() as $key => $cfg) {
-            if (strtolower($cfg['label']) === $lower || strtolower($key) === $lower) {
-                return $key;
-            }
-        }
-
-        return null;
-    }
-
     public function hasMetric(string $metric): bool
     {
         return array_key_exists($metric, $this->all());

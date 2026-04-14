@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -14,14 +13,6 @@ return new class extends Migration
     {
         // Form Templates table - only modify if columns exist
         if (Schema::hasTable('form_templates')) {
-            if (Schema::hasColumn('form_templates', 'schema')) {
-                DB::table('form_templates')
-                    ->whereNull('schema')
-                    ->update([
-                        'schema' => json_encode([]),
-                    ]);
-            }
-
             Schema::table('form_templates', function (Blueprint $table) {
                 // Only modify columns that actually exist
                 if (Schema::hasColumn('form_templates', 'title')) {

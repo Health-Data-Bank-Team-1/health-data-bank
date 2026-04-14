@@ -106,16 +106,10 @@ Route::middleware([
             ->name('livewire.admin.show');
     });
 
-    Route::middleware(['auth', 'role:admin'])
-        ->prefix('admin')
-        ->name('admin.')
-        ->group(function () {
-            Route::get('/audit-log/export.csv', [AdminAuditLogController::class, 'exportCsv'])
-                ->name('audit-log.export');
-            Route::get('/reports/flagged', [ReportModerationController::class, 'index'])->name('reports.flagged');
-            Route::get('/reports/{report}/review', [ReportModerationController::class, 'show'])->name('reports.review');
-            Route::delete('/reports/{report}', [ReportModerationController::class, 'delete'])->name('reports.delete');
-        });
+    Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/audit-log/export.csv', [AdminAuditLogController::class, 'exportCsv'])
+            ->name('audit-log.export');
+    });
 
     // Provider routes
     Route::get('/provider/patients/{patient}/feedback', [ProviderFeedbackController::class, 'create'])

@@ -209,14 +209,14 @@
                             <div class="flex gap-2">
                                 <button
                                     wire:click="save"
-                                    class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                                    class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-700"
                                 >
                                     {{ $editingGoalId ? 'Update Goal' : 'Save Goal' }}
                                 </button>
 
                                 <button
                                     wire:click="cancelForm"
-                                    class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                                    class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-700"
                                 >
                                     Cancel
                                 </button>

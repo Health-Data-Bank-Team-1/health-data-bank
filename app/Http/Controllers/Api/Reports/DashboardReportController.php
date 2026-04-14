@@ -82,7 +82,7 @@ class DashboardReportController extends Controller
             });
 
             AuditLogger::log(
-                'dashboard_trends_viewed',
+                'dashboard_trends_view_requested',
                 ['reporting', 'resource:dashboard_trends', 'outcome:success'],
                 null,
                 [],

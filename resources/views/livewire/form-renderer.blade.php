@@ -47,26 +47,6 @@
                                             </label>
                                         @endforeach
                                     </div>
-                                @elseif ($fieldType === 'radiobutton')
-                                    @if(count($options))
-                                        <div class="mt-2 space-y-2 rounded-md border border-gray-300 bg-gray-50 p-3">
-                                            @foreach ($options as $option)
-                                                <label class="flex items-center gap-2 text-sm text-gray-700">
-                                                    <input
-                                                        type="radio"
-                                                        name="field-{{ $field->id }}"
-                                                        disabled
-                                                        class="border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                    >
-                                                    <span>{{ $option }}</span>
-                                                </label>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <div class="mt-2 text-sm text-gray-500">
-                                            No options provided.
-                                        </div>
-                                    @endif
                                 @elseif ($field->field_type === 'Date')
                                     <x-input wire:model="entries.{{ $field->id }}" id="{{ $field->id }}"
                                         class="mt-1 block w-full" type="date" />

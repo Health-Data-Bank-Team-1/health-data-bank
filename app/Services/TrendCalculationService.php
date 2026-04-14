@@ -124,9 +124,6 @@ class TrendCalculationService
         $entries = HealthEntry::query()
             ->where('account_id', $accountId)
             ->whereBetween('timestamp', [$from, $to])
-            ->whereHas('submission', function ($query) {
-                $query->whereNull('deleted_at');
-            })
             ->orderBy('timestamp')
             ->get(['timestamp', 'encrypted_values']);
 
@@ -148,7 +145,7 @@ class TrendCalculationService
 
             $buckets[$bucketKey][] = [
                 'ts' => $ts,
-                'value' => $matchedValue,
+                'value' => $values[$metricKey],
             ];
         }
 

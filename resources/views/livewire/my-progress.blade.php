@@ -8,17 +8,11 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
             <div class="bg-gray-200 bg-opacity-25 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 p-6 lg:p-8">
-                <div class="bg-white shadow-xl sm:rounded-lg p-6">
-                    <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center">
                         <h2 class="text-xl font-semibold text-gray-900">
                             Health Summary
                         </h2>
-                        <a
-                            href="{{ route('health-summary') }}"
-                            class="text-sm font-medium text-gray-600 hover:text-gray-800"
-                        >
-                            View Summary
-                        </a>
                     </div>
 
                     <div>
@@ -84,8 +78,8 @@
                                 @endforeach
                             </div>
                         @else
-                            <div class="rounded-lg border border-gray-200 p-4 bg-white shadow-sm">
-                                No health goals have been set yet. Click Manage Goals to add one.
+                            <div>
+                                No health goals have been set yet.
                             </div>
                         @endif
                     </div>

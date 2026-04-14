@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
-use OwenIt\Auditing\Models\Audit;
 
 class AuditLog extends Component
 {
@@ -161,16 +160,9 @@ class AuditLog extends Component
             ->orderBy('created_at', $this->sortDirection)
             ->paginate($this->perPage);
 
-        $events = Audit::query()
-            ->whereNotNull('event')
-            ->distinct()
-            ->orderBy('event')
-            ->pluck('event');
-
         return view('livewire.admin.audit-log', [
             'audits' => $audits,
             'totalEvents' => $this->summaryCount(),
-            'events' => $events,
         ])
             ->layout('layouts.admin')
             ->layoutData([

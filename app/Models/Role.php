@@ -3,21 +3,13 @@
 namespace App\Models;
 
 use Spatie\Permission\Models\Role as SpatieRole;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\HasUuid;
 
 class Role extends SpatieRole
 {
+    use HasUuids;
+
     public $incrementing = false;
     protected $keyType = 'string';
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            if (!$model->id) {
-                $model->id = (string) Str::uuid();
-            }
-        });
-    }
 }
