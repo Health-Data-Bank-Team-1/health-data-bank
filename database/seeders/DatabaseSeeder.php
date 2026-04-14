@@ -2,10 +2,7 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Role;
-use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,15 +11,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->withPersonalTeam()->create();
-
         $this->call(RoleSeeder::class);
-        $this->call(DiffUserWithRolesSeeder::class);
+
         $this->call(FormTemplateSeeder::class);
         $this->call(UserHealthEntriesSeeder::class);
         $this->call(ReportSeeder::class);
         $this->call(ProviderWithPatients::class);
         $this->call(FlaggedSubmissionSeeder::class,);
 
+        // Run demo users LAST so other seeders can’t overwrite their password/roles.
+        $this->call(DiffUserWithRolesSeeder::class);
     }
 }
