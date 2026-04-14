@@ -18,6 +18,9 @@ class GoalProgressService
         $entries = HealthEntry::query()
             ->where('account_id', $goal->account_id)
             ->whereBetween('timestamp', [$startDate, $endDate])
+            ->whereHas('submission', function ($query) {
+                $query->whereNull('deleted_at');
+            })
             ->orderBy('timestamp')
             ->get(['encrypted_values']);
 

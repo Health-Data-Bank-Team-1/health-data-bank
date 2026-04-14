@@ -26,6 +26,9 @@ class PatientRecordController extends Controller
 
         $healthEntries = HealthEntry::query()
             ->where('account_id', $patientAccount->id)
+            ->whereHas('submission', function ($query) {
+                $query->whereNull('deleted_at');
+            })
             ->orderByDesc('timestamp')
             ->get(['id', 'timestamp', 'encrypted_values']);
 

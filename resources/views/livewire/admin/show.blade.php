@@ -30,20 +30,116 @@
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Fields</h2>
 
                     @if($template->fields->count())
-                        <div class="space-y-4">
+                        <div class="space-y-6">
                             @foreach($template->fields as $field)
                                 @php
-                                    $rules = json_decode($field->validation_rules ?? '{}', true) ?: [];
+                                    $rules = is_string($field->validation_rules)
+                                        ? json_decode($field->validation_rules, true) ?: []
+                                        : (array) ($field->validation_rules ?? []);
+
+                                    $options = is_array($field->options) ? $field->options : [];
+                                    $fieldType = strtolower(trim($field->field_type ?? ''));
                                 @endphp
 
-                                <div class="rounded-lg border border-gray-200 p-4">
-                                    <p><strong>Label:</strong> {{ $field->label }}</p>
-                                    <p><strong>Help Text:</strong> {{ $field->help_text ?: 'N/A' }}</p>
-                                    <p><strong>Type:</strong> {{ $field->field_type }}</p>
-                                    <p><strong>Required:</strong> {{ $field->is_required ? 'Yes' : 'No' }}</p>
-                                    <p><strong>Min:</strong> {{ $rules['min'] ?? 'N/A' }}</p>
-                                    <p><strong>Max:</strong> {{ $rules['max'] ?? 'N/A' }}</p>
-                                    <p><strong>Order:</strong> {{ $field->display_order }}</p>
+                                <div>
+                                    <label for="field-{{ $field->id }}" class="block text-sm font-medium text-gray-700">
+                                        {{ $field->label }}
+                                        @if(!empty($field->is_required))
+                                            <span class="text-red-500">*</span>
+                                        @endif
+                                    </label>
+
+                                    @if($field->help_text)
+                                        <p class="text-sm text-gray-500 mt-1">
+                                            {{ $field->help_text }}
+                                        </p>
+                                    @endif
+
+                                    @if ($fieldType === 'text')
+                                        <input
+                                            id="field-{{ $field->id }}"
+                                            type="text"
+                                            disabled
+                                            class="mt-2 block w-full rounded-md border-gray-300 shadow-sm bg-gray-50"
+                                        >
+
+                                    @elseif ($fieldType === 'textarea')
+                                        <textarea
+                                            id="field-{{ $field->id }}"
+                                            rows="3"
+                                            disabled
+                                            class="mt-2 block w-full rounded-md border-gray-300 shadow-sm bg-gray-50"
+                                        ></textarea>
+
+                                    @elseif ($fieldType === 'number')
+                                        <input
+                                            id="field-{{ $field->id }}"
+                                            type="number"
+                                            disabled
+                                            class="mt-2 block w-full rounded-md border-gray-300 shadow-sm bg-gray-50"
+                                        >
+
+                                    @elseif ($fieldType === 'date')
+                                        <input
+                                            id="field-{{ $field->id }}"
+                                            type="date"
+                                            disabled
+                                            class="mt-2 block w-full rounded-md border-gray-300 shadow-sm bg-gray-50"
+                                        >
+
+                                    @elseif ($fieldType === 'dropdown')
+                                        <select
+                                            id="field-{{ $field->id }}"
+                                            disabled
+                                            class="mt-2 block w-full rounded-md border-gray-300 shadow-sm bg-gray-50"
+                                        >
+                                            <option>Select an option</option>
+                                            @foreach ($options as $option)
+                                                <option>{{ $option }}</option>
+                                            @endforeach
+                                        </select>
+
+                                    @elseif ($fieldType === 'checkbox')
+                                        @if(count($options))
+                                            <div class="mt-2 space-y-2 rounded-md border border-gray-300 bg-gray-50 p-3">
+                                                @foreach ($options as $option)
+                                                    <label class="flex items-center gap-2 text-sm text-gray-700">
+                                                        <input
+                                                            type="checkbox"
+                                                            disabled
+                                                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                        >
+                                                        <span>{{ $option }}</span>
+                                                    </label>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <div class="mt-2 rounded-md border border-gray-300 bg-gray-50 p-3 text-sm text-gray-500">
+                                                Checkbox field
+                                            </div>
+                                        @endif
+
+                                    @else
+                                        <div class="mt-2 rounded-md border border-gray-300 bg-gray-50 p-3 text-sm text-gray-500">
+                                            Preview unavailable for field type: {{ $field->field_type }}
+                                        </div>
+                                    @endif
+
+                                    @if(($rules['min'] ?? null) !== null || ($rules['max'] ?? null) !== null)
+                                        <div class="mt-2 text-xs text-gray-500">
+                                            @if(($rules['min'] ?? null) !== null)
+                                                <span>Min: {{ $rules['min'] }}</span>
+                                            @endif
+
+                                            @if(($rules['min'] ?? null) !== null && ($rules['max'] ?? null) !== null)
+                                                <span class="mx-1">|</span>
+                                            @endif
+
+                                            @if(($rules['max'] ?? null) !== null)
+                                                <span>Max: {{ $rules['max'] }}</span>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>

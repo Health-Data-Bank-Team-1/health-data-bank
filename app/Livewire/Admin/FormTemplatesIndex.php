@@ -2,29 +2,32 @@
 
 namespace App\Livewire\Admin;
 
-use Livewire\Component;
-use Livewire\WithPagination;
+use App\Exceptions\WorkflowException;
 use App\Models\FormTemplate;
 use App\Services\FormTemplateApprovalService;
-use App\Exceptions\WorkflowException;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class FormTemplatesIndex extends Component
 {
     use WithPagination;
 
     public string $search = '';
+
     public string $approvalStatus = '';
+
     public int $perPage = 15;
 
     // reject modal state
     public bool $showRejectModal = false;
+
     public ?string $rejectTemplateId = null;
+
     public string $rejectReason = '';
 
     protected $queryString = [
         'search' => ['except' => ''],
         'approvalStatus' => ['except' => ''],
-        'page' => ['except' => 1],
     ];
 
     public function updatingSearch(): void
@@ -90,10 +93,11 @@ class FormTemplatesIndex extends Component
         }
 
         if ($this->search !== '') {
-            $query->where('title', 'like', '%' . $this->search . '%');
+            $query->where('title', 'like', '%'.$this->search.'%');
         }
 
         $templates = $query
+            ->orderByRaw("FIELD(approval_status, 'pending') DESC")
             ->orderByDesc('created_at')
             ->paginate($this->perPage);
 

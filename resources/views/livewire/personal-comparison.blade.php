@@ -1,4 +1,3 @@
-<div class="pt-4 pb-12">
     <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 mt-4">
         <div class="bg-white shadow-xl sm:rounded-lg p-6">
 
@@ -179,5 +178,5 @@
             @endif
         </div>
     </div>
-</div>
+
 
