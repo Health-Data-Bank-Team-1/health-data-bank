@@ -175,6 +175,7 @@ class ResearcherForms extends Component
                 'purpose' => $this->purpose,
                 'version' => $this->version,
                 'approval_status' => 'draft',
+                'schema' => [],
             ]
         );
 
@@ -211,6 +212,7 @@ class ResearcherForms extends Component
                 'purpose' => $this->purpose,
                 'version' => $this->version,
                 'approval_status' => 'pending',
+                'schema' => [],
             ]
         );
 
@@ -220,7 +222,7 @@ class ResearcherForms extends Component
             $template->fields()->create([
                 'label' => $field['label'],
                 'help_text' => $field['help_text'],
-                'field_type' => $field['type'],
+                'field_type' => strtolower($field['type']),
                 'is_required' => (bool) $field['required'],
                 'validation_rules' => json_encode([
                     'min' => $field['min'],

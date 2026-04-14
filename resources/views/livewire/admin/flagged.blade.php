@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-xl sm:rounded-lg p-6">
                 @if (session('success'))
-                    <div class="mb-4 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-green-800">
+                    <div class="mb-4 rounded-md border border-green-200 bg-green-100 px-4 py-3 text-green-800">
                         {{ session('success') }}
                     </div>
                 @endif

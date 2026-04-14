@@ -14,17 +14,21 @@ class FormField extends Model
     protected $fillable = [
         'form_template_id',
         'label',
+        'help_text',
         'metric_key',
         'field_type',
         'validation_rules',
         'goal_enabled',
         'options',
+        'is_required',
+        'display_order',
     ];
 
     protected $casts = [
         'validation_rules' => 'array',
         'options' => 'array',
         'goal_enabled' => 'boolean',
+        'is_required' => 'boolean',
     ];
 
     public function template()
