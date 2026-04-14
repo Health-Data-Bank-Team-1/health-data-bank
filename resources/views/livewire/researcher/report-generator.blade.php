@@ -136,5 +136,50 @@
             </div>
         @endif
 
+        @if (!empty($timeseriesResults))
+            <div class="bg-white shadow sm:rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Timeseries Results</h3>
+
+                @foreach ($timeseriesResults as $ts)
+                    <div class="mb-6">
+                        <h4 class="text-md font-semibold text-gray-800 mb-2">
+                            {{ $ts['metric'] }} <span class="text-sm text-gray-500">(bucket: {{ $ts['bucket'] }})</span>
+                        </h4>
+
+                        @if (!empty($ts['points']))
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full border border-gray-200 text-sm">
+                                    <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left border-b">Bucket Start</th>
+                                        <th class="px-4 py-2 text-left border-b">Count</th>
+                                        <th class="px-4 py-2 text-left border-b">Min</th>
+                                        <th class="px-4 py-2 text-left border-b">Max</th>
+                                        <th class="px-4 py-2 text-left border-b">Avg</th>
+                                        <th class="px-4 py-2 text-left border-b">Latest</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach ($ts['points'] as $point)
+                                        <tr>
+                                            <td class="px-4 py-2 border-b">{{ $point['bucket_start'] }}</td>
+                                            <td class="px-4 py-2 border-b">{{ $point['count'] ?? 0 }}</td>
+                                            <td class="px-4 py-2 border-b">{{ $point['min'] ?? '-' }}</td>
+                                            <td class="px-4 py-2 border-b">{{ $point['max'] ?? '-' }}</td>
+                                            <td class="px-4 py-2 border-b">{{ is_null($point['avg'] ?? null) ? '-' : number_format($point['avg'], 2) }}</td>
+                                            <td class="px-4 py-2 border-b">{{ $point['latest'] ?? '-' }}</td>
+                                        </tr>
+                                    @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <p class="text-sm text-gray-500">No data points for this metric.</p>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
     </div>
 </div>
