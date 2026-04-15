@@ -42,7 +42,7 @@ class DashboardReportAuditLogTest extends TestCase
             ->assertStatus(200);
 
         $this->assertDatabaseHas('audits', [
-            'event' => 'dashboard_trends_view_requested',
+            'event' => 'dashboard_trends_viewed',
         ]);
     }
 

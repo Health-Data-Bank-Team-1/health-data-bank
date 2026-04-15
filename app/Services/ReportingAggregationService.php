@@ -88,7 +88,7 @@ class ReportingAggregationService
             'avg' => $numeric ? (array_sum($numeric) / count($numeric)) : null,
             'latest' => $latestPoint['value'] ?? null,
             'latest_at' => isset($latestPoint['ts']) && $latestPoint['ts']
-                ? $latestPoint['ts']->toIso8601String()
+                ? $latestPoint['ts']->format('Y-m-d\TH:i:s+00:00')
                 : null,
         ];
     }

@@ -1,126 +1,132 @@
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-        @if (session()->has('message'))
-            <div class="bg-green-100 text-green-800 p-3 rounded text-sm">
-                {{ session('message') }}
-            </div>
-        @endif
+<x-admin-layout>
+    <x-slot name="header">
+        <h1 class="font-semibold text-xl text-gray-800 leading-tight">
+            Report Review
+        </h1>
+    </x-slot>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-1 bg-white shadow rounded-lg border border-gray-100 overflow-hidden">
-                <div class="p-4 border-b bg-gray-50">
-                    <h2 class="text-lg font-semibold text-gray-900">Reports</h2>
-                    <p class="text-sm text-gray-600 mt-1">
-                        Review stored reports and select one to inspect.
-                    </p>
+    <div class="py-12">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow sm:rounded-lg p-6">
 
-                    <div class="mt-4">
-                        <input
-                            type="text"
-                            wire:model.live.debounce.300ms="search"
-                            placeholder="Search by title, name, description, or ID..."
-                            class="w-full border border-gray-300 rounded px-3 py-2"
-                        >
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-900">Flagged Submission Review</h2>
+                        <p class="text-sm text-gray-600 mt-1">
+                            Review the flagged submission details and decide whether it should be removed.
+                        </p>
                     </div>
+
+                    <a
+                        href="{{ route('admin.reports.flagged') }}"
+                        class="text-sm text-indigo-600 hover:text-indigo-800 hover:underline"
+                    >
+                        ← Back to Flagged Reports
+                    </a>
                 </div>
 
-                <div class="divide-y divide-gray-200 max-h-[36rem] overflow-y-auto">
-                    @forelse ($reports as $report)
-                        <button
-                            wire:click="selectReport('{{ $report->id }}')"
-                            type="button"
-                            class="w-full text-left px-4 py-4 hover:bg-gray-50 transition {{ $selectedReport && $selectedReport->id === $report->id ? 'bg-indigo-50' : '' }}"
-                        >
-                            <div class="font-medium text-gray-900">
-                                {{ $report->title ?? $report->name ?? 'Report '.$loop->iteration }}
-                            </div>
+                @if (session('success'))
+                    <div class="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
-                            <div class="text-sm text-gray-500 mt-1 break-all">
-                                {{ $report->id }}
-                            </div>
+                @if (session('error'))
+                    <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                        {{ session('error') }}
+                    </div>
+                @endif
 
-                            @if(!empty($report->created_at))
-                                <div class="text-xs text-gray-400 mt-1">
-                                    {{ \Carbon\Carbon::parse($report->created_at)->format('Y-m-d H:i') }}
-                                </div>
-                            @endif
-                        </button>
-                    @empty
-                        <div class="p-4 text-sm text-gray-500">
-                            No reports available.
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="border rounded-lg p-4 bg-gray-50">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Submission Details</h3>
+
+                        <div class="space-y-3 text-sm text-gray-700">
+                            <p><span class="font-semibold text-gray-900">Form:</span> {{ $report->formTemplate->title ?? 'N/A' }}</p>
+                            <p><span class="font-semibold text-gray-900">Participant:</span> {{ $report->account->name ?? 'N/A' }}</p>
+                            <p><span class="font-semibold text-gray-900">Email:</span> {{ $report->account->email ?? 'N/A' }}</p>
+                            <p>
+                                <span class="font-semibold text-gray-900">Status:</span>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                    {{ $report->status }}
+                                </span>
+                            </p>
+                            <p><span class="font-semibold text-gray-900">Reason:</span> {{ $report->flag_reason ?? 'N/A' }}</p>
+                            <p><span class="font-semibold text-gray-900">Flagged At:</span> {{ optional($report->flagged_at)->format('M d, Y h:i A') ?? 'N/A' }}</p>
                         </div>
-                    @endforelse
-                </div>
-            </div>
+                    </div>
 
-            <div class="lg:col-span-2 bg-white shadow rounded-lg border border-gray-100 overflow-hidden">
-                <div class="p-6">
-                    @if($selectedReport)
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <h2 class="text-xl font-semibold text-gray-900">
-                                    {{ $selectedReport->title ?? $selectedReport->name ?? 'Selected Report' }}
-                                </h2>
+                    <div class="border rounded-lg p-4 bg-gray-50">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Moderation Action</h3>
 
-                                <div class="mt-3 text-sm text-gray-600 space-y-1">
-                                    <p><strong>ID:</strong> {{ $selectedReport->id }}</p>
+                        <form method="POST" action="{{ route('admin.reports.delete', $report->id) }}">
+                            @csrf
+                            @method('DELETE')
 
-                                    @if(!empty($selectedReport->created_at))
-                                        <p><strong>Created:</strong> {{ \Carbon\Carbon::parse($selectedReport->created_at)->format('Y-m-d H:i') }}</p>
-                                    @endif
+                            <div class="mb-4">
+                                <label for="deletion_reason" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Deletion Reason
+                                </label>
+                                <textarea
+                                    name="deletion_reason"
+                                    id="deletion_reason"
+                                    rows="4"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                                    required
+                                >{{ old('deletion_reason') }}</textarea>
 
-                                    @if(!empty($selectedReport->updated_at))
-                                        <p><strong>Updated:</strong> {{ \Carbon\Carbon::parse($selectedReport->updated_at)->format('Y-m-d H:i') }}</p>
-                                    @endif
+                                @error('deletion_reason')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-                                    @if(isset($selectedReport->researcher_id))
-                                        <p><strong>Researcher ID:</strong> {{ $selectedReport->researcher_id }}</p>
-                                    @endif
-                                </div>
+                            <div class="mb-4">
+                                <label class="inline-flex items-start">
+                                    <input
+                                        type="checkbox"
+                                        name="confirm_delete"
+                                        value="1"
+                                        class="mt-1 rounded border-gray-300 text-red-600 shadow-sm focus:ring-red-500"
+                                    >
+                                    <span class="ml-2 text-sm text-gray-700">
+                                        I confirm that I want to delete this flagged submission.
+                                    </span>
+                                </label>
+
+                                @error('confirm_delete')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <button
-                                wire:click="deleteSelectedReport"
-                                onclick="return confirm('Are you sure you want to delete this report? This action cannot be undone from the UI.')"
-                                type="button"
-                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                type="submit"
+                                class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150"
                             >
-                                Delete Report
+                                Delete Submission
                             </button>
-                        </div>
-
-                        <div class="mt-6 space-y-6">
-                            @if(!empty($selectedReport->description))
-                                <div>
-                                    <h3 class="text-md font-semibold text-gray-900 mb-2">Description</h3>
-                                    <div class="rounded border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
-                                        {{ $selectedReport->description }}
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if(isset($selectedReport->aggregatedData) && !empty($selectedReport->aggregatedData))
-                                <div>
-                                    <h3 class="text-md font-semibold text-gray-900 mb-2">Aggregated Report Data</h3>
-                                    <div class="rounded border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 overflow-x-auto">
-                                        <pre class="whitespace-pre-wrap break-words">{{ json_encode($selectedReport->aggregatedData, JSON_PRETTY_PRINT) }}</pre>
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if(empty($selectedReport->description) && empty($selectedReport->aggregatedData))
-                                <div class="rounded-md bg-gray-50 border border-dashed border-gray-300 p-4 text-sm text-gray-600">
-                                    This report has limited display metadata, but it can still be reviewed and removed by an administrator.
-                                </div>
-                            @endif
-                        </div>
-                    @else
-                        <div class="rounded-md bg-gray-50 border border-dashed border-gray-300 p-6 text-sm text-gray-600">
-                            Select a report to review its details.
-                        </div>
-                    @endif
+                        </form>
+                    </div>
                 </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Health Entries</h3>
+
+                    @forelse ($report->healthEntries as $entry)
+                        <div class="border rounded-lg p-4 mb-4 bg-white shadow-sm">
+                            <div class="mb-3 text-sm text-gray-500">
+                                Timestamp: {{ optional($entry->timestamp)->format('M d, Y h:i A') ?? 'N/A' }}
+                            </div>
+
+                            <pre class="text-xs bg-gray-100 p-4 rounded-md overflow-x-auto text-gray-800 whitespace-pre-wrap">{{ json_encode($entry->encrypted_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
+                        </div>
+                    @empty
+                        <div class="rounded-lg border border-dashed border-gray-300 p-6 text-sm text-gray-500 bg-gray-50">
+                            No health entries found for this submission.
+                        </div>
+                    @endforelse
+                </div>
+
             </div>
         </div>
     </div>
-</div>
+</x-admin-layout>

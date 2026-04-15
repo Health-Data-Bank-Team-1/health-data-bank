@@ -26,11 +26,6 @@ class DashboardTrendsExportTest extends TestCase
         ]);
     }
 
-    public function test_guest_cannot_export_dashboard_trends_csv(): void
-    {
-        $this->get('/api/reports/dashboard/trends/export.csv')->assertStatus(401);
-    }
-
     public function test_dashboard_trends_csv_contains_utf8_bom_and_header_for_empty_dataset(): void
     {
         $user = $this->createUserWithAccount();

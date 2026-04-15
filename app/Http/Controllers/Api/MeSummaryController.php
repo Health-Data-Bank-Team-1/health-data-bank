@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SummaryQueryRequest;
 use App\Services\AuditLogger;
 use App\Services\HealthMetricRegistry;
 use App\Services\PersonalSummaryService;
 use App\Services\SuggestionService;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class MeSummaryController extends Controller
 {
@@ -72,13 +71,5 @@ class MeSummaryController extends Controller
             ...$summary,
             'suggestions' => $suggestionPayload['suggestions'] ?? [],
         ]);
-        $result = $svc->summary(
-            $user->account_id,
-            Carbon::parse($validated['from']),
-            Carbon::parse($validated['to']),
-            $keys
-        );
-
-        return response()->json($result);
     }
 }
