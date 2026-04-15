@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class PatientController extends Controller
 {
-    private $service;
+    private PatientService $service;
 
     public function __construct(PatientService $service)
     {
@@ -22,21 +22,49 @@ class PatientController extends Controller
 
     public function store(Request $request)
     {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+        ]);
+
         return response()->json(
-            $this->service->createPatient($request->all()),
+            $this->service->createPatient($validated),
             201
         );
     }
 
     public function show($id)
     {
-        return response()->json($this->service->getPatient($id));
+        $patient = $this->service->getPatient($id);
+
+        if (!$patient) {
+            return response()->json(['message' => 'Patient not found.'], 404);
+        }
+
+        return response()->json($patient);
     }
 
     public function update(Request $request, $id)
     {
+        $validated = $request->validate([
+            'name' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'email', 'max:255'],
+        ]);
+
+        if (empty($validated)) {
+            return response()->json([
+                'message' => 'At least one updatable field is required.',
+            ], 422);
+        }
+
+        $updated = $this->service->updatePatient($id, $validated);
+
+        if (!$updated) {
+            return response()->json(['message' => 'Patient not found.'], 404);
+        }
+
         return response()->json(
-            $this->service->updatePatient($id, $request->all())
+            $updated
         );
     }
 

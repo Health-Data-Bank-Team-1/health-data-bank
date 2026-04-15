@@ -34,7 +34,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::apiResource('patients', PatientController::class);
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    Route::apiResource('patients', PatientController::class);
+});
 
 Route::middleware(['auth:sanctum', 'role:admin'])
     ->prefix('admin/forms')
