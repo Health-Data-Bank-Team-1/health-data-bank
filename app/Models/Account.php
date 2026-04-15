@@ -21,6 +21,7 @@ class Account extends Model
         'date_of_birth',
         'gender',
         'status',
+        'location',
     ];
 
     protected $casts = [

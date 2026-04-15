@@ -41,21 +41,13 @@ class ResearcherCohortEndpointTest extends TestCase
 
         $user->assignRole('researcher');
 
-        $accounts = Account::factory()->count(10)->create([
+        Account::factory()->count(10)->create([
             'account_type' => 'User',
             'status' => 'ACTIVE',
+            'gender' => 'female',
+            'date_of_birth' => '2000-01-01',
+            'location' => 'PEI',
         ]);
-
-        foreach ($accounts as $account) {
-            DB::table('participant_profiles')->insert([
-                'account_id' => $account->id,
-                'gender' => 'female',
-                'date_of_birth' => '2000-01-01',
-                'location' => 'PEI',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
 
         Sanctum::actingAs($user);
 

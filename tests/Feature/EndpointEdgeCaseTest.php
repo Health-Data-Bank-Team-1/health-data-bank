@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Polish;
+namespace Tests\Feature;
 
 use App\Models\Account;
 use App\Models\Role;

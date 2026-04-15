@@ -20,6 +20,7 @@ class AccountFactory extends Factory
 
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
+            'location' => fake()->randomElement(['PEI', 'NS', 'NB']),
 
             // MUST match enum values exactly
             'status' => 'ACTIVE',
