@@ -171,6 +171,8 @@ class DashboardReportController extends Controller
         ) {
             try {
                 $out = fopen('php://output', 'w');
+                // Add UTF-8 BOM for spreadsheet compatibility.
+                fwrite($out, "\xEF\xBB\xBF");
                 fputcsv($out, ['period', 'value']);
 
                 $rows = $this->buildTrendRows(
@@ -211,7 +213,8 @@ class DashboardReportController extends Controller
                 throw $e;
             }
         }, $filename, [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-store, no-cache',
         ]);
     }
 

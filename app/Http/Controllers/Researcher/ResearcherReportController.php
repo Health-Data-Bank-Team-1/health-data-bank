@@ -96,9 +96,16 @@ class ResearcherReportController extends Controller
                 ],
             ], 422);
         } catch (\Throwable $e) {
+            AuditLogger::log(
+                'researcher_aggregated_report_failed',
+                ['reporting', 'researcher', 'outcome:failure'],
+                null,
+                [],
+                ['reason_code' => 'server_error']
+            );
+
             return response()->json([
                 'message' => 'Failed to generate aggregated report.',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -168,6 +175,8 @@ class ResearcherReportController extends Controller
 
             return response()->streamDownload(function () use ($metrics) {
                 $handle = fopen('php://output', 'w');
+                // Add UTF-8 BOM for spreadsheet compatibility.
+                fwrite($handle, "\xEF\xBB\xBF");
 
                 fputcsv($handle, ['metric_key', 'count', 'avg']);
 
@@ -181,7 +190,8 @@ class ResearcherReportController extends Controller
 
                 fclose($handle);
             }, $filename, [
-                'Content-Type' => 'text/csv',
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Cache-Control' => 'no-store, no-cache',
             ]);
         } catch (CohortSuppressedException $e) {
             return response()->json([
@@ -191,9 +201,16 @@ class ResearcherReportController extends Controller
                 ],
             ], 422);
         } catch (\Throwable $e) {
+            AuditLogger::log(
+                'researcher_aggregated_report_export_failed',
+                ['reporting', 'researcher', 'outcome:failure', 'format:csv'],
+                null,
+                [],
+                ['reason_code' => 'server_error']
+            );
+
             return response()->json([
                 'message' => 'Failed to export aggregated report.',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }
