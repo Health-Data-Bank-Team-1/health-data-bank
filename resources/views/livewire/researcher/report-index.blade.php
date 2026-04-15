@@ -8,8 +8,9 @@
         @forelse ($reports as $report)
             <li>
                 <a
-                    href="{{ route('researcher.reports.show', $report) }}"
-                    class="flex items-center justify-between px-6 py-4 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition"
+                    href="{{ route('researcher.reports.show', $report->id) }}"
+                    wire:click="$dispatchTo('researcher.researcher-reports', 'reportSelected', '{{ $report->id }}')"
+                    class="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition text-left"
                 >
                     <div>
                         <p class="text-gray-900 font-medium">

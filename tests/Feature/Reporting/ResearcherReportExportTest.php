@@ -92,6 +92,7 @@ class ResearcherReportExportTest extends TestCase
         $response->assertHeader('content-type', 'text/csv; charset=utf-8');
         $content = $response->streamedContent();
 
+        $this->assertStringStartsWith("\xEF\xBB\xBF", $content);
         $this->assertStringContainsString('metric_key,count,avg', $content);
         $this->assertStringContainsString('hr,10,74.5', $content);
         $this->assertStringContainsString('weight,10,154.5', $content);
@@ -128,5 +129,65 @@ class ResearcherReportExportTest extends TestCase
         ]);
 
         $response->assertStatus(403);
+    }
+
+    public function test_export_csv_handles_special_characters_in_metric_keys(): void
+    {
+        $researcherAccount = Account::factory()->create([
+            'account_type' => 'Researcher',
+            'status' => 'ACTIVE',
+        ]);
+
+        $user = User::factory()->create([
+            'account_id' => $researcherAccount->id,
+        ]);
+        $user->assignRole('researcher');
+
+        $specialMetricKey = 'bmi, "μ"';
+        $accounts = Account::factory()->count(10)->create([
+            'account_type' => 'User',
+            'status' => 'ACTIVE',
+        ]);
+
+        foreach ($accounts as $index => $account) {
+            HealthEntry::factory()->create([
+                'account_id' => $account->id,
+                'timestamp' => '2026-02-10 10:00:00',
+                'encrypted_values' => [
+                    $specialMetricKey => 20 + $index,
+                ],
+            ]);
+        }
+
+        $cohortId = Str::uuid()->toString();
+
+        DB::table('researcher_cohorts')->insert([
+            'id' => $cohortId,
+            'name' => 'Special Character Cohort',
+            'purpose' => 'CSV escaping testing',
+            'filters_json' => json_encode([
+                'account_type' => 'User',
+                'account_status' => 'ACTIVE',
+            ]),
+            'estimated_size' => 10,
+            'version' => 1,
+            'created_by' => $researcherAccount->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $response = $this->post('/api/researcher/reports/aggregated/export.csv', [
+            'cohort_id' => $cohortId,
+            'from' => '2026-02-01',
+            'to' => '2026-02-28',
+            'keys' => $specialMetricKey,
+        ]);
+
+        $response->assertOk();
+        $content = $response->streamedContent();
+
+        $this->assertStringContainsString('"bmi, ""μ""",10,24.5', $content);
     }
 }

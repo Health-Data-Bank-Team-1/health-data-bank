@@ -8,6 +8,7 @@ use App\Models\FormSubmission;
 use App\Models\FormField;
 use App\Models\HealthEntry;
 use App\Services\HealthDataEncryptionService;
+use App\Services\SubmissionFlaggingService;
 use Illuminate\Support\Str;
 
 class FormSubmissionController extends Controller
@@ -20,21 +21,17 @@ class FormSubmissionController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    /**
-     * Store a newly created form submission in storage.
-     */
     public function store(StoreFormSubmissionRequest $request)
     {
         $validated = $request->validated();
 
         $user = $request->user();
-        if (!$user || !$user->account_id) {
+        if (! $user || ! $user->account_id) {
             return response()->json([
                 'message' => 'User is not linked to an account.',
             ], 422);
         }
 
-        // Create the form submission
         $submission = FormSubmission::create([
             'id' => Str::uuid(),
             'account_id' => $user->account_id,
@@ -43,17 +40,16 @@ class FormSubmissionController extends Controller
             'submitted_at' => now(),
         ]);
 
-        // Create health entries for each entry
         foreach ($validated['entries'] as $entry) {
-            $field = FormField::find($entry['field_id']);
+            $field = FormField::findOrFail($entry['field_id']);
 
-            // Prepare the encrypted data
-            $encryptedData = $this->encryptionService->encrypt([
+            $encryptedData = [
                 'field_id' => $entry['field_id'],
-                'value' => $entry['value'] ?? null,
+                'metric_key' => $field->metric_key,
                 'field_label' => $field->label,
                 'field_type' => $field->field_type,
-            ]);
+                'value' => $entry['value'] ?? null,
+            ];
 
             HealthEntry::create([
                 'id' => Str::uuid(),
@@ -63,6 +59,8 @@ class FormSubmissionController extends Controller
                 'encrypted_values' => $encryptedData,
             ]);
         }
+
+        app(SubmissionFlaggingService::class)->evaluate($submission);
 
         return response()->json([
             'message' => 'Form submitted successfully.',

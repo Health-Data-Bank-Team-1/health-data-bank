@@ -1,0 +1,25 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        DB::statement("
+            ALTER TABLE form_submissions
+            MODIFY status ENUM('SUBMITTED','FLAGGED','APPROVED','DELETED')
+            NOT NULL DEFAULT 'SUBMITTED'
+        ");
+    }
+
+    public function down(): void
+    {
+        DB::statement("
+            ALTER TABLE form_submissions
+            MODIFY status ENUM('SUBMITTED','FLAGGED','APPROVED')
+            NOT NULL DEFAULT 'SUBMITTED'
+        ");
+    }
+};

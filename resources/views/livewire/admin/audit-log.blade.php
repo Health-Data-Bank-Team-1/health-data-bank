@@ -87,26 +87,14 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Actions</label>
 
-                <select
-                    wire:model.live="event"
-                    class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-full"
-                >
+                <select wire:model="event" class="rounded-md border-gray-300 shadow-sm">
                     <option value="">All Events</option>
-                    <option value="login_success">login_success</option>
-                    <option value="login_failure">login_failure</option>
-                    <option value="logout">logout</option>
-                    <option value="access_denied">access_denied</option>
-                    <option value="profile_updated">profile_updated</option>
-                    <option value="form_submitted">form_submitted</option>
-                    <option value="data_exported">data_exported</option>
-                    <option value="provider_data_accessed">provider_data_accessed</option>
-                    <option value="health_record_viewed">health_record_viewed</option>
-                    <option value="reporting_trends_view">reporting_trends_view</option>
-                    <option value="reporting_summary_view">reporting_summary_view</option>
-                    <option value="researcher_cohort_generated">researcher_cohort_generated</option>
-                    <option value="researcher_aggregated_report_viewed">researcher_aggregated_report_viewed</option>
-                    <option value="researcher_aggregated_report_exported">researcher_aggregated_report_exported</option>
-                    <option value="audit_log_exported">audit_log_exported</option>
+
+                    @foreach($events as $eventOption)
+                        <option value="{{ $eventOption }}">
+                            {{ $eventOption }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
         </div>

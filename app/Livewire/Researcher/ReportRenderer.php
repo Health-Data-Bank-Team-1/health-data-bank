@@ -9,8 +9,14 @@ class ReportRenderer extends Component
 {
     public Report $report;
 
+    public array $aggregateData = [];
+
     public array $metrics = [];
     public array $displayMetrics = [];
+
+    public array $timeseriesRows = [];
+
+    public array $notes = [];
 
     public function mount(Report $report): void
     {
@@ -33,15 +39,15 @@ class ReportRenderer extends Component
             }
         }
 
-        $this->metrics = $metricMap;
+        $tsData = $report->timeseriesData ?? [];
 
-        foreach ($metricMap as $key => $value) {
-            $this->displayMetrics[] = [
-                'key' => (string) $key,
-                'label' => str_replace('_', ' ', ucfirst((string) $key)),
-                'value' => is_array($value) ? json_encode($value) : $value,
-            ];
+        if ($tsData instanceof \Illuminate\Support\Collection) {
+            $tsData = $tsData->toArray();
         }
+
+        $this->timeseriesRows = is_array($tsData) ? $tsData : [];
+
+        $this->notes = $report->updates()->latest()->get()->toArray();
     }
 
     public function render()

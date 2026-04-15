@@ -31,11 +31,8 @@
                     <x-link-button class="w-full mt-2" href="{{ route('researcher.reports') }}">
                         Manage Reports
                     </x-link-button>
-                    <x-link-button class="w-full mt-2" href="{{ route('researcher.cohort') }}">
-                        Manage Cohort
-                    </x-link-button>
                     <x-link-button class="w-full mt-2" href="{{ route('researcher.report-generator') }}">
-                        New Report
+                        Cohort Report Generator
                     </x-link-button>
                 </div>
             </div>

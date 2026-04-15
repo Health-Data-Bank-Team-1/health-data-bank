@@ -13,6 +13,13 @@ class PatientRecordController extends Controller
 {
     public function show(Request $request, string $patient)
     {
+        $providerAccountId = $request->user()?->account_id;
+        if (!$providerAccountId) {
+            return response()->json([
+                'message' => 'Provider account not found.',
+            ], 403);
+        }
+
         $patientAccount = Account::query()
             ->where('id', $patient)
             ->where('account_type', 'User')
@@ -24,8 +31,24 @@ class PatientRecordController extends Controller
             ], 404);
         }
 
+        $isLinkedPatient = Account::query()
+            ->where('id', $providerAccountId)
+            ->whereHas('patients', function ($query) use ($patientAccount) {
+                $query->where('accounts.id', $patientAccount->id);
+            })
+            ->exists();
+
+        if (!$isLinkedPatient) {
+            return response()->json([
+                'message' => 'You are not authorized to access this patient record.',
+            ], 403);
+        }
+
         $healthEntries = HealthEntry::query()
             ->where('account_id', $patientAccount->id)
+            ->whereHas('submission', function ($query) {
+                $query->whereNull('deleted_at');
+            })
             ->orderByDesc('timestamp')
             ->get(['id', 'timestamp', 'encrypted_values']);
 
