@@ -24,15 +24,15 @@ class PatientRenderer extends Component
     {
         $providerAccountId = Auth::user()->account_id;
 
-        $this->patientAccount = Account::query()
+        $patientAccount = Account::query()
             ->where('id', $patient)
             ->where('account_type', 'User')
             ->whereHas('providers', fn ($q) => $q->where('provider_id', $providerAccountId))
             ->firstOrFail();
 
-        abort_unless($patientAccount, 404, 'Patient not found.');
-
         $this->patientAccount = $patientAccount;
+
+        abort_unless($patientAccount, 404, 'Patient not found.');
 
         $this->healthEntries = HealthEntry::query()
             ->where('account_id', $patientAccount->id)

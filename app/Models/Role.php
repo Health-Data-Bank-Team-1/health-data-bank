@@ -7,16 +7,31 @@ use Illuminate\Support\Str;
 
 class Role extends SpatieRole
 {
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
     public $incrementing = false;
+
+    /**
+     * The "type" of the auto-incrementing ID.
+     *
+     * @var string
+     */
     protected $keyType = 'string';
 
+    /**
+     * Boot function from Laravel.
+     */
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($model) {
-            if (!$model->id) {
-                $model->id = (string) Str::uuid();
+            // Set a UUID only if it does not already exist
+            if (empty($model->{$model->getKeyName()})) {
+                $model->{$model->getKeyName()} = (string) Str::uuid();
             }
         });
     }

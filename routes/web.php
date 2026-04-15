@@ -100,6 +100,9 @@ Route::middleware([
     Route::get('/admin/database-management', DatabaseManagement::class)->middleware('role:admin')->name('admin.database-management');
     Route::get('/admin/report-review', ReportReview::class)->middleware('role:admin')->name('admin.report-review');
     Route::get('/admin/forms', FormTemplatesIndex::class)->middleware('role:admin')->name('admin.forms.index');
+    Route::get('/admin/user-roles', \App\Livewire\Admin\UserRoleManagement::class)->middleware('role:admin')->name('admin.user-roles');
+    Route::get('/admin/schema-management', \App\Livewire\Admin\SchemaManagement::class)->middleware('role:admin')->name('admin.schema-management');
+    Route::get('/admin/reports/flagged', \App\Livewire\Admin\ReportReview::class)->middleware('role:admin')->name('admin.reports.flagged');
 
     Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
         Route::get('/forms/{template}', [FormTemplateApprovalController::class, 'show'])
@@ -112,9 +115,9 @@ Route::middleware([
         ->group(function () {
             Route::get('/audit-log/export.csv', [AdminAuditLogController::class, 'exportCsv'])
                 ->name('audit-log.export');
-            Route::get('/reports/flagged', [ReportModerationController::class, 'index'])->name('reports.flagged');
-            Route::get('/reports/{report}/review', [ReportModerationController::class, 'show'])->name('reports.review');
-            Route::delete('/reports/{report}', [ReportModerationController::class, 'delete'])->name('reports.delete');
+            //Route::get('/reports/flagged', [ReportModerationController::class, 'index'])->name('reports.flagged');
+            //Route::get('/reports/{report}/review', [ReportModerationController::class, 'show'])->name('reports.review');
+            //Route::delete('/reports/{report}', [ReportModerationController::class, 'delete'])->name('reports.delete');
         });
 
     // Provider routes

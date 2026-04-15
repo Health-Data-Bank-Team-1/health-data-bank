@@ -24,14 +24,14 @@
 
                                 @if ($field->field_type === 'Text')
                                     <x-input wire:model="entries.{{ $field->id }}" id="{{ $field->id }}"
-                                        class="mt-1 block w-full" type="text" />
+                                             class="mt-1 block w-full" type="text" />
                                 @elseif ($field->field_type === 'RadioButton')
                                     <div class="mt-2 space-y-2">
                                         @foreach ($field->options as $option)
                                             <label class="flex items-center space-x-4 mt-1">
                                                 <input type="radio" wire:model="entries.{{ $field->id }}"
-                                                    value="{{ $option }}"
-                                                    class="h-4 w-4 mr-2 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded">
+                                                       value="{{ $option }}"
+                                                       class="h-4 w-4 mr-2 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded">
                                                 <span>{{ $option }}</span>
                                             </label>
                                         @endforeach
@@ -41,45 +41,25 @@
                                         @foreach ($field->options as $option)
                                             <label class="flex items-center space-x-4 mt-1">
                                                 <input type="checkbox" wire:model="entries.{{ $field->id }}"
-                                                    value="{{ $option }}"
-                                                    class="h-4 w-4 mr-2 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded">
+                                                       value="{{ $option }}"
+                                                       class="h-4 w-4 mr-2 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded">
                                                 <span>{{ $option }}</span>
                                             </label>
                                         @endforeach
                                     </div>
-                                @elseif ($fieldType === 'radiobutton')
-                                    @if(count($options))
-                                        <div class="mt-2 space-y-2 rounded-md border border-gray-300 bg-gray-50 p-3">
-                                            @foreach ($options as $option)
-                                                <label class="flex items-center gap-2 text-sm text-gray-700">
-                                                    <input
-                                                        type="radio"
-                                                        name="field-{{ $field->id }}"
-                                                        disabled
-                                                        class="border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                    >
-                                                    <span>{{ $option }}</span>
-                                                </label>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <div class="mt-2 text-sm text-gray-500">
-                                            No options provided.
-                                        </div>
-                                    @endif
                                 @elseif ($field->field_type === 'Date')
                                     <x-input wire:model="entries.{{ $field->id }}" id="{{ $field->id }}"
-                                        class="mt-1 block w-full" type="date" />
+                                             class="mt-1 block w-full" type="date" />
                                 @elseif ($field->field_type === 'Number')
                                     <x-input wire:model="entries.{{ $field->id }}" id="{{ $field->id }}"
-                                        class="mt-1 block w-full" type="number" />
+                                             class="mt-1 block w-full" type="number" />
                                 @endif
 
                                 @error("entries.$field->id")
-                                    <span class="text-red-600 text-sm">{{ $message }}</span>
+                                <span class="text-red-600 text-sm">{{ $message }}</span>
                                 @enderror
                             </div>
-                        @endforeach
+                    @endforeach
                 </x-slot>
 
                 <x-slot name="actions">
