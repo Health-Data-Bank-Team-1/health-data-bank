@@ -116,6 +116,9 @@ Route::middleware([
             Route::get('/reports/flagged', [ReportModerationController::class, 'index'])->name('reports.flagged');
             Route::get('/reports/{report}/review', [ReportModerationController::class, 'show'])->name('reports.review');
             Route::delete('/reports/{report}', [ReportModerationController::class, 'delete'])->name('reports.delete');
+
+            Route::get('/user-roles', UserRoleManagement::class)->name('user-roles');
+            Route::get('/schema-management', SchemaManagement::class)->name('schema-management');
         });
 
     // Provider routes
