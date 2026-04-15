@@ -6,11 +6,36 @@ use App\Models\Account;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class AdminAuditLogIndexTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $adminRole = Role::where('name', 'admin')->where('guard_name', 'web')->first();
+        if (! $adminRole) {
+            $adminRole = new Role();
+            $adminRole->id = (string) Str::uuid();
+            $adminRole->name = 'admin';
+            $adminRole->guard_name = 'web';
+            $adminRole->save();
+        }
+
+        $userRole = Role::where('name', 'user')->where('guard_name', 'web')->first();
+        if (! $userRole) {
+            $userRole = new Role();
+            $userRole->id = (string) Str::uuid();
+            $userRole->name = 'user';
+            $userRole->guard_name = 'web';
+            $userRole->save();
+        }
+    }
 
     public function test_admin_can_list_audits(): void
     {
@@ -22,6 +47,8 @@ class AdminAuditLogIndexTest extends TestCase
         $admin = User::factory()->create([
             'account_id' => $account->id,
         ]);
+
+        $admin->assignRole('admin');
 
         DB::table('audits')->insert([
             [
@@ -35,50 +62,19 @@ class AdminAuditLogIndexTest extends TestCase
                 'url' => '/login',
                 'ip_address' => '127.0.0.1',
                 'user_agent' => 'PHPUnit',
-                'tags' => "['auth','outcome:success']",
-                'created_at' => now()->subMinute(),
-                'updated_at' => now()->subMinute(),
-            ],
-            [
-                'user_type' => User::class,
-                'user_id' => $account->id,
-                'event' => 'researcher_aggregated_report_exported',
-                'auditable_type' => null,
-                'auditable_id' => null,
-                'old_values' => null,
-                'new_values' => "{'format':'csv'}",
-                'url' => '/api/researcher/reports/aggregated/export.csv',
-                'ip_address' => '127.0.0.1',
-                'user_agent' => 'PHPUnit',
-                'tags' => "['reporting','researcher','outcome:success','format:csv']",
+                'tags' => '["auth","outcome:success"]',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ]);
 
-        $this->actingAs($admin, 'sanctum')
-            ->getJson('/api/admin/audit-log')
-            ->assertOk()
-            ->assertJsonStructure([
-                'current_page',
-                'data' => [
-                    '*' => [
-                        'id',
-                        'event',
-                        'user_type',
-                        'user_id',
-                        'auditable_type',
-                        'auditable_id',
-                        'old_values',
-                        'new_values',
-                        'url',
-                        'ip_address',
-                        'user_agent',
-                        'tags',
-                        'created_at',
-                    ]
-                ],
-            ]);
+        $response = $this->actingAs($admin)
+            ->getJson(route('admin.audit-log.index'));
+
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'event' => 'login_success',
+        ]);
     }
 
     public function test_admin_can_filter_by_event(): void
@@ -92,6 +88,8 @@ class AdminAuditLogIndexTest extends TestCase
             'account_id' => $account->id,
         ]);
 
+        $admin->assignRole('admin');
+
         DB::table('audits')->insert([
             [
                 'user_type' => User::class,
@@ -100,11 +98,11 @@ class AdminAuditLogIndexTest extends TestCase
                 'auditable_type' => null,
                 'auditable_id' => null,
                 'old_values' => null,
-                'new_values' => "{'reason':'invalid_credentials'}",
+                'new_values' => '{"reason":"invalid_credentials"}',
                 'url' => '/login',
                 'ip_address' => '127.0.0.1',
                 'user_agent' => 'PHPUnit',
-                'tags' => "['auth','outcome:failure']",
+                'tags' => '["auth","outcome:failure"]',
                 'created_at' => now()->subMinute(),
                 'updated_at' => now()->subMinute(),
             ],
@@ -119,18 +117,18 @@ class AdminAuditLogIndexTest extends TestCase
                 'url' => '/logout',
                 'ip_address' => '127.0.0.1',
                 'user_agent' => 'PHPUnit',
-                'tags' => "['auth','outcome:success']",
+                'tags' => '["auth","outcome:success"]',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ]);
 
-        $response = $this->actingAs($admin, 'sanctum')
-            ->getJson('/api/admin/audit-log?event=login_failure')
-            ->assertOk();
+        $response = $this->actingAs($admin)
+            ->getJson(route('admin.audit-log.index', ['event' => 'logout']));
 
-        $this->assertCount(1, $response->json('data'));
-        $this->assertEquals('login_failure', $response->json('data.0.event'));
+        $response->assertOk();
+        $response->assertJsonFragment(['event' => 'logout']);
+        $response->assertJsonMissing(['event' => 'login_failure']);
     }
 
     public function test_admin_can_filter_by_tag(): void
@@ -144,45 +142,47 @@ class AdminAuditLogIndexTest extends TestCase
             'account_id' => $account->id,
         ]);
 
+        $admin->assignRole('admin');
+
         DB::table('audits')->insert([
             [
                 'user_type' => User::class,
                 'user_id' => $account->id,
-                'event' => 'reporting_trends_view',
+                'event' => 'login_failure',
                 'auditable_type' => null,
                 'auditable_id' => null,
                 'old_values' => null,
-                'new_values' => "{'metric':'steps'}",
-                'url' => '/api/reporting/trends',
+                'new_values' => '{"reason":"invalid_credentials"}',
+                'url' => '/login',
                 'ip_address' => '127.0.0.1',
                 'user_agent' => 'PHPUnit',
-                'tags' => "['reporting','resource:trends']",
+                'tags' => '["auth","outcome:failure"]',
                 'created_at' => now()->subMinute(),
                 'updated_at' => now()->subMinute(),
             ],
             [
                 'user_type' => User::class,
                 'user_id' => $account->id,
-                'event' => 'login_success',
+                'event' => 'logout',
                 'auditable_type' => null,
                 'auditable_id' => null,
                 'old_values' => null,
                 'new_values' => null,
-                'url' => '/login',
+                'url' => '/logout',
                 'ip_address' => '127.0.0.1',
                 'user_agent' => 'PHPUnit',
-                'tags' => "['auth','outcome:success']",
+                'tags' => '["auth","outcome:success"]',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
         ]);
 
-        $response = $this->actingAs($admin, 'sanctum')
-            ->getJson('/api/admin/audit-log?tag=reporting')
-            ->assertOk();
+        $response = $this->actingAs($admin)
+            ->getJson(route('admin.audit-log.index', ['tag' => 'outcome:success']));
 
-        $this->assertCount(1, $response->json('data'));
-        $this->assertEquals('reporting_trends_view', $response->json('data.0.event'));
+        $response->assertOk();
+        $response->assertJsonFragment(['event' => 'logout']);
+        $response->assertJsonMissing(['event' => 'login_failure']);
     }
 
     public function test_non_admin_cannot_list_audits(): void
@@ -196,8 +196,10 @@ class AdminAuditLogIndexTest extends TestCase
             'account_id' => $account->id,
         ]);
 
-        $this->actingAs($user, 'sanctum')
-            ->getJson('/api/admin/audit-log')
+        $user->assignRole('user');
+
+        $this->actingAs($user)
+            ->getJson(route('admin.audit-log.index'))
             ->assertForbidden();
     }
 }

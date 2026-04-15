@@ -171,6 +171,7 @@ class AuditLog extends Component
             'audits' => $audits,
             'totalEvents' => $this->summaryCount(),
             'events' => $events,
+            'presetRange' => $this->presetRange,
         ])
             ->layout('layouts.admin')
             ->layoutData([

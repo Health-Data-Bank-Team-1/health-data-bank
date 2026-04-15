@@ -5,79 +5,44 @@ namespace App\Http\Controllers\Provider;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\HealthEntry;
-use App\Models\ProviderFeedback;
 use App\Services\AuditLogger;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class PatientRecordController extends Controller
 {
-    public function show(Request $request, string $patient)
+    public function show(string $patient): JsonResponse
     {
-        $providerAccountId = $request->user()?->account_id;
-        if (!$providerAccountId) {
-            return response()->json([
-                'message' => 'Provider account not found.',
-            ], 403);
-        }
+        $providerAccountId = Auth::user()?->account_id;
+
+        abort_unless($providerAccountId, 403, 'Provider account not found.');
 
         $patientAccount = Account::query()
             ->where('id', $patient)
             ->where('account_type', 'User')
             ->first();
 
-        if (!$patientAccount) {
-            return response()->json([
-                'message' => 'Patient not found.',
-            ], 404);
-        }
+        abort_unless($patientAccount, 404, 'Patient not found.');
 
-        $isLinkedPatient = Account::query()
-            ->where('id', $providerAccountId)
-            ->whereHas('patients', function ($query) use ($patientAccount) {
-                $query->where('accounts.id', $patientAccount->id);
-            })
+        $isLinked = $patientAccount->providers()
+            ->where('provider_id', $providerAccountId)
             ->exists();
 
-        if (!$isLinkedPatient) {
-            return response()->json([
-                'message' => 'You are not authorized to access this patient record.',
-            ], 403);
-        }
+        abort_unless($isLinked, 403, 'You are not authorized to access this patient record.');
 
-        $healthEntries = HealthEntry::query()
+        $entries = HealthEntry::query()
             ->where('account_id', $patientAccount->id)
-            ->whereHas('submission', function ($query) {
-                $query->whereNull('deleted_at');
-            })
             ->orderByDesc('timestamp')
             ->get(['id', 'timestamp', 'encrypted_values']);
 
-        $feedback = ProviderFeedback::query()
-            ->with(['provider:id,name'])
-            ->where('patient_account_id', $patientAccount->id)
-            ->orderByDesc('created_at')
-            ->get()
-            ->map(function (ProviderFeedback $item) {
-                return [
-                    'id' => $item->id,
-                    'feedback' => $item->feedback,
-                    'recommended_actions' => $item->recommended_actions,
-                    'created_at' => $item->created_at,
-                    'updated_at' => $item->updated_at,
-                    'provider' => [
-                        'id' => $item->provider?->id,
-                        'name' => $item->provider?->name,
-                    ],
-                ];
-            });
-
         AuditLogger::log(
             'provider_patient_record_view',
-            ['provider', 'resource:patient_record'],
+            ['provider', 'resource:patient_record', 'outcome:success'],
             null,
             [],
             [
                 'patient_id' => $patientAccount->id,
+                'provider_account_id' => $providerAccountId,
             ]
         );
 
@@ -87,10 +52,8 @@ class PatientRecordController extends Controller
                 'name' => $patientAccount->name,
                 'email' => $patientAccount->email,
                 'status' => $patientAccount->status,
-                'account_type' => $patientAccount->account_type,
             ],
-            'health_entries' => $healthEntries,
-            'feedback' => $feedback,
+            'health_entries' => $entries,
         ]);
     }
 }

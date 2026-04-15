@@ -6,11 +6,36 @@ use App\Models\Account;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class AdminAuditLogExportTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $adminRole = Role::where('name', 'admin')->where('guard_name', 'web')->first();
+        if (! $adminRole) {
+            $adminRole = new Role();
+            $adminRole->id = (string) Str::uuid();
+            $adminRole->name = 'admin';
+            $adminRole->guard_name = 'web';
+            $adminRole->save();
+        }
+
+        $userRole = Role::where('name', 'user')->where('guard_name', 'web')->first();
+        if (! $userRole) {
+            $userRole = new Role();
+            $userRole->id = (string) Str::uuid();
+            $userRole->name = 'user';
+            $userRole->guard_name = 'web';
+            $userRole->save();
+        }
+    }
 
     public function test_admin_can_export_audits_as_csv(): void
     {
@@ -22,6 +47,8 @@ class AdminAuditLogExportTest extends TestCase
         $admin = User::factory()->create([
             'account_id' => $account->id,
         ]);
+
+        $admin->assignRole('admin');
 
         DB::table('audits')->insert([
             [
@@ -45,7 +72,6 @@ class AdminAuditLogExportTest extends TestCase
             ->get(route('admin.audit-log.export'));
 
         $response->assertOk();
-        $response->assertHeader('content-type');
         $this->assertStringContainsString('text/csv', $response->headers->get('content-type'));
         $this->assertStringContainsString('audit_logs.csv', $response->headers->get('content-disposition'));
 
@@ -65,6 +91,8 @@ class AdminAuditLogExportTest extends TestCase
         $admin = User::factory()->create([
             'account_id' => $account->id,
         ]);
+
+        $admin->assignRole('admin');
 
         DB::table('audits')->insert([
             [
@@ -121,6 +149,8 @@ class AdminAuditLogExportTest extends TestCase
             'account_id' => $account->id,
         ]);
 
+        $user->assignRole('user');
+
         $this->actingAs($user)
             ->get(route('admin.audit-log.export'))
             ->assertForbidden();
@@ -136,6 +166,8 @@ class AdminAuditLogExportTest extends TestCase
         $admin = User::factory()->create([
             'account_id' => $account->id,
         ]);
+
+        $admin->assignRole('admin');
 
         DB::table('audits')->insert([
             [

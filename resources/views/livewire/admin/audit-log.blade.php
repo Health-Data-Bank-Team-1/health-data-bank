@@ -36,7 +36,7 @@
                     <option value="7d">Last 7 days</option>
                     <option value="custom">Custom range</option>
                 </select>
-                @if ($presetRange === 'custom')
+                @if (($presetRange ?? null) === 'custom')
                     <p class="text-xs text-gray-500 mt-1">
                         Choose a start and end date below.
                     </p>
@@ -87,7 +87,7 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Actions</label>
 
-                <select wire:model="event" class="rounded-md border-gray-300 shadow-sm">
+                <select wire:model.live="event" class="rounded-md border-gray-300 shadow-sm">
                     <option value="">All Events</option>
 
                     @foreach($events as $eventOption)
