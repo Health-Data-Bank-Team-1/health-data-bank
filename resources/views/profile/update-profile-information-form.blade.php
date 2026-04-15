@@ -81,6 +81,25 @@
                 @endif
             @endif
         </div>
+
+        <!-- DOB -->
+        <div class="col-span-6 sm:col-span-4">
+            <x-label for="date_of_birth" value="{{ __('Date of Birth') }}" />
+            <x-input id="date_of_birth" type="date" class="mt-1 block w-full" wire:model="state.date_of_birth" />
+            <x-input-error for="date_of_birth" class="mt-2" />
+        </div>
+
+        <!-- Gender -->
+        <div class="col-span-6 sm:col-span-4">
+            <x-label for="gender" value="{{ __('Gender') }}" />
+            <select id="gender" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" wire:model="state.gender">
+                <option value="">{{ __('Select gender') }}</option>
+                <option value="male">{{ __('Male') }}</option>
+                <option value="female">{{ __('Female') }}</option>
+                <option value="other">{{ __('Other') }}</option>
+            </select>
+            <x-input-error for="gender" class="mt-2" />
+        </div>
     </x-slot>
 
     <x-slot name="actions">

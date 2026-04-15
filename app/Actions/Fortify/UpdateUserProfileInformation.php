@@ -3,24 +3,26 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
-use App\Services\AuditLogger;
 
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
 {
     /**
      * Validate and update the given user's profile information.
      *
-     * @param  array<string, mixed>  $input
+     * @param array<string, mixed> $input
      */
     public function update(User $user, array $input): void
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'date_of_birth' => ['nullable', 'date', 'before:today'],
+            'gender' => ['nullable', 'in:male,female,other'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
         ])->validateWithBag('updateProfileInformation');
 
@@ -28,46 +30,43 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user->updateProfilePhoto($input['photo']);
         }
 
-        if ($input['email'] !== $user->email &&
-            $user instanceof MustVerifyEmail) {
+        $emailChanged = $input['email'] !== $user->email;
+
+        if ($emailChanged && $user instanceof MustVerifyEmail) {
             $this->updateVerifiedUser($user, $input);
-
-            AuditLogger::log(
-                'profile_updated',
-                ['account', 'outcome:success'],
-                $user,
-                [],
-                [
-                    'email_changed' => true,
-                    'verification_reset' => true,
-                    'photo_updated' => isset($input['photo']),
-                ]
-            );
-
         } else {
             $user->forceFill([
                 'name' => $input['name'],
                 'email' => $input['email'],
             ])->save();
-
-            AuditLogger::log(
-                'profile_updated',
-                ['account', 'outcome:success'],
-                $user,
-                [],
-                [
-                    'email_changed' => $input['email'] !== $user->email,
-                    'verification_reset' => false,
-                    'photo_updated' => isset($input['photo']),
-                ]
-            );
         }
+
+        if ($user->account) {
+            $user->account->update([
+                'name' => $input['name'],
+                'email' => $input['email'],
+                'date_of_birth' => $input['date_of_birth'] ?? null,
+                'gender' => $input['gender'] ?? null,
+            ]);
+        }
+
+        AuditLogger::log(
+            'profile_updated',
+            ['account', 'outcome:success'],
+            $user,
+            [],
+            [
+                'email_changed' => $emailChanged,
+                'verification_reset' => $emailChanged && $user instanceof MustVerifyEmail,
+                'photo_updated' => isset($input['photo']),
+            ]
+        );
     }
 
     /**
      * Update the given verified user's profile information.
      *
-     * @param  array<string, string>  $input
+     * @param array<string, mixed> $input
      */
     protected function updateVerifiedUser(User $user, array $input): void
     {
