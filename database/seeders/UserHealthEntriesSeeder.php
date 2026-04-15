@@ -19,12 +19,14 @@ class UserHealthEntriesSeeder extends Seeder
     public function run(): void
     {
 
-        $account = Account::factory()->create([
-            'name' => 'Test Summary',
-            'email' => 'summary@example.com',
-            'account_type' => 'User',
-            'status' => 'ACTIVE',
-        ]);
+        $account = Account::firstOrCreate(
+            ['email' => 'summary@example.com'],
+            [
+                'name' => 'Test Summary',
+                'account_type' => 'User',
+                'status' => 'ACTIVE',
+            ]
+        );
 
         $user = User::factory()->withPersonalTeam()->create([
             'name' => 'Test Summary',

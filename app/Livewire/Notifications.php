@@ -24,6 +24,10 @@ class Notifications extends Component
 
         $notification->update(['status' => 'read']);
 
+        if (! empty($notification->link)) {
+            return redirect()->to($notification->link);
+        }
+
         $this->selectedNotification = $notification;
         $this->showModal = true;
     }

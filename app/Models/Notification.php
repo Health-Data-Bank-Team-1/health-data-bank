@@ -15,6 +15,5 @@ class Notification extends Model
         'message',
         'link',
         'status',
-        'link',
     ];
 }

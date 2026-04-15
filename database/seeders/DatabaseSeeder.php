@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
         $this->call(UserHealthEntriesSeeder::class);
         $this->call(ReportSeeder::class);
         $this->call(ProviderWithPatients::class);
-        $this->call(FlaggedSubmissionSeeder::class,);
+        $this->call(FlaggedSubmissionSeeder::class);
+        $this->call(NotificationSeeder::class);
 
         // Run demo users LAST so other seeders can’t overwrite their password/roles.
         $this->call(DiffUserWithRolesSeeder::class);
