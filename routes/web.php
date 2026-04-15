@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\FormTemplateApprovalController;
 use App\Http\Controllers\Api\Reports\DashboardReportController;
 use App\Http\Controllers\FormTemplateController;
 use App\Http\Controllers\Provider\ProviderFeedbackController;
+use App\Http\Controllers\Provider\ProviderAnalyticsController;
 use App\Http\Controllers\Researcher\ResearcherReportController;
 use App\Http\Controllers\Admin\ReportModerationController;
 use App\Livewire\Admin\AuditLog;
