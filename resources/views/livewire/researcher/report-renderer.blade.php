@@ -17,7 +17,27 @@
         </div>
     </div>
 
-    <div class="p-6">
+    <div class="p-6 space-y-6">
+        @if(!empty($displayMetrics))
+            <div class="rounded-lg border border-gray-200 bg-white p-5">
+                <h3 class="text-base font-semibold text-gray-900 mb-4">Report Summary</h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach($displayMetrics as $metric)
+                        <div class="rounded-xl border border-gray-200 bg-gray-50 p-5 shadow-sm">
+                            <p class="text-sm font-medium text-gray-500">
+                                {{ $metric['label'] }}
+                            </p>
+
+                            <p class="mt-3 text-3xl font-bold text-gray-900 break-words">
+                                {{ $metric['value'] }}
+                            </p>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         @if (!empty($metrics))
             <div class="overflow-x-auto">
                 <table class="min-w-full border border-gray-200">

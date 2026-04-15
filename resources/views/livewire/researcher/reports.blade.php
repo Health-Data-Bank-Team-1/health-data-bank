@@ -35,9 +35,6 @@
                             <x-button>{{ 'Export as CSV' }}</x-button>
                         </div>
                     </div>
-                    <div class="mb-4">
-                        {{ 'graphical report here' }}
-                    </div>
                     <div>
                         <livewire:researcher.report-renderer :report="$currReport" />
                     </div>
