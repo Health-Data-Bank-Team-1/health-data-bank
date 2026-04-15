@@ -5,13 +5,11 @@ namespace App\Actions\Fortify;
 use App\Models\Account;
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Laravel\Jetstream\Jetstream;
-use Spatie\Permission\Models\Role;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -27,20 +25,29 @@ class CreateNewUser implements CreatesNewUsers
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'date_of_birth' => ['required', 'date', 'before:today'],
+            'gender' => ['required', 'in:male,female,other'],
+            'role' => ['required', 'in:user,researcher,provider'],
             'password' => $this->passwordRules(),
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
 
         return DB::transaction(function () use ($input) {
-            // Create the domain Account record
+            $accountType = match ($input['role']) {
+                'researcher' => 'Researcher',
+                'provider' => 'HealthcareProvider',
+                default => 'User',
+            };
+
             $account = Account::create([
-                'account_type' => 'User',
+                'account_type' => $accountType,
                 'name' => $input['name'],
                 'email' => $input['email'],
+                'date_of_birth' => $input['date_of_birth'],
+                'gender' => $input['gender'],
                 'status' => 'ACTIVE',
             ]);
 
-            // Create the auth User linked to that account
             $user = User::create([
                 'name' => $input['name'],
                 'email' => $input['email'],
@@ -48,21 +55,8 @@ class CreateNewUser implements CreatesNewUsers
                 'account_id' => $account->id,
             ]);
 
-            // Ensure role exists (roles.id has no default in this project; set it explicitly)
-            $role = Role::where('name', 'user')->where('guard_name', 'web')->first();
+            $user->syncRoles([$input['role']]);
 
-            if (! $role) {
-                $role = new Role();
-                $role->id = (string) Str::uuid();
-                $role->name = 'user';
-                $role->guard_name = 'web';
-                $role->save();
-            }
-
-            // Assign role
-            $user->assignRole('user');
-
-            // Jetstream personal team
             $this->createTeam($user);
 
             return $user;
@@ -76,7 +70,7 @@ class CreateNewUser implements CreatesNewUsers
     {
         $user->ownedTeams()->save(Team::forceCreate([
             'user_id' => $user->id,
-            'name' => explode(' ', $user->name, 2)[0]."'s Team",
+            'name' => explode(' ', $user->name, 2)[0] . "'s Team",
             'personal_team' => true,
         ]));
     }

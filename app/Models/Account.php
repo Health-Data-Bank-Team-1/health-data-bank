@@ -18,12 +18,15 @@ class Account extends Model
         'account_type',
         'name',
         'email',
+        'date_of_birth',
+        'gender',
         'status',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'date_of_birth' => 'date',
     ];
 
     public function credentials()
@@ -114,5 +117,10 @@ class Account extends Model
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    public function getAgeAttribute(): ?int
+    {
+        return $this->date_of_birth?->age;
     }
 }

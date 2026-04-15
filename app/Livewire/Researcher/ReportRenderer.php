@@ -12,6 +12,7 @@ class ReportRenderer extends Component
     public array $aggregateData = [];
 
     public array $metrics = [];
+    public array $displayMetrics = [];
 
     public array $timeseriesRows = [];
 
@@ -21,23 +22,20 @@ class ReportRenderer extends Component
     {
         $this->report = $report;
 
-        $data = $report->aggregatedData ?? [];
+        $aggregatedData = $report->aggregatedData ?? [];
+        $metricMap = [];
 
-        if ($data instanceof \Illuminate\Support\Collection) {
-            $data = $data->toArray();
-        }
+        foreach ($aggregatedData as $data) {
+            $metrics = is_array($data)
+                ? ($data['metrics'] ?? [])
+                : ($data->metrics ?? []);
 
-        $this->aggregateData = is_array($data) ? $data : [];
-
-        foreach ($this->aggregateData as $row) {
-            if (is_array($row) && isset($row['metrics']) && is_array($row['metrics'])) {
-                $this->metrics = $row['metrics'];
-                break;
+            if (!is_array($metrics)) {
+                continue;
             }
 
-            if (is_object($row) && isset($row->metrics) && is_array($row->metrics)) {
-                $this->metrics = $row->metrics;
-                break;
+            foreach ($metrics as $key => $value) {
+                $metricMap[$key] = $value;
             }
         }
 
