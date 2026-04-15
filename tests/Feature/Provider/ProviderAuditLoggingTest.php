@@ -97,6 +97,9 @@ class ProviderAuditLoggingTest extends TestCase
             'status' => 'ACTIVE',
         ]);
 
+        // Link provider account to patient account
+        $patient->providers()->attach($providerAccount->id);
+
         HealthEntry::factory()->create([
             'account_id' => $patient->id,
             'timestamp' => '2026-02-10 10:00:00',

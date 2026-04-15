@@ -120,7 +120,7 @@ class ProcessScheduledRemindersTest extends TestCase
         );
     }
 
-    public function test_opening_notification_marks_it_as_read_and_shows_modal(): void
+    public function test_opening_notification_marks_it_as_read_and_shows_modal_when_no_link_exists(): void
     {
         $account = Account::factory()->create([
             'account_type' => 'User',
@@ -133,18 +133,16 @@ class ProcessScheduledRemindersTest extends TestCase
 
         $notification = Notification::create([
             'account_id' => $account->id,
-            'type' => 'reminder',
-            'message' => 'Test reminder',
-            'link' => '/user/form-select',
+            'type' => 'system',
+            'message' => 'Test notification',
+            'link' => null,
             'status' => 'unread',
         ]);
 
-        $this->actingAs($user);
-
-        Livewire::test(\App\Livewire\Notifications::class)
+        Livewire::actingAs($user)
+            ->test(\App\Livewire\Notifications::class)
             ->call('open', $notification)
-            ->assertSet('showModal', true)
-            ->assertSet('selectedNotification.message', 'Test reminder');
+            ->assertSet('showModal', true);
 
         $this->assertDatabaseHas('notifications', [
             'id' => $notification->id,

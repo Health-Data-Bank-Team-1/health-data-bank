@@ -25,9 +25,6 @@
                             <a href="{{ route('researcher.reports') }}">Reports</a>
                         </h2>
                     </div>
-                    <div>
-                        <livewire:researcher.report-index />
-                    </div>
                     <x-link-button class="w-full mt-2" href="{{ route('researcher.reports') }}">
                         Manage Reports
                     </x-link-button>

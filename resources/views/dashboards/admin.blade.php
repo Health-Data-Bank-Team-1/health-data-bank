@@ -51,6 +51,26 @@
                         Manage Database
                     </x-link-button>
                 </div>
+                <div>
+                    <div class="flex items-center">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <a href="{{ route('admin.user-roles') }}">Roles Management</a>
+                        </h2>
+                    </div>
+                    <x-link-button class="w-full mt-2" href="{{ route('admin.user-roles') }}">
+                        Manage Roles
+                    </x-link-button>
+                </div>
+                <div>
+                    <div class="flex items-center">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <a href="{{ route('admin.schema-management') }}">Schema Management</a>
+                        </h2>
+                    </div>
+                    <x-link-button class="w-full mt-2" href="{{ route('admin.schema-management') }}">
+                        Manage Schema
+                    </x-link-button>
+                </div>
             </div>
         </div>
     </div>

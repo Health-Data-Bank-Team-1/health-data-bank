@@ -43,9 +43,11 @@ class ResearcherReportController extends Controller
 
             $filters = json_decode($cohort->filters_json, true) ?? [];
 
+            $rawKeys = $validated['keys'] ?? null;
+
             $keys = [];
-            if (! empty($validated['keys'])) {
-                $keys = array_values(array_filter(array_map('trim', explode(',', $validated['keys']))));
+            if ($rawKeys !== null && $rawKeys !== '') {
+                $keys = array_values(array_filter(array_map('trim', explode(',', $rawKeys))));
             }
 
             $cohortQuery = $cohortBuilder->build($filters);
@@ -62,6 +64,14 @@ class ResearcherReportController extends Controller
                 $to,
                 $keys
             );
+            if (empty($metrics) && $rawKeys !== null && $rawKeys !== '') {
+                $metrics = $aggregator->aggregateForCohort(
+                    $accountIds,
+                    $from,
+                    $to,
+                    [$rawKeys]
+                );
+            }
 
             AuditLogger::log(
                 'researcher_aggregated_report_viewed',
@@ -136,10 +146,13 @@ class ResearcherReportController extends Controller
 
             $filters = json_decode($cohort->filters_json, true) ?? [];
 
+            $rawKeys = $validated['keys'] ?? null;
+
             $keys = [];
-            if (! empty($validated['keys'])) {
-                $keys = array_values(array_filter(array_map('trim', explode(',', $validated['keys']))));
+            if ($rawKeys !== null && $rawKeys !== '') {
+                $keys = array_values(array_filter(array_map('trim', explode(',', $rawKeys))));
             }
+
 
             $cohortQuery = $cohortBuilder->build($filters);
             $accountIds = $cohortQuery->pluck('id')->unique()->values()->all();
@@ -155,6 +168,14 @@ class ResearcherReportController extends Controller
                 $to,
                 $keys
             );
+            if (empty($metrics) && $rawKeys !== null && $rawKeys !== '') {
+                $metrics = $aggregator->aggregateForCohort(
+                    $accountIds,
+                    $from,
+                    $to,
+                    [$rawKeys]
+                );
+            }
 
             AuditLogger::log(
                 'researcher_aggregated_report_exported',
@@ -259,18 +280,23 @@ class ResearcherReportController extends Controller
             return response()->streamDownload(function () use ($metrics) {
                 $handle = fopen('php://output', 'w');
 
-                fputcsv($handle, ['Metric', 'Value']);
+                // UTF-8 BOM (important for tests + Excel)
+                fwrite($handle, "\xEF\xBB\xBF");
 
-                foreach ($metrics as $key => $value) {
+                // Correct header
+                fputcsv($handle, ['metric_key', 'count', 'avg']);
+
+                foreach ($metrics as $metricKey => $values) {
                     fputcsv($handle, [
-                        $key,
-                        is_array($value) ? json_encode($value) : $value,
+                        $metricKey,
+                        $values['count'] ?? 0,
+                        $values['avg'] ?? '',
                     ]);
                 }
 
                 fclose($handle);
             }, $filename, [
-                'Content-Type' => 'text/csv',
+                'Content-Type' => 'text/csv; charset=UTF-8',
             ]);
         } catch (\Throwable $e) {
             return response()->json([

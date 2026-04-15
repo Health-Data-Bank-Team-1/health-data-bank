@@ -60,11 +60,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->post(
 Route::middleware(['auth:sanctum', 'role:admin'])
     ->prefix('admin/reports')
     ->group(function () {
-        Route::post('{report}/archive', [ReportModerationController::class, 'archive']);
         Route::post('{report}/delete', [ReportModerationController::class, 'delete']);
-        Route::post('{report}/restore', [ReportModerationController::class, 'restore']);
-        Route::get('{report}/moderation-status', [ReportModerationController::class, 'status']);
-        Route::post('{report}/permanent-delete', [ReportModerationController::class, 'permanentDelete']);
     });
 
 Route::middleware(['auth:sanctum', 'role:researcher'])->get(

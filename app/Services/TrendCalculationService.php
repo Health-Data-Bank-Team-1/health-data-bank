@@ -148,7 +148,7 @@ class TrendCalculationService
 
             $buckets[$bucketKey][] = [
                 'ts' => $ts,
-                'value' => $matchedValue,
+                'value' => $values[$metricKey],
             ];
         }
 

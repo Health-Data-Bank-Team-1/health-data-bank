@@ -88,6 +88,8 @@ class EndpointEdgeCaseTest extends TestCase
             'status' => 'ACTIVE',
         ]);
 
+        $patient->providers()->attach($providerAccount->id);
+
         $this->actingAs($providerUser, 'sanctum')
             ->getJson("/api/provider/patients/{$patient->id}/record")
             ->assertStatus(200)

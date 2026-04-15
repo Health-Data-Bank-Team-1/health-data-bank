@@ -15,6 +15,7 @@ class AdminAuditLogController extends Controller
 {
     public function index(Request $request)
     {
+        abort_if(Gate::denies('admin-access'), 403);
         $events = Audit::query()
             ->whereNotNull('event')
             ->distinct()
@@ -24,6 +25,9 @@ class AdminAuditLogController extends Controller
         $audits = Audit::query()
             ->when($request->filled('event'), function ($query) use ($request) {
                 $query->where('event', $request->event);
+            })
+            ->when($request->filled('tag'), function ($query) use ($request) {
+                $query->where('tags', 'like', '%' . $request->tag . '%');
             })
             ->latest()
             ->paginate(20)
@@ -37,9 +41,15 @@ class AdminAuditLogController extends Controller
             []
         );
 
-        return view('livewire.admin.audit-log', [
-            'audits' => $audits,
+        return response()->json([
+            'data' => $audits->items(),
             'events' => $events,
+            'meta' => [
+                'current_page' => $audits->currentPage(),
+                'last_page' => $audits->lastPage(),
+                'per_page' => $audits->perPage(),
+                'total' => $audits->total(),
+            ],
         ]);
     }
 
